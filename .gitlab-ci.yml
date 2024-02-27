@@ -5,7 +5,6 @@ stages:
   - lint
   - test
   - publish
-  - validate
 
 flake8:
   stage: lint
@@ -42,7 +41,7 @@ isort:
   script:
     - pip install poetry
     - poetry install --no-root 
-    - poetry run isort --check-only
+    - poetry run isort src --check-only
   only:
     - merge_requests
     - main
