@@ -1,0 +1,36 @@
+
+services:
+  path: ~/services
+
+integrations:
+  rar:
+    password: SuperSecretPassword
+  aws:
+    access_key: XXXXXXXXXXXXXXXXXXXX
+    secret_key: XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+
+commands:
+  backup:
+    destination: 
+      path: /mnt/backups
+      overwrite: false
+    upload:
+      enabled: true
+      provider: aws
+      aws:
+        bucket: my.domain.archive
+        storage_class: DEEP_ARCHIVE # STANDARD | INTELLIGENT_TIERING | DEEP_ARCHIVE
+    groups:
+      config:
+        - ~/.ssh
+        - /path/to/some/config/folder
+      docs:
+        - ~/Documents
+      apps:
+        - /mnt/ssd/nextcloud/
+        - /mnt/ssd/gitlab
+        - /mnt/ssd/syncthing
+      media:
+        - ~/Pictures
+        - ~/Music
+        - ~/Videos
