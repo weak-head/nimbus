@@ -15,6 +15,7 @@ flake8:
     - poetry run flake8 .
   only:
     - merge_requests
+    - main
 
 black:
   stage: lint
@@ -24,6 +25,7 @@ black:
     - poetry run black --check .
   only:
     - merge_requests
+    - main
 
 pylint:
   stage: lint
@@ -33,6 +35,7 @@ pylint:
     - poetry run pylint src
   only:
     - merge_requests
+    - main
 
 isort:
   stage: lint
@@ -42,6 +45,7 @@ isort:
     - poetry run isort --check-only
   only:
     - merge_requests
+    - main
 
 unit-tests:
   stage: test
