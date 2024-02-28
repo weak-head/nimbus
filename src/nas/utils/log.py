@@ -228,9 +228,9 @@ class Pretty:
         self.process(archive.proc, cmd=False, folder=False, vertical_indent=False)
 
         # Output archive-specific fields
-        self._log.out("archive:", archive.archive_path)
-        self._log.out("archive size:", archive.archive_size, format_as="size")
-        self._log.out("archival speed:", archive.archival_speed, format_as="speed")
+        self._log.out("archive:", archive.archive)
+        self._log.out("archive size:", archive.size, format_as="size")
+        self._log.out("archival speed:", archive.speed, format_as="speed")
 
         if vertical_indent:
             self._log.out()

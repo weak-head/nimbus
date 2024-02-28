@@ -7,56 +7,42 @@ from nas.core.runner import CompletedProcess, Runner
 
 
 class Archiver(ABC):
-    """Compress and archive data."""
+    """
+    Defines an abstract archiver.
+    All archivers should follow the APIs defined by this class.
+    """
 
     @abstractmethod
-    def archive(self, folder: str, archive_path: str) -> ArchivalResult:
+    def archive(self, folder: str, archive: str) -> ArchivalResult:
         """
-        Create compressed archive from the specified folder.
+        Archive a folder.
 
-        :param folder: Input folder to archive, recursive.
-        :param archive_path: Path of the output archive.
-        :return: Archival result.
+        :param folder: Full path to the folder that should be archived.
+
+        :param archive: A file path where the archive should be created.
+
+        :return: Result of the folder archival.
         """
 
 
 class RarArchiver(Archiver):
     """
-    Compress and archive data using 'WinRar'.
-
-    - https://www.win-rar.com/download.html
-    - https://www.win-rar.com/rar-linux-mac.html
+    Create a password protected archive using 'WinRar'.
     """
 
-    def __init__(self, runner: Runner, password: str) -> None:
-        """
-        Creates a new instance of `RarArchiver` that used the provided `Runner`
-        to start WinRar archival process.
-
-        :param runner: Command runner to use.
-        :param password: Password to protect the archive with.
-        """
+    def __init__(self, runner: Runner, password: str):
         self._runner = runner
         self._password = password
 
-    def archive(self, folder: str, archive_path: str) -> ArchivalResult:
-        """
-        Create compressed archive from the specified folder.
-
-        :param folder: Input folder to archive, recursive.
-        :param archive_path: Path of the output archive.
-        :return: Archival result.
-        """
+    def archive(self, folder: str, archive: str) -> ArchivalResult:
 
         # Ensure destination folder exists
-        directory_path = os.path.dirname(archive_path)
+        directory_path = os.path.dirname(archive)
         if not os.path.exists(directory_path):
             os.makedirs(directory_path, exist_ok=True)
 
-        # Execute the folder archival using WinRar.
-        # It is expected that the 'rar' executable is available in
-        # the system PATH and could be access by the user,
-        # that executes the archival process.
+        # It is expected that 'rar' executable
+        # is available in a system PATH.
         proc = self._runner.execute(
             [
                 "rar",  # https://www.win-rar.com/download.html
@@ -72,46 +58,29 @@ class RarArchiver(Archiver):
                 "-k",  # lock archive
                 "-y",  # yes to all questions
                 f"-hp{self._password}",  # protect with password
-                archive_path,
+                archive,
                 folder,
             ]
         )
 
-        return ArchivalResult(proc, folder=folder, archive_path=archive_path)
+        return ArchivalResult(proc, folder, archive)
 
 
 class ArchivalResult:
-    """Result of compressing and archiving a single folder."""
 
-    def __init__(self, proc: CompletedProcess, folder: str, archive_path: str):
-        """
-        Creates a new instance of the `ArchivalResult`.
-
-        :param proc: Completed process.
-        :param folder: Input folder.
-        :param archive_path: Full path to the created archive.
-        """
-
+    def __init__(self, proc: CompletedProcess, folder: str, archive: str):
         self.proc = proc
-        """Completed archival process."""
-
         self.folder = folder
-        """Input folder."""
-
-        self.archive_path = archive_path
-        """Full path to the created archive."""
-
-    @property
-    def archive_size(self) -> int:
-        """Archive size, in bytes."""
-        return os.stat(self.archive_path).st_size if self.successful else None
+        self.archive = archive
 
     @property
     def successful(self) -> bool:
-        """True, if the archive is successfully created."""
-        return self.proc.successful and self.folder and self.archive_path and os.path.exists(self.archive_path)
+        return self.proc.successful and self.folder and self.archive and os.path.exists(self.archive)
 
     @property
-    def archival_speed(self) -> int:
-        """Archival speed, in bytes per second."""
-        return int(self.archive_size // self.proc.elapsed.total_seconds()) if self.successful else 0
+    def size(self) -> int:
+        return os.stat(self.archive).st_size if self.successful else None
+
+    @property
+    def speed(self) -> int:
+        return int(self.size // self.proc.elapsed.total_seconds()) if self.successful else 0

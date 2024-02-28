@@ -23,7 +23,7 @@ class Runner(ABC):
 
         :param cwd: Current working directory.
 
-        :return: A result of command execution.
+        :return: Result of the command execution.
         """
 
 
