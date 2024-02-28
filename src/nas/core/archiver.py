@@ -1,8 +1,3 @@
-"""
-Provides an abstract base class `Archiver` for all archivers,
-and implements WinRar-based archiver `RarArchiver`.
-"""
-
 from __future__ import annotations
 
 import os

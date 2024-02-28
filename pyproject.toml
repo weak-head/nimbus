@@ -68,5 +68,7 @@ disable = """
     too-many-instance-attributes,
     too-many-locals,
     unused-argument,
-    not-callable
+    not-callable,
+    missing-module-docstring,
+    missing-function-docstring,
 """

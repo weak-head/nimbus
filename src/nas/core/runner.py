@@ -1,9 +1,3 @@
-"""
-Provides abstract base class `Runner` for all process runners,
-and implements:
-  - `SubprocessRunner` - Subprocess-based runner.
-"""
-
 from __future__ import annotations
 
 import subprocess
@@ -92,28 +86,28 @@ class CompletedProcess:
         :param cmd: A command, that has been executed.
         """
 
-        self.cmd = cmd
+        self.cmd: list[str] = cmd
         """The command, that has been executed as a process."""
 
-        self.working_dir = None
+        self.working_dir: str = None
         """Process working directory."""
 
-        self.exit_code = None
+        self.exit_code: int = None
         """Process exit code."""
 
-        self.stdout = None
+        self.stdout: str = None
         """Process STDOUT output."""
 
-        self.stderr = None
+        self.stderr: str = None
         """Process STDERR output."""
 
-        self.exception = None
+        self.exception: Exception = None
         """The generated exception, or `None`."""
 
-        self.started = None
+        self.started: datetime = None
         """Process start time, as `datetime`."""
 
-        self.completed = None
+        self.completed: datetime = None
         """Process completion time, as `datetime`."""
 
     @property
