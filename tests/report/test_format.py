@@ -59,33 +59,33 @@ def test_duration(duration, readable_duration):
 
 
 @pytest.mark.parametrize(
-    "date_time_format, dt, readable_dt",
+    "datetime_fmt, dt, readable_dt",
     [
         ("%Y-%m-%d %H:%M:%S", datetime(year=2004, month=8, day=3, hour=17, minute=33), "2004-08-03 17:33:00"),
         ("%Y/%m/%d_%H-%M-%S", datetime(year=2011, month=6, day=13, hour=1, minute=3, second=7), "2011/06/13_01-03-07"),
     ],
 )
-def test_date_time(date_time_format, dt, readable_dt):
-    assert Formatter(date_time_format=date_time_format).date_time(dt) == readable_dt
+def test_date_time(datetime_fmt, dt, readable_dt):
+    assert Formatter(datetime_fmt=datetime_fmt).datetime(dt) == readable_dt
 
 
 @pytest.mark.parametrize(
-    "date_format, d, readable_d",
+    "date_fmt, d, readable_d",
     [
         ("%Y-%m-%d", datetime(year=2004, month=8, day=3), "2004-08-03"),
         ("%Y/%m/%d", datetime(year=2011, month=6, day=13), "2011/06/13"),
     ],
 )
-def test_date(date_format, d, readable_d):
-    assert Formatter(date_format=date_format).date(d) == readable_d
+def test_date(date_fmt, d, readable_d):
+    assert Formatter(date_fmt=date_fmt).date(d) == readable_d
 
 
 @pytest.mark.parametrize(
-    "time_format, t, readable_t",
+    "time_fmt, t, readable_t",
     [
         ("%H:%M:%S", datetime(year=2004, month=8, day=3, hour=17, minute=33, second=47), "17:33:47"),
         ("%H-%M-%S", datetime(year=2004, month=8, day=3, hour=1, minute=3, second=7), "01-03-07"),
     ],
 )
-def test_time(time_format, t, readable_t):
-    assert Formatter(time_format=time_format).time(t) == readable_t
+def test_time(time_fmt, t, readable_t):
+    assert Formatter(time_fmt=time_fmt).time(t) == readable_t
