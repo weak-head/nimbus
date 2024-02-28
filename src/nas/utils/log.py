@@ -30,6 +30,7 @@ class Log:
         """
         Creates a new instance of `Log`.
 
+        :param pretty: Pretty printer.
         :param formatter: Data formatter.
         :param indent: Line indent of each log entry.
         :param indent_size: Indent increase of a child logger.
@@ -43,6 +44,14 @@ class Log:
         self._indent_char = indent_char
         self._column_width = column_width
         self._parent = parent
+
+    @property
+    def pretty(self) -> Pretty:
+        """
+        Returns an instance of a pretty printer, that captures the current log instance and uses
+        the current configuration for pretty print of complex objects.
+        """
+        return Pretty(self)
 
     def out(self, *columns, **rules) -> Log:
         """
@@ -112,96 +121,6 @@ class Log:
             parent=self,
         )
 
-    def process(self, proc: CompletedProcess, cmd=True, folder=True, stdout=True, vertical_indent=True) -> Log:
-        """
-        Pretty print the `CompletedProcess` information.
-
-        :param process: The instance of the `CompletedProcess` to print.
-        :param cmd: Should `self.cmd` be written to the `Log`.
-        :param folder: Should `self.folder` be written to the `Log`.
-        :param stdout: Should `self.stdout` be written to the `Log`.
-        :param vertical_indent: Should empty line be written in the end.
-        :return: `self`.
-        """
-
-        if cmd:
-            self.out("cmd:", (" ".join(proc.cmd)).strip())
-
-        if folder:
-            self.out("folder:", proc.working_dir)
-
-        self.out("status:", proc.status)
-        self.out("started:", proc.started, format_as="datetime")
-        self.out("completed:", proc.completed, format_as="datetime")
-        self.out("elapsed:", proc.elapsed, format_as="duration")
-
-        if proc.exit_code is not None and proc.exit_code != 0:
-            self.out("exit code:", f"{proc.exit_code} ({errno.errorcode.get(proc.exit_code, 'unknown')})")
-
-        if stdout and proc.stdout and proc.stdout.strip():
-            log_output = self.section("stdout:")
-            log_output.multiline(proc.stdout)
-
-        if proc.stderr and proc.stderr.strip():
-            log_output = self.section("stderr:")
-            log_output.multiline(proc.stderr)
-
-        if proc.exception:
-            log_output = self.section("exception:")
-            log_output.multiline(str(proc.exception))
-
-        if vertical_indent:
-            self.out()
-
-        return self
-
-    def archive(self, archive: ArchivalResult, vertical_indent=True) -> Log:
-        """
-        Pretty print the `ArchivalResult` information.
-
-        :param archive: The instance of `ArchivalResult` to pretty print.
-        :param vertical_indent: Should empty line be written in the end.
-        :return: `self`.
-        """
-
-        # Output underlying process info
-        self.process(archive.proc, cmd=False, folder=False, vertical_indent=False)
-
-        # Output archive-specific fields
-        self.out("archive:", archive.archive_path)
-        self.out("archive size:", archive.archive_size, format_as="size")
-        self.out("archival speed:", archive.archival_speed, format_as="speed")
-
-        if vertical_indent:
-            self.out()
-
-        return self
-
-    def upload(self, upload: UploadResult, vertical_indent=True) -> Log:
-        """
-        Pretty print the `UploadResult` information.
-
-        :param upload: The instance of `UploadResult` to pretty print.
-        :param vertical_indent: Should empty line be written in the end.
-        :return: `self`.
-        """
-
-        self.out("status:", upload.status)
-        self.out("started:", upload.started, format_as="datetime")
-        self.out("completed:", upload.completed, format_as="datetime")
-        self.out("elapsed:", upload.elapsed, format_as="duration")
-        self.out("size:", upload.size, format_as="size")
-        self.out("speed:", upload.speed, format_as="speed")
-
-        if upload.exception:
-            log_output = self.section("exception:")
-            log_output.multiline(str(upload.exception))
-
-        if vertical_indent:
-            self.out()
-
-        return self
-
     def _format_entry(self, entry: Any, format_as: str = None) -> str:
         """
         Format log entry according to formatting rules.
@@ -238,3 +157,103 @@ class Log:
                     string_entry = self._formatter.duration(entry)
 
         return string_entry
+
+
+class Pretty:
+    """
+    Pretty printer that outputs to log writer complex objects, such as:
+        - `CompletedProcess`
+        - `ArchivalResult`
+        - `UploadResult`
+    """
+
+    def __init__(self, log: Log):
+        """
+        Creates a new instance of `Pretty` and captures a log writter,
+        that is used to pretty print complex objects.
+        """
+        self._log = log
+
+    def process(self, proc: CompletedProcess, cmd=True, folder=True, stdout=True, vertical_indent=True) -> None:
+        """
+        Pretty print the `CompletedProcess` information.
+
+        :param process: The instance of the `CompletedProcess` to print.
+        :param cmd: Should `self.cmd` be written to the `Log`.
+        :param folder: Should `self.folder` be written to the `Log`.
+        :param stdout: Should `self.stdout` be written to the `Log`.
+        :param vertical_indent: Should empty line be written in the end.
+        :return: `self`.
+        """
+
+        if cmd:
+            self._log.out("cmd:", (" ".join(proc.cmd)).strip())
+
+        if folder:
+            self._log.out("folder:", proc.working_dir)
+
+        self._log.out("status:", proc.status)
+        self._log.out("started:", proc.started, format_as="datetime")
+        self._log.out("completed:", proc.completed, format_as="datetime")
+        self._log.out("elapsed:", proc.elapsed, format_as="duration")
+
+        if proc.exit_code is not None and proc.exit_code != 0:
+            self._log.out("exit code:", f"{proc.exit_code} ({errno.errorcode.get(proc.exit_code, 'unknown')})")
+
+        if stdout and proc.stdout and proc.stdout.strip():
+            log_output = self._log.section("stdout:")
+            log_output.multiline(proc.stdout)
+
+        if proc.stderr and proc.stderr.strip():
+            log_output = self._log.section("stderr:")
+            log_output.multiline(proc.stderr)
+
+        if proc.exception:
+            log_output = self._log.section("exception:")
+            log_output.multiline(str(proc.exception))
+
+        if vertical_indent:
+            self._log.out()
+
+    def archive(self, archive: ArchivalResult, vertical_indent=True) -> None:
+        """
+        Pretty print the `ArchivalResult` information.
+
+        :param archive: The instance of `ArchivalResult` to pretty print.
+        :param vertical_indent: Should empty line be written in the end.
+        :return: `self`.
+        """
+
+        # Output underlying process info
+        self.process(archive.proc, cmd=False, folder=False, vertical_indent=False)
+
+        # Output archive-specific fields
+        self._log.out("archive:", archive.archive_path)
+        self._log.out("archive size:", archive.archive_size, format_as="size")
+        self._log.out("archival speed:", archive.archival_speed, format_as="speed")
+
+        if vertical_indent:
+            self._log.out()
+
+    def upload(self, upload: UploadResult, vertical_indent=True) -> None:
+        """
+        Pretty print the `UploadResult` information.
+
+        :param upload: The instance of `UploadResult` to pretty print.
+        :param vertical_indent: Should empty line be written in the end.
+        :return: `self`.
+        """
+
+        self._log.out("status:", upload.status)
+        self._log.out("started:", upload.started, format_as="datetime")
+        self._log.out("completed:", upload.completed, format_as="datetime")
+        self._log.out("elapsed:", upload.elapsed, format_as="duration")
+        self._log.out("size:", upload.size, format_as="size")
+        self._log.out("speed:", upload.speed, format_as="speed")
+
+        if upload.exception:
+            log_output = self._log.section("exception:")
+            log_output.multiline(str(upload.exception))
+
+        if vertical_indent:
+            self._log.out()

@@ -192,7 +192,7 @@ class Backup:
                 # Create backup archive
                 archive_result = self._archiver.archive(folder, archive_path)
                 backup_result = BackupResult(group, archive_result)
-                log_folder.archive(archive_result)
+                log_folder.pretty.archive(archive_result)
 
                 if backup_result.created:
                     bisect.insort(created, backup_result, key=lambda a: a.archive_path)

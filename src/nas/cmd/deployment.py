@@ -175,7 +175,7 @@ class Deployment(ABC):
                 # Execute the command and write to log
                 # the result of command execution.
                 proc = self._runner.execute(command.cmd, service.folder)
-                log_cmd.process(proc, cmd=False)
+                log_cmd.pretty.process(proc, cmd=False)
 
                 # Do not continue the command chain execution,
                 # if this command has failed.
