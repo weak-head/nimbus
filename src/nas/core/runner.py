@@ -1,9 +1,3 @@
-"""
-Provides abstract base class `Runner` for all process runners,
-and implements:
-  - `SubprocessRunner` - Subprocess-based runner.
-"""
-
 from __future__ import annotations
 
 import subprocess
@@ -12,53 +6,43 @@ from datetime import datetime, timedelta
 
 
 class Runner(ABC):
-    """Allows executing commands and getting the execution result."""
+    """
+    Defines an abstract command runner.
+    All runners should follow the APIs defined by this class.
+    """
 
     @abstractmethod
-    def execute(self, cmd: list[str] | str, working_dir=None) -> CompletedProcess:
+    def execute(self, cmd: list[str] | str, cwd=None) -> CompletedProcess:
         """
-        Execute a single command and return its result.
+        Execute a command.
 
         :param cmd: A command to execute.
-        :param working_dir: Working directory.
-        :return: Completed process.
+            There are several ways to specify the command:
+                - As a string, where each argument is separated by spaces.
+                - As a list of strings, where each entry is an independent argument.
+
+        :param cwd: Current working directory.
+
+        :return: Result of the command execution.
         """
 
 
 class SubprocessRunner(Runner):
-    """Execute commands using system subprocesses."""
+    """
+    Executes a command as a subprocess.
+    """
 
-    def execute(self, cmd: list[str] | str, working_dir=None) -> CompletedProcess:
-        """
-        Execute a single command and return its result.
-
-        :param cmd: A command to execute.
-        :param working_dir: Working directory.
-        :return: Completed process.
-        """
-
-        # A command could be specified as a string separated by spaces,
-        # or as an array of strings.
+    def execute(self, cmd: list[str] | str, cwd=None) -> CompletedProcess:
         if isinstance(cmd, str):
             cmd = cmd.split()
 
-        result = CompletedProcess(cmd)
-        result.working_dir = working_dir
+        result = CompletedProcess(cmd, cwd)
         result.started = datetime.now()
 
         try:
 
-            # Execute a command as a subprocess,
-            # capturing STDOUT and STDERR output.
-            process = subprocess.run(
-                cmd,
-                stdout=subprocess.PIPE,
-                text=True,
-                check=False,
-                cwd=working_dir,
-            )
-
-            result.exit_code = process.returncode
+            process = subprocess.run(cmd, capture_output=True, text=True, check=False, cwd=cwd)
+            result.exitcode = process.returncode
 
             if process.stdout is not None:
                 result.stdout = process.stdout.strip()
@@ -74,63 +58,33 @@ class SubprocessRunner(Runner):
 
 
 class CompletedProcess:
-    """Result of a command execution."""
 
     SUCCESS = "success"
-    """The process has successfully finished (exit code is 0)."""
-
     FAILED = "failed"
-    """The process has finished with errors (exit code is not 0)."""
-
     EXCEPTION = "exception"
-    """Unexpected exception has been generated."""
 
-    def __init__(self, cmd: list[str]):
-        """
-        Creates a new instance of `CompletedProcess`, with empty values.
-
-        :param cmd: A command, that has been executed.
-        """
-
-        self.cmd = cmd
-        """The command, that has been executed as a process."""
-
-        self.working_dir = None
-        """Process working directory."""
-
-        self.exit_code = None
-        """Process exit code."""
-
-        self.stdout = None
-        """Process STDOUT output."""
-
-        self.stderr = None
-        """Process STDERR output."""
-
-        self.exception = None
-        """The generated exception, or `None`."""
-
-        self.started = None
-        """Process start time, as `datetime`."""
-
-        self.completed = None
-        """Process completion time, as `datetime`."""
+    def __init__(self, cmd: list[str], cwd: str):
+        self.cmd: list[str] = cmd
+        self.cwd: str = cwd
+        self.exitcode: int = None
+        self.stdout: str = None
+        self.stderr: str = None
+        self.exception: Exception = None
+        self.started: datetime = None
+        self.completed: datetime = None
 
     @property
     def status(self) -> str:
-        """Process execution status."""
         if self.exception:
             return CompletedProcess.EXCEPTION
-        if self.exit_code != 0:
+        if self.exitcode != 0:
             return CompletedProcess.FAILED
         return CompletedProcess.SUCCESS
 
     @property
     def successful(self) -> bool:
-        """True, if the process has finished successfully."""
         return self.status == CompletedProcess.SUCCESS and self.cmd and self.started and self.completed
 
     @property
     def elapsed(self) -> timedelta:
-        """Process elapsed time, as `timedelta`."""
         return self.completed - self.started
