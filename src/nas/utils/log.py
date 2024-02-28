@@ -190,15 +190,15 @@ class Pretty:
             self._log.out("cmd:", (" ".join(proc.cmd)).strip())
 
         if folder:
-            self._log.out("folder:", proc.working_dir)
+            self._log.out("folder:", proc.cwd)
 
         self._log.out("status:", proc.status)
         self._log.out("started:", proc.started, format_as="datetime")
         self._log.out("completed:", proc.completed, format_as="datetime")
         self._log.out("elapsed:", proc.elapsed, format_as="duration")
 
-        if proc.exit_code is not None and proc.exit_code != 0:
-            self._log.out("exit code:", f"{proc.exit_code} ({errno.errorcode.get(proc.exit_code, 'unknown')})")
+        if proc.exit_code is not None and proc.exitcode != 0:
+            self._log.out("exit code:", f"{proc.exitcode} ({errno.errorcode.get(proc.exitcode, 'unknown')})")
 
         if stdout and proc.stdout and proc.stdout.strip():
             log_output = self._log.section("stdout:")

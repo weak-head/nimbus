@@ -38,7 +38,7 @@ class Uploader(ABC):
 
 class AwsUploader(Uploader):
     """
-    AWS S3 file uploader.
+    Upload files to AWS S3 bucket.
     """
 
     class CallbackAdapter:
@@ -114,8 +114,8 @@ class UploadResult:
     FAILED = "failed"
 
     def __init__(self, filepath: str, key: str):
-        self.filepath = filepath
-        self.key = key
+        self.filepath: str = filepath
+        self.key: str = key
         self.size: int = None
         self.started: datetime = None
         self.completed: datetime = None
