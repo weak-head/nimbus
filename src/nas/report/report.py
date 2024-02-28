@@ -13,13 +13,13 @@ class Report:
         self._writer = writer
         self._pretty = pretty
 
-    def entry(self, key: Any, *columns):
+    def entry(self, key: Any, *columns, **rules):
         # Try to pretty print the entry,
         # fallback to plain writer otherwise.
         if self._pretty.can_print(key):
-            self._pretty.print(self._writer, key, *columns)
+            self._pretty.print(self._writer, key, *columns, **rules)
         else:
-            self._writer.out(key, *columns)
+            self._writer.out(key, *columns, **rules)
 
     def multiline(self, msg: list[str] | str, as_list=False):
         self._writer.multiline(msg, as_list=as_list)

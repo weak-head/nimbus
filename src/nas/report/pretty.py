@@ -9,105 +9,79 @@ from nas.report.writer import Writer
 
 class PrettyPrinter:
     """
-    Pretty printer that outputs to log writer complex objects, such as:
-        - `CompletedProcess`
-        - `ArchivalResult`
-        - `UploadResult`
+    Knows an internal structure of the core objects and outputs them to `Writer`.
     """
 
-    def __init__(self, log: Writer):
-        """
-        Creates a new instance of `Pretty` and captures a log writter,
-        that is used to pretty print complex objects.
-        """
-        self._log = log
+    @property
+    def supported_types(self) -> tuple:
+        return (CompletedProcess, UploadResult, ArchivalResult)
 
     def can_print(self, value: Any) -> bool:
-        return False
+        return issubclass(value, self.supported_types)
 
-    def print(self, writer: Writer, value: Any, *columns):
-        pass
+    def print(self, writer: Writer, value: Any, *columns, **rules) -> None:
+        match value:
+            case CompletedProcess():
+                self._process(writer, value)
 
-    def process(self, proc: CompletedProcess, cmd=True, folder=True, stdout=True, vertical_indent=True) -> None:
-        """
-        Pretty print the `CompletedProcess` information.
+            case UploadResult():
+                self._upload(writer, value)
 
-        :param process: The instance of the `CompletedProcess` to print.
-        :param cmd: Should `self.cmd` be written to the `Log`.
-        :param folder: Should `self.folder` be written to the `Log`.
-        :param stdout: Should `self.stdout` be written to the `Log`.
-        :param vertical_indent: Should empty line be written in the end.
-        :return: `self`.
-        """
+            case ArchivalResult():
+                self._archive(writer, value)
 
+    def _process(self, writer: Writer, proc: CompletedProcess, cmd=False, folder=False, break_after=True) -> None:
         if cmd:
-            self._log.out("cmd:", (" ".join(proc.cmd)).strip())
+            writer.out("cmd:", (" ".join(proc.cmd)).strip())
 
         if folder:
-            self._log.out("folder:", proc.cwd)
+            writer.out("folder:", proc.cwd)
 
-        self._log.out("status:", proc.status)
-        self._log.out("started:", proc.started, format_as="datetime")
-        self._log.out("completed:", proc.completed, format_as="datetime")
-        self._log.out("elapsed:", proc.elapsed, format_as="duration")
+        writer.out("status:", proc.status)
+        writer.out("started:", proc.started, format_as="datetime")
+        writer.out("completed:", proc.completed, format_as="datetime")
+        writer.out("elapsed:", proc.elapsed, format_as="duration")
 
-        if proc.exit_code is not None and proc.exitcode != 0:
-            self._log.out("exit code:", f"{proc.exitcode} ({errno.errorcode.get(proc.exitcode, 'unknown')})")
+        if proc.exitcode is not None and proc.exitcode != 0:
+            decoded = errno.errorcode.get(proc.exitcode, "unknown")
+            writer.out("exit code:", f"{proc.exitcode} ({decoded})")
 
-        if stdout and proc.stdout and proc.stdout.strip():
-            log_output = self._log.section("stdout:")
-            log_output.multiline(proc.stdout)
+        if proc.stdout and proc.stdout.strip():
+            stdout = writer.section("stdout:")
+            stdout.multiline(proc.stdout)
 
         if proc.stderr and proc.stderr.strip():
-            log_output = self._log.section("stderr:")
-            log_output.multiline(proc.stderr)
+            stderr = writer.section("stderr:")
+            stderr.multiline(proc.stderr)
 
         if proc.exception:
-            log_output = self._log.section("exception:")
-            log_output.multiline(str(proc.exception))
+            exc = writer.section("exception:")
+            exc.multiline(str(proc.exception))
 
-        if vertical_indent:
-            self._log.out()
+        if break_after:
+            writer.out()
 
-    def archive(self, archive: ArchivalResult, vertical_indent=True) -> None:
-        """
-        Pretty print the `ArchivalResult` information.
+    def _archive(self, writer: Writer, archive: ArchivalResult, break_after=True) -> None:
+        self._process(writer, archive.proc, cmd=False, folder=False, break_after=False)
 
-        :param archive: The instance of `ArchivalResult` to pretty print.
-        :param vertical_indent: Should empty line be written in the end.
-        :return: `self`.
-        """
+        writer.out("archive:", archive.archive)
+        writer.out("archive size:", archive.size, format_as="size")
+        writer.out("archival speed:", archive.speed, format_as="speed")
 
-        # Output underlying process info
-        self.process(archive.proc, cmd=False, folder=False, vertical_indent=False)
+        if break_after:
+            writer.out()
 
-        # Output archive-specific fields
-        self._log.out("archive:", archive.archive)
-        self._log.out("archive size:", archive.size, format_as="size")
-        self._log.out("archival speed:", archive.speed, format_as="speed")
-
-        if vertical_indent:
-            self._log.out()
-
-    def upload(self, upload: UploadResult, vertical_indent=True) -> None:
-        """
-        Pretty print the `UploadResult` information.
-
-        :param upload: The instance of `UploadResult` to pretty print.
-        :param vertical_indent: Should empty line be written in the end.
-        :return: `self`.
-        """
-
-        self._log.out("status:", upload.status)
-        self._log.out("started:", upload.started, format_as="datetime")
-        self._log.out("completed:", upload.completed, format_as="datetime")
-        self._log.out("elapsed:", upload.elapsed, format_as="duration")
-        self._log.out("size:", upload.size, format_as="size")
-        self._log.out("speed:", upload.speed, format_as="speed")
+    def _upload(self, writer: Writer, upload: UploadResult, break_after=True) -> None:
+        writer.out("status:", upload.status)
+        writer.out("started:", upload.started, format_as="datetime")
+        writer.out("completed:", upload.completed, format_as="datetime")
+        writer.out("elapsed:", upload.elapsed, format_as="duration")
+        writer.out("size:", upload.size, format_as="size")
+        writer.out("speed:", upload.speed, format_as="speed")
 
         if upload.exception:
-            log_output = self._log.section("exception:")
-            log_output.multiline(str(upload.exception))
+            exc = writer.section("exception:")
+            exc.multiline(str(upload.exception))
 
-        if vertical_indent:
-            self._log.out()
+        if break_after:
+            writer.out()
