@@ -11,7 +11,7 @@ from abc import ABC
 from pathlib import Path
 
 from nas.core.runner import Runner
-from nas.utils.log import Log
+from nas.report.writer import Writer
 
 
 class Deployment(ABC):
@@ -23,7 +23,7 @@ class Deployment(ABC):
         - maps requested services
     """
 
-    def __init__(self, commands: list[Command], section: str, root_folder: str, runner: Runner, log: Log):
+    def __init__(self, commands: list[Command], section: str, root_folder: str, runner: Runner, log: Writer):
         """
         Creates a new instance of `Deployment`.
 
@@ -188,7 +188,7 @@ class Deployment(ABC):
 class Up(Deployment):
     """Deploy services command."""
 
-    def __init__(self, root_folder: str, runner: Runner, log: Log):
+    def __init__(self, root_folder: str, runner: Runner, log: Writer):
         """Create a new instance of `Up` command."""
         super().__init__(
             [
@@ -209,7 +209,7 @@ class Up(Deployment):
 class Down(Deployment):
     """Undeploy services command."""
 
-    def __init__(self, root_folder: str, runner: Runner, log: Log):
+    def __init__(self, root_folder: str, runner: Runner, log: Writer):
         """Create a new instance of 'Down' command."""
         super().__init__(
             [

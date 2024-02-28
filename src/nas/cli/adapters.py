@@ -9,9 +9,9 @@ from nas.cmd import Backup, Down, Up
 from nas.core.archiver import RarArchiver
 from nas.core.runner import SubprocessRunner
 from nas.core.uploader import AwsUploader
+from nas.report.format import Formatter
+from nas.report.writer import LogWriter
 from nas.utils.config import Config
-from nas.utils.format import Formatter
-from nas.utils.log import Log
 
 
 class UpAdapter:
@@ -31,7 +31,7 @@ class UpAdapter:
         services = args.services
         root_folder = config.services.path
 
-        log = Log(Formatter())
+        log = LogWriter(Formatter())
         runner = SubprocessRunner()
         up = Up(root_folder, runner, log)
 
@@ -55,7 +55,7 @@ class DownAdapter:
         services = args.services
         root_folder = config.services.path
 
-        log = Log(Formatter())
+        log = LogWriter(Formatter())
         runner = SubprocessRunner()
         down = Down(root_folder, runner, log)
 
@@ -90,7 +90,7 @@ class BackupAdapter:
         # Rar config
         rar_password = config.integrations.rar.password
 
-        log = Log(Formatter())
+        log = LogWriter(Formatter())
         runner = SubprocessRunner()
         archiver = RarArchiver(runner, rar_password)
         uploader = None
@@ -112,18 +112,3 @@ class BackupAdapter:
 
         backup = Backup(known_folders, archiver, uploader, log)
         backup.execute(groups, destination_path, overwrite, upload_enabled)
-
-
-class SnapshotAdapter:
-    """
-    Converts CLI API into the internal 'snapshot' command API.
-    """
-
-    @staticmethod
-    def execute(args: Namespace, config: Config) -> None:
-        """
-        Execute `Snapshot` command.
-
-        :param args: CLI arguments.
-        :param config: Application configuration.
-        """

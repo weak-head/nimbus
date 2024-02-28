@@ -9,9 +9,9 @@ import sys
 from datetime import datetime
 
 from nas.cli.parser import create_parser
+from nas.report.format import Formatter
+from nas.report.writer import LogWriter
 from nas.utils.config import load_config
-from nas.utils.format import Formatter
-from nas.utils.log import Log
 
 
 def main() -> int:
@@ -90,7 +90,7 @@ def write_startup_header() -> None:
 
     # --
     # Log header
-    log = Log(Formatter())
+    log = LogWriter(Formatter())
     log.out()
     log.out("=" * 80)
     log.out(f"== {now}")

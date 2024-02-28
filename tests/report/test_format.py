@@ -2,7 +2,7 @@ from datetime import datetime, timedelta
 
 import pytest
 
-from nas.utils.format import Formatter
+from nas.report.format import Formatter
 
 
 @pytest.mark.parametrize(
