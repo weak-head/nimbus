@@ -1,5 +1,5 @@
+import datetime as dt
 import math
-from datetime import datetime, timedelta
 from typing import Any
 
 
@@ -18,19 +18,23 @@ class Formatter:
         self._date_fmt = date_fmt
         self._time_fmt = time_fmt
 
+    @property
+    def profiles(self) -> tuple[str, ...]:
+        return ("datetime", "date", "time", "size", "speed", "duration")
+
     def format(self, entry: Any, profile: str) -> str:
         match profile:
 
             case "datetime":
-                if isinstance(entry, datetime):
+                if isinstance(entry, dt.datetime):
                     return self.datetime(entry)
 
             case "date":
-                if isinstance(entry, datetime):
+                if isinstance(entry, dt.datetime):
                     return self.date(entry)
 
             case "time":
-                if isinstance(entry, datetime):
+                if isinstance(entry, dt.datetime):
                     return self.time(entry)
 
             case "size":
@@ -42,7 +46,7 @@ class Formatter:
                     return self.speed(entry)
 
             case "duration":
-                if isinstance(entry, timedelta):
+                if isinstance(entry, dt.timedelta):
                     return self.duration(entry)
 
         return str(entry)
@@ -90,7 +94,7 @@ class Formatter:
         gbps = int(mbps // 1024)
         return f"{_ceil(gbps, mbps)} GB/s"
 
-    def duration(self, elapsed: timedelta) -> str:
+    def duration(self, elapsed: dt.timedelta) -> str:
         data = {}
         data["days"], remaining = divmod(elapsed.total_seconds(), 86_400)
         data["hours"], remaining = divmod(remaining, 3_600)
@@ -103,13 +107,13 @@ class Formatter:
 
         return " ".join(time_parts) if time_parts else "less than one second"
 
-    def datetime(self, dt: datetime) -> str:
-        return dt.strftime(self._datetime_fmt)
+    def datetime(self, d: dt.datetime) -> str:
+        return d.strftime(self._datetime_fmt)
 
-    def date(self, d: datetime) -> str:
+    def date(self, d: dt.datetime) -> str:
         return d.strftime(self._date_fmt)
 
-    def time(self, t: datetime) -> str:
+    def time(self, t: dt.datetime) -> str:
         return t.strftime(self._time_fmt)
 
 

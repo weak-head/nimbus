@@ -16,21 +16,22 @@ class Writer(ABC):
     @abstractmethod
     def entry(self, *parts, **rules) -> None:
         """
-        Write a message. If the message is provided as a several message parts,
-        the message parts are aligned and formatted according to the provided rules.
-        If no rules are provided, the default formatting rules are used.
+        Write a message following the specified rules. The message can be a single
+        part or composed of several parts. If the message is composed of several parts,
+        each message part would be aligned and formatted according to the provided formatting rules.
+        If no specific rules are given, default formatting rules will be applied.
 
-        :param parts: One or several values of any type that logically compose
-            a single message entry and should be written as a whole.
+        :param parts: One or more message parts that logically form a complete entry.
 
         :param rules: Message formatting and processing rules.
             These rules are used by the `Writer` to format the entire message or
-            a particular part of the message (if the message is provided as a several parts).
+            individual message parts (if the message is provided as a several parts).
             You can specify the following rules:
 
-                - formatter: Defines the message formatting options. The formatter
-                    is applied to each message part independently.
-                    You can provide the following values:
+                - formatter: Determines formatting options for each message part.
+                    The specified formatter is applied to each message part.
+                    Message part is converted to a string, if the formatter cannot be applied.
+                    You can provide the following formatter values:
                         * default
                         * datetime
                         * date
@@ -39,8 +40,11 @@ class Writer(ABC):
                         * speed
                         * duration
 
-                - layout: Defines the layout of the massage or individual message parts.
-                    You can provide the following values:
+                - layout: Defines the layout of the entire massage or individual message parts.
+                    Each concrete 'Writer` implementation could have it's own meaning
+                    and interpretation of the layout rule. Refer to the actual implementation
+                    of a particular `Writer` for the details of the layout formatting.
+                    You can provide the following layout values:
                         * default
                         * multiline
                         * list
@@ -49,10 +53,13 @@ class Writer(ABC):
     @abstractmethod
     def section(self, title: str) -> Writer:
         """
-        Create a new section.
+        Creates a new `Writer` that represents a nested section and serves
+        as a logical grouping for message entries. All message entries written
+        using the created `Writer` will be grouped under the corresponding section.
+        These sections can be nested within each other for better organization.
 
         :param title: A title of the section.
-        :return: `Writer` that writes messages to the created section.
+        :return: A new instance of `Writer`, that is designated to the created section.
         """
 
 
@@ -78,15 +85,16 @@ class LogWriter(Writer):
         self._parent: LogWriter = parent
 
     def entry(self, *parts, **rules):
-        # Layout rules completely alter the
-        # message layout for this writer.
         match rules.get("layout", "default"):
+
             case "default":
                 self._entry(*parts, **rules)
+
             case "multiline":
                 for part in parts:
                     for msg in part.split("\n"):
                         self._entry(msg, **rules)
+
             case "list":
                 rules["_prepend"] = "- "
                 for part in parts:
@@ -140,7 +148,7 @@ class PrettyWriter(Writer):
     def entry(self, *parts, **rules):
         # Try to pretty print the entry,
         # fallback to the decorated writer on failure.
-        if self._pretty.can_print(parts[0]):
+        if self._pretty.can_print(*parts):
             self._pretty.print(self._writer, *parts, **rules)
         else:
             self._writer.entry(*parts, **rules)

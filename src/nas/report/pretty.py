@@ -17,30 +17,30 @@ class PrettyPrinter:
     """
 
     @property
-    def supported_types(self) -> tuple:
+    def supported_types(self) -> tuple[type, ...]:
         return (CompletedProcess, UploadResult, ArchivalResult)
 
-    def can_print(self, value: typing.Any) -> bool:
-        return issubclass(value, self.supported_types)
+    def can_print(self, *parts) -> bool:
+        return any(issubclass(part, self.supported_types) for part in parts)
 
     def print(self, writer: Writer, *parts, **rules) -> None:
         for part in parts:
             match part:
                 case CompletedProcess():
                     self._process(writer, part)
-
                 case UploadResult():
                     self._upload(writer, part)
-
                 case ArchivalResult():
                     self._archive(writer, part)
+                case _:
+                    writer.entry(part, **rules)
 
-    def _process(self, writer: Writer, proc: CompletedProcess, cmd=False, folder=False, break_after=True) -> None:
+    def _process(self, writer: Writer, proc: CompletedProcess, cmd=False, cwd=False, break_after=True) -> None:
         if cmd:
             writer.entry("cmd:", (" ".join(proc.cmd)).strip())
 
-        if folder:
-            writer.entry("folder:", proc.cwd)
+        if cwd:
+            writer.entry("cwd:", proc.cwd)
 
         writer.entry("status:", proc.status)
         writer.entry("started:", proc.started, formatter="datetime")
@@ -67,7 +67,7 @@ class PrettyPrinter:
             writer.entry()
 
     def _archive(self, writer: Writer, archive: ArchivalResult, break_after=True) -> None:
-        self._process(writer, archive.proc, cmd=False, folder=False, break_after=False)
+        self._process(writer, archive.proc, break_after=False)
 
         writer.entry("archive:", archive.archive)
         writer.entry("archive size:", archive.size, formatter="size")
