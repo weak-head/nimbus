@@ -1,5 +1,6 @@
 import math
 from datetime import datetime, timedelta
+from typing import Any
 
 
 class Formatter:
@@ -16,6 +17,35 @@ class Formatter:
         self._datetime_fmt = datetime_fmt
         self._date_fmt = date_fmt
         self._time_fmt = time_fmt
+
+    def format(self, entry: Any, profile: str) -> str:
+        match profile:
+
+            case "datetime":
+                if isinstance(entry, datetime):
+                    return self.datetime(entry)
+
+            case "date":
+                if isinstance(entry, datetime):
+                    return self.date(entry)
+
+            case "time":
+                if isinstance(entry, datetime):
+                    return self.time(entry)
+
+            case "size":
+                if isinstance(entry, int):
+                    return self.size(entry)
+
+            case "speed":
+                if isinstance(entry, int):
+                    return self.speed(entry)
+
+            case "duration":
+                if isinstance(entry, timedelta):
+                    return self.duration(entry)
+
+        return str(entry)
 
     def size(self, size_bytes: int) -> str:
         # Bytes

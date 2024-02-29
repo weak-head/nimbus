@@ -1,110 +1,109 @@
-"""
-Exposes structured Log writer, with support of sections and columns.
-"""
-
 from __future__ import annotations
 
 import logging
 from abc import ABC, abstractmethod
-from datetime import datetime, timedelta
-from typing import Any
 
 from nas.report.format import Formatter
+from nas.report.pretty import PrettyPrinter
 
 
 class Writer(ABC):
     """
-    Defines an abstract writer.
+    Defines an abstract message writer.
     All writers should follow the APIs defined by this class.
     """
 
     @abstractmethod
-    def out(self, *columns, **rules) -> None:
+    def entry(self, *parts, **rules) -> None:
         """
-        Write a message to the log file.
-        The message could be composed as a set of values,
-        with each value aligned left to the pre-configured column.
+        Write a message. If the message is provided as a several message parts,
+        the message parts are aligned and formatted according to the provided rules.
+        If no rules are provided, the default formatting rules are used.
 
-        :param columns: A set of values, that are composed as a single message.
-        :keyword str format_as: Formatting rule.
-        """
+        :param parts: One or several values of any type that logically compose
+            a single message entry and should be written as a whole.
 
-    @abstractmethod
-    def multiline(self, msg: list[str] | str, as_list=False) -> None:
-        """
-        Write a multi-line message to the log file.
+        :param rules: Message formatting and processing rules.
+            These rules are used by the `Writer` to format the entire message or
+            a particular part of the message (if the message is provided as a several parts).
+            You can specify the following rules:
 
-        :param msg: Multi-line message, where each line is separated by `\\n` or list of strings.
-        :param as_list: Should '- ' be added in front of each line.
+                - formatter: Defines the message formatting options. The formatter
+                    is applied to each message part independently.
+                    You can provide the following values:
+                        * default
+                        * datetime
+                        * date
+                        * time
+                        * size
+                        * speed
+                        * duration
+
+                - layout: Defines the layout of the massage or individual message parts.
+                    You can provide the following values:
+                        * default
+                        * multiline
+                        * list
         """
 
     @abstractmethod
     def section(self, title: str) -> Writer:
         """
-        Create a new indented section.
+        Create a new section.
 
-        :param columns: A title of the created section.
-        :return: An instance of the `Log`, with indented lines.
+        :param title: A title of the section.
+        :return: `Writer` that writes messages to the created section.
         """
 
 
 class LogWriter(Writer):
     """
-    Log writer with support of:
-        - indented nested sections
-        - multiline messages
-        - formatted columns
-
-    Provides functionality to pretty-print execution results
-    of operations defined in `nas.core` package.
+    Writer that uses `logging` package.
     """
 
-    def __init__(self, formatter: Formatter, indent=0, indent_size=4, indent_char=" ", column_width=40, parent=None):
-        """
-        Creates a new instance of `Log`.
+    def __init__(
+        self,
+        formatter: Formatter,
+        indent: int = 0,
+        indent_size: int = 4,
+        indent_char: str = " ",
+        column_width: int = 40,
+        parent: LogWriter = None,
+    ):
+        self._formatter: Formatter = formatter
+        self._indent: int = indent
+        self._indent_size: int = indent_size
+        self._indent_char: str = indent_char
+        self._column_width: int = column_width
+        self._parent: LogWriter = parent
 
-        :param pretty: Pretty printer.
-        :param formatter: Data formatter.
-        :param indent: Line indent of each log entry.
-        :param indent_size: Indent increase of a child logger.
-        :param indent_char: Char that is used for indent.
-        :param column_width: A width of each column.
-        :param parent: Parent logger.
-        """
-        self._formatter = formatter
-        self._indent = indent
-        self._indent_size = indent_size
-        self._indent_char = indent_char
-        self._column_width = column_width
-        self._parent = parent
+    def entry(self, *parts, **rules):
+        # Layout rules completely alter the
+        # message layout for this writer.
+        match rules.get("layout", "default"):
+            case "default":
+                self._entry(*parts, **rules)
+            case "multiline":
+                for part in parts:
+                    for msg in part.split("\n"):
+                        self._entry(msg, **rules)
+            case "list":
+                rules["_prepend"] = "- "
+                for part in parts:
+                    self._entry(part, **rules)
 
-    # @property
-    # def pretty(self) -> PrettyPrinter:
-    #     """
-    #     Returns an instance of a pretty printer, that captures the current log instance and uses
-    #     the current configuration for pretty print of complex objects.
-    #     """
-    #     return PrettyPrinter(self)
-
-    def out(self, *columns, **rules):
-        """
-        Write a message to the log file.
-        The message could be composed as a set of values,
-        with each value aligned left to the pre-configured column.
-
-        :param columns: A set of values, that are composed as a single message.
-        :keyword str format_as: Formatting rule.
-        :return: `self`.
-        """
+    def _entry(self, *parts, **rules):
         message = []
         message.append(self._indent_char * self._indent)
         offset = self._indent
 
-        # Format and align left, to match the column width
-        for entry in columns:
+        prepend = rules.get("_prepend", "")
+        formatter = rules.get("formatter", "default")
 
-            # Format column value
-            string_entry = self._format_entry(entry, rules.get("format_as", None))
+        # Format and align each message part,
+        # to match the configured width
+        for entry in parts:
+            string_entry = prepend + self._formatter.format(entry, formatter)
             offset += len(string_entry)
             message.append(string_entry)
 
@@ -115,35 +114,9 @@ class LogWriter(Writer):
             offset = 0
 
         logging.info("".join(message).rstrip())
-        return self
 
-    def multiline(self, msg: list[str] | str, as_list=False):
-        """
-        Write a multi-line message to the log file.
-
-        :param msg: Multi-line message, where each line is separated by `\\n` or list of strings.
-        :param as_list: Should '- ' be added in front of each line.
-        """
-
-        if isinstance(msg, str):
-            msg = msg.split("\n")
-
-        for line in msg:
-            if as_list:
-                line = "- " + line
-            self.out(line)
-
-        return self
-
-    def section(self, *columns) -> LogWriter:
-        """
-        Create a new indented section.
-
-        :param columns: A title of the created section.
-        :return: An instance of the `Log`, with indented lines.
-        """
-
-        self.out(*columns)
+    def section(self, title: str) -> LogWriter:
+        self.entry(title)
 
         return LogWriter(
             self._formatter,
@@ -154,39 +127,26 @@ class LogWriter(Writer):
             parent=self,
         )
 
-    def _format_entry(self, entry: Any, format_as: str = None) -> str:
-        """
-        Format log entry according to formatting rules.
 
-        :param entry: A single entry to format.
-        :param format_as: Formatting rule.
-        :return: String representation of the formatted entry.
-        """
-        string_entry = str(entry)
-        match format_as:
+class PrettyWriter(Writer):
+    """
+    Writer decorator that uses `PrettyPrinter` to write prettified messages.
+    """
 
-            case "datetime":
-                if isinstance(entry, datetime):
-                    string_entry = self._formatter.date_time(entry)
+    def __init__(self, writer: Writer, pretty: PrettyPrinter):
+        self._writer = writer
+        self._pretty = pretty
 
-            case "date":
-                if isinstance(entry, datetime):
-                    string_entry = self._formatter.date(entry)
+    def entry(self, *parts, **rules):
+        # Try to pretty print the entry,
+        # fallback to the decorated writer on failure.
+        if self._pretty.can_print(parts[0]):
+            self._pretty.print(self._writer, *parts, **rules)
+        else:
+            self._writer.entry(*parts, **rules)
 
-            case "time":
-                if isinstance(entry, datetime):
-                    string_entry = self._formatter.time(entry)
-
-            case "size":
-                if isinstance(entry, int):
-                    string_entry = self._formatter.size(entry)
-
-            case "speed":
-                if isinstance(entry, int):
-                    string_entry = self._formatter.speed(entry)
-
-            case "duration":
-                if isinstance(entry, timedelta):
-                    string_entry = self._formatter.duration(entry)
-
-        return string_entry
+    def section(self, title: str) -> PrettyWriter:
+        return PrettyWriter(
+            self._writer.section(title),
+            self._pretty,
+        )

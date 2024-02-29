@@ -91,8 +91,8 @@ def write_startup_header() -> None:
     # --
     # Log header
     log = LogWriter(Formatter())
-    log.out()
-    log.out("=" * 80)
-    log.out(f"== {now}")
-    log.out(f"== {command_line}")
-    log.out()
+    log.entry()
+    log.entry("=" * 80)
+    log.entry(f"== {now}")
+    log.entry(f"== {command_line}")
+    log.entry()

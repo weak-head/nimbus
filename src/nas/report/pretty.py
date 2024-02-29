@@ -1,10 +1,14 @@
+from __future__ import annotations
+
 import errno
-from typing import Any
+import typing
 
 from nas.core.archiver import ArchivalResult
 from nas.core.runner import CompletedProcess
 from nas.core.uploader import UploadResult
-from nas.report.writer import Writer
+
+if typing.TYPE_CHECKING:
+    from nas.report.writer import Writer
 
 
 class PrettyPrinter:
@@ -16,72 +20,73 @@ class PrettyPrinter:
     def supported_types(self) -> tuple:
         return (CompletedProcess, UploadResult, ArchivalResult)
 
-    def can_print(self, value: Any) -> bool:
+    def can_print(self, value: typing.Any) -> bool:
         return issubclass(value, self.supported_types)
 
-    def print(self, writer: Writer, value: Any, *columns, **rules) -> None:
-        match value:
-            case CompletedProcess():
-                self._process(writer, value)
+    def print(self, writer: Writer, *parts, **rules) -> None:
+        for part in parts:
+            match part:
+                case CompletedProcess():
+                    self._process(writer, part)
 
-            case UploadResult():
-                self._upload(writer, value)
+                case UploadResult():
+                    self._upload(writer, part)
 
-            case ArchivalResult():
-                self._archive(writer, value)
+                case ArchivalResult():
+                    self._archive(writer, part)
 
     def _process(self, writer: Writer, proc: CompletedProcess, cmd=False, folder=False, break_after=True) -> None:
         if cmd:
-            writer.out("cmd:", (" ".join(proc.cmd)).strip())
+            writer.entry("cmd:", (" ".join(proc.cmd)).strip())
 
         if folder:
-            writer.out("folder:", proc.cwd)
+            writer.entry("folder:", proc.cwd)
 
-        writer.out("status:", proc.status)
-        writer.out("started:", proc.started, format_as="datetime")
-        writer.out("completed:", proc.completed, format_as="datetime")
-        writer.out("elapsed:", proc.elapsed, format_as="duration")
+        writer.entry("status:", proc.status)
+        writer.entry("started:", proc.started, formatter="datetime")
+        writer.entry("completed:", proc.completed, formatter="datetime")
+        writer.entry("elapsed:", proc.elapsed, formatter="duration")
 
         if proc.exitcode is not None and proc.exitcode != 0:
             decoded = errno.errorcode.get(proc.exitcode, "unknown")
-            writer.out("exit code:", f"{proc.exitcode} ({decoded})")
+            writer.entry("exit code:", f"{proc.exitcode} ({decoded})")
 
         if proc.stdout and proc.stdout.strip():
             stdout = writer.section("stdout:")
-            stdout.multiline(proc.stdout)
+            stdout.entry(proc.stdout, layout="multiline")
 
         if proc.stderr and proc.stderr.strip():
             stderr = writer.section("stderr:")
-            stderr.multiline(proc.stderr)
+            stderr.entry(proc.stderr, layout="multiline")
 
         if proc.exception:
             exc = writer.section("exception:")
-            exc.multiline(str(proc.exception))
+            exc.entry(proc.exception, layout="multiline")
 
         if break_after:
-            writer.out()
+            writer.entry()
 
     def _archive(self, writer: Writer, archive: ArchivalResult, break_after=True) -> None:
         self._process(writer, archive.proc, cmd=False, folder=False, break_after=False)
 
-        writer.out("archive:", archive.archive)
-        writer.out("archive size:", archive.size, format_as="size")
-        writer.out("archival speed:", archive.speed, format_as="speed")
+        writer.entry("archive:", archive.archive)
+        writer.entry("archive size:", archive.size, formatter="size")
+        writer.entry("archival speed:", archive.speed, formatter="speed")
 
         if break_after:
-            writer.out()
+            writer.entry()
 
-    def _upload(self, writer: Writer, upload: UploadResult, break_after=True) -> None:
-        writer.out("status:", upload.status)
-        writer.out("started:", upload.started, format_as="datetime")
-        writer.out("completed:", upload.completed, format_as="datetime")
-        writer.out("elapsed:", upload.elapsed, format_as="duration")
-        writer.out("size:", upload.size, format_as="size")
-        writer.out("speed:", upload.speed, format_as="speed")
+    def _upload(self, writer, upload: UploadResult, break_after=True) -> None:
+        writer.entry("status:", upload.status)
+        writer.entry("started:", upload.started, formatter="datetime")
+        writer.entry("completed:", upload.completed, formatter="datetime")
+        writer.entry("elapsed:", upload.elapsed, formatter="duration")
+        writer.entry("size:", upload.size, formatter="size")
+        writer.entry("speed:", upload.speed, formatter="speed")
 
         if upload.exception:
             exc = writer.section("exception:")
-            exc.multiline(str(upload.exception))
+            exc.entry(upload.exception, layout="multiline")
 
         if break_after:
-            writer.out()
+            writer.entry()
