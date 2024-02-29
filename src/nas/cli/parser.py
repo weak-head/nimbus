@@ -8,7 +8,7 @@ CLI API parser with support of the following commands:
 
 from argparse import ArgumentParser
 
-from nas.cli.adapters import BackupAdapter, DownAdapter, SnapshotAdapter, UpAdapter
+from nas.cli.adapters import BackupAdapter, DownAdapter, UpAdapter
 from nas.utils.config import Config
 
 
@@ -27,7 +27,6 @@ def create_parser(config: Config) -> ArgumentParser:
     up_parser(subparsers.add_parser("up"), config)
     down_parser(subparsers.add_parser("down"), config)
     backup_parser(subparsers.add_parser("backup"), config)
-    snapshot_parser(subparsers.add_parser("snapshot"), config)
 
     return parser
 
@@ -102,15 +101,3 @@ def backup_parser(parser: ArgumentParser, config: Config):
     )
 
     parser.set_defaults(func=BackupAdapter.execute)
-
-
-def snapshot_parser(parser: ArgumentParser, config: Config):
-    """
-    Initialize 'snapshot' command parser.
-
-    :param parser: The parser, that would be initialized as 'up' command.
-    :param config: Application configuration.
-    :return: None
-    """
-
-    parser.set_defaults(func=SnapshotAdapter.execute)

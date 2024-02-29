@@ -11,14 +11,14 @@ from datetime import datetime
 
 from nas.core.archiver import ArchivalResult, Archiver
 from nas.core.uploader import Uploader
-from nas.utils.log import Log
+from nas.report.writer import Writer
 from nas.utils.timer import Timer
 
 
 class Backup:
     """Create and upload backups."""
 
-    def __init__(self, known_folders: dict[str, list], archiver: Archiver, uploader: Uploader, log: Log):
+    def __init__(self, known_folders: dict[str, list], archiver: Archiver, uploader: Uploader, log: Writer):
         """
         Creates a new instance of `Backup`.
 

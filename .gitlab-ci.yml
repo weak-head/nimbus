@@ -31,7 +31,7 @@ pylint:
   script:
     - pip install poetry
     - poetry install --no-root 
-    - poetry run pylint src
+    - poetry run pylint src tests
   only:
     - merge_requests
     - main
@@ -41,7 +41,7 @@ isort:
   script:
     - pip install poetry
     - poetry install --no-root 
-    - poetry run isort src --check-only
+    - poetry run isort src tests --check-only
   only:
     - merge_requests
     - main
