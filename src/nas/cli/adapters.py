@@ -6,12 +6,12 @@ to the internal command API.
 from argparse import Namespace
 
 from nas.cmd import Backup, Down, Up
+from nas.config import Config
 from nas.core.archiver import RarArchiver
 from nas.core.runner import SubprocessRunner
 from nas.core.uploader import AwsUploader
 from nas.report.format import Formatter
 from nas.report.writer import LogWriter
-from nas.utils.config import Config
 
 
 class UpAdapter:

@@ -9,7 +9,7 @@ CLI API parser with support of the following commands:
 from argparse import ArgumentParser
 
 from nas.cli.adapters import BackupAdapter, DownAdapter, UpAdapter
-from nas.utils.config import Config
+from nas.config import Config
 
 
 def create_parser(config: Config) -> ArgumentParser:

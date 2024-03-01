@@ -12,7 +12,6 @@ from datetime import datetime
 from nas.core.archiver import ArchivalResult, Archiver
 from nas.core.uploader import Uploader
 from nas.report.writer import Writer
-from nas.utils.timer import Timer
 
 
 class Backup:
@@ -156,7 +155,7 @@ class Backup:
         # and we want to re-use the same start date for all
         # backup categories and folders.
         today = datetime.today()
-        timer = Timer()
+        timer = object()
         created, failed, skipped = [], [], []
 
         log = self._log.section("Backup:")
@@ -227,7 +226,7 @@ class Backup:
 
     def _log_backup_summary(
         self,
-        timer: Timer,
+        timer,
         created: list[BackupResult],
         failed: list[BackupResult],
         skipped: list[str],
