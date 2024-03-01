@@ -149,7 +149,7 @@ class PrettyWriter(Writer):
         # Try to pretty print the entry,
         # fallback to the decorated writer on failure.
         if self._pretty.can_print(*parts):
-            self._pretty.print(self._writer, *parts, **rules)
+            self._pretty.print(self, *parts, **rules)
         else:
             self._writer.entry(*parts, **rules)
 

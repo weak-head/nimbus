@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import fnmatch
 from abc import ABC, abstractmethod
+from pathlib import Path
 from typing import Any
 
 
@@ -26,7 +27,7 @@ class Provider(ABC):
         matches = []
         for resource in self._resources():
             if not patterns or any((resource.match(pat) for pat in patterns)):
-                matches.add(resource)
+                matches.append(resource)
 
         return Resources(sorted(matches, key=lambda res: res.name))
 
@@ -64,15 +65,32 @@ class Resource:
         return len(fnmatch.filter([self.name], pattern)) > 0
 
 
-class FileSystemServiceProvider(Provider):
+class DirectoryProvider(Provider):
     """
-    Service provider that discovers services under the
-    specified location on the local file system.
+    Provider that maps all directories under the specified path to
+    a list of resources, where a directory name is mapped to the resource name.
     """
 
+    def __init__(self, root_dir: str):
+        self._root_dir = root_dir
 
-class GroupProvider(Provider):
+    def _resources(self) -> list[Resource]:
+        resources = []
+        for obj in Path(self._root_dir).iterdir():
+            if obj.is_dir():
+                resources.append(Resource(obj.name, [obj.as_posix()]))
+
+        return resources
+
+
+class DictionaryProvider(Provider):
     """
-    Group provider that uses a given configuration
-    for the group resolution.
+    Provider that uses a given dictionary for the resource resolution.
+    Each key in the dictionary is mapped to the resource name.
     """
+
+    def __init__(self, groups: dict[str, list[Any]]):
+        self._groups = groups
+
+    def _resources(self) -> list[Resource]:
+        return [Resource(key, value) for key, value in self._groups.items()]
