@@ -37,30 +37,30 @@ class PrettyPrinter:
 
     def _process(self, writer: Writer, proc: CompletedProcess, cmd=False, cwd=False, break_after=True) -> None:
         if cmd:
-            writer.entry("cmd:", (" ".join(proc.cmd)).strip())
+            writer.entry("Cmd:", (" ".join(proc.cmd)).strip())
 
         if cwd:
-            writer.entry("cwd:", proc.cwd)
+            writer.entry("Cwd:", proc.cwd)
 
-        writer.entry("status:", proc.status)
-        writer.entry("started:", proc.started, formatter="datetime")
-        writer.entry("completed:", proc.completed, formatter="datetime")
-        writer.entry("elapsed:", proc.elapsed, formatter="duration")
+        writer.entry("Status:", proc.status)
+        writer.entry("Started:", proc.started, formatter="datetime")
+        writer.entry("Completed:", proc.completed, formatter="datetime")
+        writer.entry("Elapsed:", proc.elapsed, formatter="duration")
 
         if proc.exitcode is not None and proc.exitcode != 0:
             decoded = errno.errorcode.get(proc.exitcode, "unknown")
-            writer.entry("exit code:", f"{proc.exitcode} ({decoded})")
+            writer.entry("Exit code:", f"{proc.exitcode} ({decoded})")
 
         if proc.stdout and proc.stdout.strip():
-            stdout = writer.section("stdout:")
+            stdout = writer.section("StdOut:")
             stdout.entry(proc.stdout, layout="multiline")
 
         if proc.stderr and proc.stderr.strip():
-            stderr = writer.section("stderr:")
+            stderr = writer.section("StdErr:")
             stderr.entry(proc.stderr, layout="multiline")
 
         if proc.exception:
-            exc = writer.section("exception:")
+            exc = writer.section("Exception:")
             exc.entry(proc.exception, layout="multiline")
 
         if break_after:
@@ -69,23 +69,23 @@ class PrettyPrinter:
     def _archive(self, writer: Writer, archive: ArchivalResult, break_after=True) -> None:
         self._process(writer, archive.proc, break_after=False)
 
-        writer.entry("archive:", archive.archive)
-        writer.entry("archive size:", archive.size, formatter="size")
-        writer.entry("archival speed:", archive.speed, formatter="speed")
+        writer.entry("Archive:", archive.archive)
+        writer.entry("Archive size:", archive.size, formatter="size")
+        writer.entry("Archival speed:", archive.speed, formatter="speed")
 
         if break_after:
             writer.entry()
 
-    def _upload(self, writer, upload: UploadResult, break_after=True) -> None:
-        writer.entry("status:", upload.status)
-        writer.entry("started:", upload.started, formatter="datetime")
-        writer.entry("completed:", upload.completed, formatter="datetime")
-        writer.entry("elapsed:", upload.elapsed, formatter="duration")
-        writer.entry("size:", upload.size, formatter="size")
-        writer.entry("speed:", upload.speed, formatter="speed")
+    def _upload(self, writer: Writer, upload: UploadResult, break_after=True) -> None:
+        writer.entry("Status:", upload.status)
+        writer.entry("Started:", upload.started, formatter="datetime")
+        writer.entry("Completed:", upload.completed, formatter="datetime")
+        writer.entry("Elapsed:", upload.elapsed, formatter="duration")
+        writer.entry("Size:", upload.size, formatter="size")
+        writer.entry("Speed:", upload.speed, formatter="speed")
 
         if upload.exception:
-            exc = writer.section("exception:")
+            exc = writer.section("Exception:")
             exc.entry(upload.exception, layout="multiline")
 
         if break_after:

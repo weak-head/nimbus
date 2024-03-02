@@ -1,8 +1,3 @@
-"""
-Provides functionality related to managing backups.
-Backups could be created using `Archiver` and uploaded via `Uploader`.
-"""
-
 from __future__ import annotations
 
 import bisect
@@ -10,81 +5,51 @@ import os
 from datetime import datetime
 
 from nas.core.archiver import ArchivalResult, Archiver
+from nas.core.provider import Provider
 from nas.core.uploader import Uploader
 from nas.report.writer import Writer
 
 
 class Backup:
-    """Create and upload backups."""
+    """
+    Create and upload backups.
+    """
 
-    def __init__(self, known_folders: dict[str, list], archiver: Archiver, uploader: Uploader, log: Writer):
-        """
-        Creates a new instance of `Backup`.
-
-        :param known_folders: Dictionary with known folders, organized by groups.
-        :param archiver: Archiver for archival creation.
-        :param uploader: Uploader for data upload.
-        :param log: Log writer.
-        """
-
-        self._known_folders = known_folders
+    def __init__(self, provider: Provider, archiver: Archiver, uploader: Uploader, writer: Writer):
+        self._provider = provider
         self._archiver = archiver
         self._uploader = uploader
-        self._log = log
+        self._writer = writer
 
-    def execute(self, groups: list[str], destination: str, overwrite: bool, upload: bool):
+    def execute(self, patterns: list[str], destination_path: str, overwrite: bool, upload: bool) -> None:
         """
-        Backup the requested groups and save backups to the specified destination.
-
-        :param groups: The list of groups to backup.
-        :param destination: tbd
-        :param overwrite: tbd
-        :param upload: tbd
+        tbd
         """
+        writer = self._writer.section("Operation:")
+        writer.entry("Destination:", destination_path)
+        writer.entry("Overwrite:", overwrite)
+        writer.entry("Upload:", upload)
+        if patterns:
+            writer.section("Patterns:").entry(patterns, layout="list")
 
-        # Informational section with the general
-        # overview of the backup execution plan.
-        self._log_info(groups, destination, overwrite, upload)
+        directories = self._provider.resolve(patterns)
+        dir_section = writer.section("Directories:")
+        for group in directories.items:
+            dir_section.section(group.name).entry(*group.artifacts, formatter="list")
 
-        # Try to map the requested set of groups,
-        # to the verified and known set of groups.
-        group_mapping = self._map_groups(groups)
-
-        # Folders section with information about
-        # the mapped and unmapped folders and groups.
-        self._log_groups(group_mapping)
-
-        # If nothing has been mapped, there is no reason to continue
-        if not group_mapping.successful:
+        if directories.empty:
             return
 
-        # Backup all mapped groups
-        archives = self._backup(destination, group_mapping.mapped, overwrite)
+        backups = self._backup(directories, destination_path, overwrite)
+        writer = self._writer.section("Backup Summary:")
+        writer.entry(backups)
 
-        # Upload all created archives
-        if upload and self._uploader:
-            self._upload(archives)
+        if not upload:
+            return
 
-    def _log_info(self, groups: list[str], destination: str, overwrite: bool, upload: bool) -> None:
-        """
-        Write to log 'Information' section.
-
-        :param groups: List of requested groups.
-        :param destination: Path to destination folder.
-        :param overwrite: True, if archives should be overwritten.
-        :param upload: True, if backups should be uploaded.
-        """
-        log = self._log.section("Information:")
-        log.out("destination:", destination)
-        log.out("overwrite:", overwrite)
-        log.out("upload:", upload)
-
-        if not groups:
-            log.out("groups:", "*")
-        else:
-            log.section("groups:").multiline(groups, as_list=True)
-
-        log.out()
+        uploads = self._upload(backups)
+        writer = self._writer.section("Upload Summary:")
+        writer.entry(uploads)
 
     def _log_groups(self, group_mapping: GroupMapping) -> None:
         """
