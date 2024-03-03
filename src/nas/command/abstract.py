@@ -54,6 +54,10 @@ class Command(ABC):
 
 
 class CommandInfo:
-    def __init__(self, name: str, parameters: dict[str, Any]):
+    """
+    tbd
+    """
+
+    def __init__(self, name: str, params: dict[str, Any]):
         self.name = name
-        self.parameters = parameters
+        self.params = params

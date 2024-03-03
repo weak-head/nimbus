@@ -16,41 +16,32 @@ class Backup(Command):
     Create and upload backups.
     """
 
-    def __init__(
-        self,
-        writer: Writer,
-        provider: Provider,
-        archiver: Archiver,
-        uploader: Uploader,
-        destination: str,
-        upload: bool,
-    ):
+    def __init__(self, path: str, writer: Writer, provider: Provider, archiver: Archiver, uploader: Uploader = None):
         super().__init__(writer, provider)
+        self._destination = path
         self._archiver = archiver
         self._uploader = uploader
-        self._destination = destination
-        self._upload = upload
 
     def info(self) -> CommandInfo:
         return CommandInfo(
             name="Backup",
-            parameters={
+            params={
                 "Destination": self._destination,
-                "Upload": self._upload,
+                "Upload": bool(self._uploader),
             },
         )
 
     def _execute(self, resources: Resources) -> None:
-        backups = self._execute_backup(self._destination, resources)
+        backups = self._backup(self._destination, resources)
         self._writer.section("Backup").entry(backups)
 
-        if not self._upload:
+        if not self._uploader:
             return
 
-        uploads = self._execute_upload(backups)
+        uploads = self._upload(backups)
         self._writer.section("Upload").entry(uploads)
 
-    def _execute_backup(self, destination: str, resources: Resources) -> BackupInfo:
+    def _backup(self, destination: str, resources: Resources) -> BackupInfo:
         info = BackupInfo()
         info.started = datetime.now()
 
@@ -59,10 +50,10 @@ class Backup(Command):
                 entry = BackupEntry(resource.name, artifact)
 
                 archive_path = self._compose_path(
-                    info.started,
                     destination,
                     entry.group,
                     entry.folder,
+                    info.started,
                 )
 
                 entry.archive = self._archiver.archive(entry.folder, archive_path)
@@ -71,15 +62,23 @@ class Backup(Command):
         info.completed = datetime.now()
         return info
 
-    def _execute_upload(self, backups: BackupInfo) -> UploadInfo:
-        return None
+    def _upload(self, backups: BackupInfo) -> UploadInfo:
+        info = UploadInfo()
+        info.started = datetime.now()
 
-    def _compose_path(self, today: datetime, destination: str, group: str, folder: str) -> str:
+        # TODO: implement me
+
+        info.completed = datetime.now()
+        return info
+
+    def _compose_path(self, destination: str, group: str, folder: str, today: datetime) -> str:
         suffix = 0
         today_path = today.strftime("%Y-%m-%d")
         archive_name = Path(folder).name
         base_path = os.path.join(destination, group, today_path, archive_name)
 
+        # Don't overwrite the existing backups under the same path.
+        # Find the next available name that matches the pattern.
         while True:
             archive_path = base_path + f"_{suffix:02d}.rar" if suffix > 0 else ".rar"
             if os.path.exists(archive_path):
@@ -100,31 +99,27 @@ class BackupEntry:
         return self.archive and self.archive.successful
 
 
-class BackupInfo:
-
-    def __init__(self):
-        self.entries: list[BackupEntry] = []
-        self.started: datetime = None
-        self.completed: datetime = None
-
-    @property
-    def elapsed(self) -> timedelta:
-        return self.completed - self.started
-
-
 class UploadEntry:
 
     def __init__(self):
         self.backup: BackupEntry = None
 
 
-class UploadInfo:
+class ActionInfo:
 
     def __init__(self):
-        self.entries: list[UploadEntry] = []
+        self.entries: list = []
         self.started: datetime = None
         self.completed: datetime = None
 
     @property
     def elapsed(self) -> timedelta:
         return self.completed - self.started
+
+
+class BackupInfo(ActionInfo):
+    pass
+
+
+class UploadInfo(ActionInfo):
+    pass

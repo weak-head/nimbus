@@ -94,10 +94,10 @@ def backup_parser(parser: ArgumentParser, config: Config):
     # --   + => 1+
     # --   * => 0+
     parser.add_argument(
-        "groups",
+        "patterns",
         nargs="*",
         default="",
-        help="One or several groups to backup",
+        help="Multiple patterns to match against the configured backup groups.",
     )
 
     parser.set_defaults(func=BackupAdapter.execute)

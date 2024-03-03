@@ -1,8 +1,10 @@
 from __future__ import annotations
 
 import errno
+from typing import Callable, Any
 
 from nas.command.abstract import CommandInfo
+from nas.command.backup import BackupInfo, UploadInfo
 from nas.core.archiver import ArchivalResult
 from nas.core.provider import DictionaryProvider, DirectoryProvider, Resource
 from nas.core.runner import CompletedProcess
@@ -15,37 +17,29 @@ class PrettyPrinter:
     Knows an internal structure of the core objects and outputs them to `Writer`.
     """
 
-    @property
-    def supported_types(self) -> tuple[type, ...]:
-        return (
-            CompletedProcess,
-            UploadResult,
-            ArchivalResult,
-            CommandInfo,
-            DictionaryProvider.DictionaryResource,
-            DirectoryProvider.DirectoryResource,
-        )
-
     def can_print(self, *parts) -> bool:
-        return any(issubclass(part, self.supported_types) for part in parts)
+        types = tuple(self._types.keys())
+        return any(issubclass(part, types) for part in parts)
 
     def print(self, writer: Writer, *parts, **rules) -> None:
         for part in parts:
-            match part:
-                case CompletedProcess():
-                    self._process(writer, part)
-                case UploadResult():
-                    self._upload(writer, part)
-                case ArchivalResult():
-                    self._archive(writer, part)
-                case CommandInfo():
-                    self._command_info(writer, part)
-                case DirectoryProvider.DirectoryResource():
-                    self._directory_resource(writer, part)
-                case DictionaryProvider.DictionaryResource():
-                    self._dictionary_resource(writer, part)
-                case _:
-                    writer.entry(part, **rules)
+            if type(part) in self._types:
+                self._types[type(part)](writer, part)
+            else:
+                writer.entry(part, **rules)
+
+    @property
+    def _types(self) -> dict[type, Callable[[Writer, Any], None]]:
+        return {
+            CompletedProcess: self._process,
+            UploadResult: self._upload_result,
+            ArchivalResult: self._archive_result,
+            CommandInfo: self._command_info,
+            BackupInfo: self._backup_info,
+            UploadInfo: self._upload_info,
+            DictionaryProvider.DictionaryResource: self._dictionary_resource,
+            DirectoryProvider.DirectoryResource: self._directory_resource,
+        }
 
     def _process(self, writer: Writer, proc: CompletedProcess, cmd=False, cwd=False, break_after=True) -> None:
         if cmd:
@@ -78,7 +72,7 @@ class PrettyPrinter:
         if break_after:
             writer.entry()
 
-    def _archive(self, writer: Writer, archive: ArchivalResult, break_after=True) -> None:
+    def _archive_result(self, writer: Writer, archive: ArchivalResult, break_after=True) -> None:
         self._process(writer, archive.proc, break_after=False)
 
         writer.entry("Archive", archive.archive)
@@ -88,7 +82,7 @@ class PrettyPrinter:
         if break_after:
             writer.entry()
 
-    def _upload(self, writer: Writer, upload: UploadResult, break_after=True) -> None:
+    def _upload_result(self, writer: Writer, upload: UploadResult, break_after=True) -> None:
         writer.entry("Status", upload.status)
         writer.entry("Started", upload.started, formatter="datetime")
         writer.entry("Completed", upload.completed, formatter="datetime")
@@ -104,6 +98,12 @@ class PrettyPrinter:
             writer.entry()
 
     def _command_info(self, writer: Writer, command: CommandInfo) -> None:
+        pass
+
+    def _backup_info(self, writer: Writer, backups: BackupInfo) -> None:
+        pass
+
+    def _upload_info(self, writer: Writer, uploads: UploadInfo) -> None:
         pass
 
     def _directory_resource(self, writer: Writer, resource: Resource) -> None:
