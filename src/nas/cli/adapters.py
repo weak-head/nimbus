@@ -5,7 +5,7 @@ to the internal command API.
 
 from argparse import Namespace
 
-from nas.operation import Backup, Down, Up
+from nas.command import Backup, Down, Up
 from nas.config import Config
 from nas.core.archiver import RarArchiver
 from nas.core.runner import SubprocessRunner

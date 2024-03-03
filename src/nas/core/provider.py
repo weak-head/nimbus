@@ -71,6 +71,9 @@ class DirectoryProvider(Provider):
     a list of resources, where a directory name is mapped to the resource name.
     """
 
+    class DirectoryResource(Resource):
+        pass
+
     def __init__(self, root_dir: str):
         self._root_dir = root_dir
 
@@ -78,7 +81,7 @@ class DirectoryProvider(Provider):
         resources = []
         for obj in Path(self._root_dir).iterdir():
             if obj.is_dir():
-                resources.append(Resource(obj.name, [obj.as_posix()]))
+                resources.append(DirectoryProvider.DirectoryResource(obj.name, [obj.as_posix()]))
 
         return resources
 
@@ -89,8 +92,11 @@ class DictionaryProvider(Provider):
     Each key in the dictionary is mapped to the resource name.
     """
 
+    class DictionaryResource(Resource):
+        pass
+
     def __init__(self, groups: dict[str, list[Any]]):
         self._groups = groups
 
     def _resources(self) -> list[Resource]:
-        return [Resource(key, value) for key, value in self._groups.items()]
+        return [DictionaryProvider.DictionaryResource(key, value) for key, value in self._groups.items()]
