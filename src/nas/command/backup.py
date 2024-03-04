@@ -22,12 +22,12 @@ class Backup(Command):
         self._archiver = archiver
         self._uploader = uploader
 
-    def _build_pipeline(self, patterns: list[str]) -> PipelineInfo:
+    def _build_pipeline(self, arguments: list[str]) -> PipelineInfo:
         pi = PipelineInfo("Backup")
-        pi.params = {"Destination": self._destination, "Upload": bool(self._uploader)}
+        pi.config = {"Destination": self._destination, "Upload": bool(self._uploader)}
         pi.pipeline = [self._backup, self._upload] if self._uploader else [self._backup]
-        pi.patterns = patterns
-        pi.resources = self._provider.resolve(patterns)
+        pi.arguments = arguments
+        pi.resources = self._provider.resolve(arguments)
         return pi
 
     def _backup(self, resources: Resources) -> BackupInfo:

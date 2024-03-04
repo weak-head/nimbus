@@ -20,12 +20,12 @@ class Command(ABC):
         self._writer = writer
         self._provider = provider
 
-    def execute(self, patterns: list[str]) -> None:
+    def execute(self, arguments: list[str]) -> None:
         """
         tbd
         """
 
-        pi = self._build_pipeline(patterns)
+        pi = self._build_pipeline(arguments)
         self._writer.entry(pi)
 
         if pi.resources.empty:
@@ -37,7 +37,7 @@ class Command(ABC):
             self._writer.entry(data)
 
     @abstractmethod
-    def _build_pipeline(self, patterns: list[str]) -> PipelineInfo:
+    def _build_pipeline(self, arguments: list[str]) -> PipelineInfo:
         """
         tbd
         """
@@ -51,8 +51,8 @@ class PipelineInfo:
     def __init__(self, name: str):
         self.name: str = name
         self.pipeline: list[ActionHandler] = []
-        self.params: dict[str, Any] = {}
-        self.patterns: list[str] = []
+        self.config: dict[str, Any] = {}
+        self.arguments: list[str] = []
         self.resources: Resources = []
 
 
