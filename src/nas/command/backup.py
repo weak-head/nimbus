@@ -1,10 +1,10 @@
 from __future__ import annotations
 
 import os
-from datetime import datetime, timedelta
+from datetime import datetime
 from pathlib import Path
 
-from nas.command.abstract import Command, CommandInfo
+from nas.command.abstract import ActionInfo, Command, PipelineInfo
 from nas.core.archiver import ArchivalResult, Archiver
 from nas.core.provider import Provider, Resources
 from nas.core.uploader import Uploader
@@ -22,35 +22,23 @@ class Backup(Command):
         self._archiver = archiver
         self._uploader = uploader
 
-    def info(self) -> CommandInfo:
-        return CommandInfo(
-            name="Backup",
-            params={
-                "Destination": self._destination,
-                "Upload": bool(self._uploader),
-            },
-        )
+    def _build_pipeline(self, patterns: list[str]) -> PipelineInfo:
+        pi = PipelineInfo("Backup")
+        pi.params = {"Destination": self._destination, "Upload": bool(self._uploader)}
+        pi.pipeline = [self._backup, self._upload] if self._uploader else [self._backup]
+        pi.patterns = patterns
+        pi.resources = self._provider.resolve(patterns)
+        return pi
 
-    def _execute(self, resources: Resources) -> None:
-        backups = self._backup(self._destination, resources)
-        self._writer.section("Backup").entry(backups)
-
-        if not self._uploader:
-            return
-
-        uploads = self._upload(backups)
-        self._writer.section("Upload").entry(uploads)
-
-    def _backup(self, destination: str, resources: Resources) -> BackupInfo:
-        info = BackupInfo()
-        info.started = datetime.now()
+    def _backup(self, resources: Resources) -> BackupInfo:
+        info = BackupInfo(started=datetime.now())
 
         for resource in resources.items:
             for artifact in resource.artifacts:
                 entry = BackupEntry(resource.name, artifact)
 
                 archive_path = self._compose_path(
-                    destination,
+                    self._destination,
                     entry.group,
                     entry.folder,
                     info.started,
@@ -63,8 +51,7 @@ class Backup(Command):
         return info
 
     def _upload(self, backups: BackupInfo) -> UploadInfo:
-        info = UploadInfo()
-        info.started = datetime.now()
+        info = UploadInfo(started=datetime.now())
 
         # TODO: implement me
 
@@ -105,21 +92,9 @@ class UploadEntry:
         self.backup: BackupEntry = None
 
 
-class ActionInfo:
-
-    def __init__(self):
-        self.entries: list = []
-        self.started: datetime = None
-        self.completed: datetime = None
-
-    @property
-    def elapsed(self) -> timedelta:
-        return self.completed - self.started
-
-
-class BackupInfo(ActionInfo):
+class BackupInfo(ActionInfo[BackupEntry]):
     pass
 
 
-class UploadInfo(ActionInfo):
+class UploadInfo(ActionInfo[UploadEntry]):
     pass

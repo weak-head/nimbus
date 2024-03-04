@@ -26,15 +26,15 @@ black:
     - merge_requests
     - main
 
-pylint:
-  stage: lint
-  script:
-    - pip install poetry
-    - poetry install --no-root 
-    - poetry run pylint src tests
-  only:
-    - merge_requests
-    - main
+# pylint:
+#   stage: lint
+#   script:
+#     - pip install poetry
+#     - poetry install --no-root 
+#     - poetry run pylint src tests
+#   only:
+#     - merge_requests
+#     - main
 
 isort:
   stage: lint

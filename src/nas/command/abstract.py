@@ -1,10 +1,13 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import Any
+from datetime import datetime, timedelta
+from typing import Any, Callable
 
 from nas.core.provider import Provider, Resources
 from nas.report.writer import Writer
+
+type ActionHandler = Callable[[Any], ActionInfo]
 
 
 class Command(ABC):
@@ -22,42 +25,47 @@ class Command(ABC):
         tbd
         """
 
-        writer = self._writer.section("Command")
-        writer.entry(self.info())
+        pi = self._build_pipeline(patterns)
+        self._writer.entry(pi)
 
-        if patterns:
-            writer.section("Patterns").entry(*patterns, layout="list")
-
-        resources = self._provider.resolve(patterns)
-        if resources.empty:
-            writer.entry("Warning", "No resolved resources, terminating the command execution.")
+        if pi.resources.empty:
             return
 
-        section = writer.section("Resources")
-        for resource in resources.items:
-            section.entry(resource)
-        writer.entry()
-
-        self._execute(resources)
+        data = pi.resources
+        for handler in pi.pipeline:
+            data = handler(data)
+            self._writer.entry(data)
 
     @abstractmethod
-    def info(self) -> CommandInfo:
-        """
-        tbd
-        """
-
-    @abstractmethod
-    def _execute(self, resources: Resources) -> None:
+    def _build_pipeline(self, patterns: list[str]) -> PipelineInfo:
         """
         tbd
         """
 
 
-class CommandInfo:
+class PipelineInfo:
     """
     tbd
     """
 
-    def __init__(self, name: str, params: dict[str, Any]):
-        self.name = name
-        self.params = params
+    def __init__(self, name: str):
+        self.name: str = name
+        self.pipeline: list[ActionHandler] = []
+        self.params: dict[str, Any] = {}
+        self.patterns: list[str] = []
+        self.resources: Resources = []
+
+
+class ActionInfo[T]:
+    """
+    Base class for all action results.
+    """
+
+    def __init__(self, started: datetime = None):
+        self.entries: list[T] = []
+        self.started: datetime = started
+        self.completed: datetime = None
+
+    @property
+    def elapsed(self) -> timedelta:
+        return self.completed - self.started
