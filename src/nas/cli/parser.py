@@ -9,7 +9,7 @@ CLI API parser with support of the following commands:
 from argparse import ArgumentParser
 
 from nas.cli.adapters import BackupAdapter, DownAdapter, UpAdapter
-from nas.utils.config import Config
+from nas.config import Config
 
 
 def create_parser(config: Config) -> ArgumentParser:
@@ -94,10 +94,10 @@ def backup_parser(parser: ArgumentParser, config: Config):
     # --   + => 1+
     # --   * => 0+
     parser.add_argument(
-        "groups",
+        "patterns",
         nargs="*",
         default="",
-        help="One or several groups to backup",
+        help="Multiple patterns to match against the configured backup groups.",
     )
 
     parser.set_defaults(func=BackupAdapter.execute)

@@ -4,7 +4,6 @@ import logging
 from abc import ABC, abstractmethod
 
 from nas.report.format import Formatter
-from nas.report.pretty import PrettyPrinter
 
 
 class Writer(ABC):
@@ -141,15 +140,15 @@ class PrettyWriter(Writer):
     Writer decorator that uses `PrettyPrinter` to write prettified messages.
     """
 
-    def __init__(self, writer: Writer, pretty: PrettyPrinter):
+    def __init__(self, writer: Writer, pretty_printer):
         self._writer = writer
-        self._pretty = pretty
+        self._pretty = pretty_printer
 
     def entry(self, *parts, **rules):
         # Try to pretty print the entry,
         # fallback to the decorated writer on failure.
         if self._pretty.can_print(*parts):
-            self._pretty.print(self._writer, *parts, **rules)
+            self._pretty.print(self, *parts, **rules)
         else:
             self._writer.entry(*parts, **rules)
 

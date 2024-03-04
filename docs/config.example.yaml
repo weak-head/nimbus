@@ -11,9 +11,7 @@ integrations:
 
 commands:
   backup:
-    destination: 
-      path: /mnt/backups
-      overwrite: false
+    destination: /mnt/backups
     upload:
       enabled: true
       provider: aws

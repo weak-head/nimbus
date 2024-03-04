@@ -5,13 +5,14 @@ to the internal command API.
 
 from argparse import Namespace
 
-from nas.cmd import Backup, Down, Up
+from nas.command import Backup, Down, Up
+from nas.config import Config
 from nas.core.archiver import RarArchiver
+from nas.core.provider import DictionaryProvider
 from nas.core.runner import SubprocessRunner
 from nas.core.uploader import AwsUploader
 from nas.report.format import Formatter
 from nas.report.writer import LogWriter
-from nas.utils.config import Config
 
 
 class UpAdapter:
@@ -76,39 +77,39 @@ class BackupAdapter:
         :param config: Application configuration.
         """
 
-        groups = args.groups
+        patterns = args.patterns
 
         # Backup config
-        destination_path = config.commands.backup.destination.path
-        overwrite = config.commands.backup.destination.overwrite
+        destination = config.commands.backup.destination
         known_folders = config.commands.backup.groups
 
         # Upload config
         upload_enabled = config.commands.backup.upload.enabled
-        upload_provider = config.commands.backup.upload.provider
 
         # Rar config
         rar_password = config.integrations.rar.password
 
-        log = LogWriter(Formatter())
+        writer = LogWriter(Formatter())
+        provider = DictionaryProvider(known_folders)
         runner = SubprocessRunner()
         archiver = RarArchiver(runner, rar_password)
         uploader = None
 
-        match upload_provider:
+        if upload_enabled:
+            match config.commands.backup.upload.provider:
 
-            # AWS S3 uploader
-            case "aws":
-                aws_access_key = config.integrations.aws.access_key
-                aws_secret_key = config.integrations.aws.secret_key
-                aws_bucket = config.commands.backup.upload.aws.bucket
-                aws_storage = config.commands.backup.upload.aws.storage_class
+                # AWS S3 uploader
+                case "aws":
+                    aws_access_key = config.integrations.aws.access_key
+                    aws_secret_key = config.integrations.aws.secret_key
+                    aws_bucket = config.commands.backup.upload.aws.bucket
+                    aws_storage = config.commands.backup.upload.aws.storage_class
 
-                uploader = AwsUploader(aws_access_key, aws_secret_key, aws_bucket, aws_storage)
+                    uploader = AwsUploader(aws_access_key, aws_secret_key, aws_bucket, aws_storage)
 
-            # Any other provider
-            case _:
-                uploader = None
+                # Any other provider
+                case _:
+                    uploader = None
 
-        backup = Backup(known_folders, archiver, uploader, log)
-        backup.execute(groups, destination_path, overwrite, upload_enabled)
+        backup = Backup(destination, writer, provider, archiver, uploader)
+        backup.execute(patterns)
