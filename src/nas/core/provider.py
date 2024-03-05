@@ -47,7 +47,7 @@ class DirectoryProvider(Provider):
     def __init__(self, root_dir: str):
         self._root_dir = root_dir
 
-    def _resources(self) -> list[Resource]:
+    def _resources(self) -> list[DirectoryResource]:
         resources = []
         for obj in Path(self._root_dir).iterdir():
             if obj.is_dir():
@@ -62,10 +62,10 @@ class DictionaryProvider(Provider):
     Each key in the dictionary is mapped to the resource name.
     """
 
-    def __init__(self, groups: dict[str, list[Any]]):
+    def __init__(self, groups: dict[str, Any]):
         self._groups = groups
 
-    def _resources(self) -> list[Resource]:
+    def _resources(self) -> list[DictionaryResource]:
         return [DictionaryResource(key, value) for key, value in self._groups.items()]
 
 
@@ -88,7 +88,7 @@ class Resource[T]:
     and a list of custom artifacts of any type.
     """
 
-    def __init__(self, name: str, artifacts: list[T] = None):
+    def __init__(self, name: str, artifacts: T = None):
         self.name: str = name
         self.artifacts = artifacts
 
@@ -96,7 +96,7 @@ class Resource[T]:
         return len(fnmatch.filter([self.name], pattern)) > 0
 
 
-class DirectoryResource(Resource[str]):
+class DirectoryResource(Resource[list[str]]):
     pass
 
 

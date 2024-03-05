@@ -18,22 +18,23 @@ class Service(ABC):
     @abstractmethod
     def start(self) -> OperationResult:
         """
-        tbd
+        Start the service.
         """
 
     @abstractmethod
     def stop(self) -> OperationResult:
         """
-        tbd
+        Stop the service.
         """
 
 
 class OperationResult:
     """
-    tbd
+    The outcome of the service operation.
     """
 
-    def __init__(self, operation: str):
+    def __init__(self, service: str, operation: str):
+        self.service: str = service
         self.operation: str = operation
         self.processes: list[CompletedProcess] = []
 
@@ -44,7 +45,8 @@ class OperationResult:
 
 class ServiceFactory:
     """
-    tbd
+    Service Factory that dynamically creates new instances of services based on the provided resource type.
+    The type of each created service instance depends on the characteristics of the resource.
     """
 
     def __init__(self, runner: Runner, secrets: Secrets) -> None:
@@ -67,6 +69,9 @@ class ServiceFactory:
 
 
 class DockerService(Service):
+    """
+    A Dockerized service orchestrated using a docker-compose file.
+    """
 
     def __init__(self, name: str, folder: str, secrets: dict[str, str], runner: Runner):
         self._name = name
@@ -74,26 +79,29 @@ class DockerService(Service):
         self._secrets = secrets
         self._runner = runner
 
+    def _execute(self, operation: str, commands: list[str]) -> OperationResult:
+        result = OperationResult(self._name, operation)
+        for cmd in commands:
+            proc = self._runner.execute(cmd, self._folder, self._secrets)
+            result.processes.append(proc)
+            if not proc.successful:
+                break
+        return result
+
     @abstractmethod
     def start(self) -> OperationResult:
-
-        result = OperationResult("Start")
-
-        for cmd in [
+        commands = [
             "docker compose config --quiet",
             "docker compose pull",
             "docker compose down",
             "docker compose up --detach",
-        ]:
-
-            proc = self._runner.execute(cmd, self._folder)
-            result.processes.append(proc)
-
-            if not proc.successful:
-                break
-
-        return result
+        ]
+        return self._execute("Start", commands)
 
     @abstractmethod
     def stop(self):
-        pass
+        commands = [
+            "docker compose config --quiet",
+            "docker compose down",
+        ]
+        return self._execute("Stop", commands)
