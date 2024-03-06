@@ -3,8 +3,8 @@ from __future__ import annotations
 import errno
 from typing import Any, Callable
 
-from nas.command.abstract import PipelineInfo
-from nas.command.backup import BackupInfo, UploadInfo
+from nas.cmd.abstract import Pipeline
+from nas.cmd.backup import BackupInfo, UploadInfo
 from nas.core.archiver import ArchivalResult
 from nas.core.provider import DictionaryResource, DirectoryResource
 from nas.core.runner import CompletedProcess
@@ -34,7 +34,7 @@ class PrettyPrinter:
             CompletedProcess: self._process,
             UploadResult: self._upload_result,
             ArchivalResult: self._archive_result,
-            PipelineInfo: self._pipeline_info,
+            Pipeline: self._pipeline_info,
             BackupInfo: self._backup_info,
             UploadInfo: self._upload_info,
             DictionaryResource: self._dictionary_resource,
@@ -97,7 +97,7 @@ class PrettyPrinter:
         if break_after:
             writer.entry()
 
-    def _pipeline_info(self, writer: Writer, pipe: PipelineInfo) -> None:
+    def _pipeline_info(self, writer: Writer, pipe: Pipeline) -> None:
         pass
 
     def _backup_info(self, writer: Writer, backups: BackupInfo) -> None:

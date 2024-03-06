@@ -38,13 +38,13 @@ class Command(ABC):
             self._writer.entry(data)
 
     @abstractmethod
-    def _build_pipeline(self, arguments: list[str]) -> PipelineInfo:
+    def _build_pipeline(self, arguments: list[str]) -> Pipeline:
         """
         Builds the command execution pipeline.
         """
 
 
-class PipelineInfo:
+class Pipeline:
     """
     tbd
     """

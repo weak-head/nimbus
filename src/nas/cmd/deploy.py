@@ -3,7 +3,7 @@ from __future__ import annotations
 from abc import abstractmethod
 from datetime import datetime
 
-from nas.command.abstract import ActionInfo, Command, PipelineInfo
+from nas.cmd.abstract import ActionInfo, Command, Pipeline
 from nas.core.provider import Provider, Resources
 from nas.core.service import OperationResult, Service, ServiceFactory
 from nas.report.writer import Writer
@@ -19,8 +19,8 @@ class Deployment(Command):
         self._factory = factory
         self._name = name
 
-    def _build_pipeline(self, arguments: list[str]) -> PipelineInfo:
-        pi = PipelineInfo("Deploy")
+    def _build_pipeline(self, arguments: list[str]) -> Pipeline:
+        pi = Pipeline(self._name)
         pi.config = {}
         pi.pipeline = [self._build_services, self._deploy]
         pi.arguments = arguments
