@@ -15,6 +15,9 @@ class Service(ABC):
     All services should follow the APIs defined by this class.
     """
 
+    def __init__(self, name: str):
+        self.name: str = name
+
     @abstractmethod
     def start(self) -> OperationResult:
         """
@@ -74,13 +77,13 @@ class DockerService(Service):
     """
 
     def __init__(self, name: str, folder: str, secrets: dict[str, str], runner: Runner):
-        self._name = name
+        super().__init__(name)
         self._folder = folder
         self._secrets = secrets
         self._runner = runner
 
     def _execute(self, operation: str, commands: list[str]) -> OperationResult:
-        result = OperationResult(self._name, operation)
+        result = OperationResult(self.name, operation)
         for cmd in commands:
             proc = self._runner.execute(cmd, self._folder, self._secrets)
             result.processes.append(proc)
@@ -88,20 +91,22 @@ class DockerService(Service):
                 break
         return result
 
-    @abstractmethod
     def start(self) -> OperationResult:
-        commands = [
-            "docker compose config --quiet",
-            "docker compose pull",
-            "docker compose down",
-            "docker compose up --detach",
-        ]
-        return self._execute("Start", commands)
+        return self._execute(
+            "Start",
+            [
+                "docker compose config --quiet",
+                "docker compose pull",
+                "docker compose down",
+                "docker compose up --detach",
+            ],
+        )
 
-    @abstractmethod
     def stop(self):
-        commands = [
-            "docker compose config --quiet",
-            "docker compose down",
-        ]
-        return self._execute("Stop", commands)
+        return self._execute(
+            "Stop",
+            [
+                "docker compose config --quiet",
+                "docker compose down",
+            ],
+        )
