@@ -8,6 +8,7 @@ from nas.core.provider import Provider, Resources
 from nas.report.writer import Writer
 
 type ActionHandler = Callable[[Any], ActionInfo]
+"""A single action in the command execution pipeline."""
 
 
 class Command(ABC):
@@ -22,7 +23,7 @@ class Command(ABC):
 
     def execute(self, arguments: list[str]) -> None:
         """
-        tbd
+        Initiates execution of the command.
         """
 
         pi = self._build_pipeline(arguments)
@@ -37,13 +38,13 @@ class Command(ABC):
             self._writer.entry(data)
 
     @abstractmethod
-    def _build_pipeline(self, arguments: list[str]) -> PipelineInfo:
+    def _build_pipeline(self, arguments: list[str]) -> Pipeline:
         """
-        tbd
+        Builds the command execution pipeline.
         """
 
 
-class PipelineInfo:
+class Pipeline:
     """
     tbd
     """

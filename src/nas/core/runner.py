@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 import subprocess
 from abc import ABC, abstractmethod
 from datetime import datetime, timedelta
@@ -12,7 +13,7 @@ class Runner(ABC):
     """
 
     @abstractmethod
-    def execute(self, cmd: list[str] | str, cwd=None) -> CompletedProcess:
+    def execute(self, cmd: list[str] | str, cwd=None, env=None) -> CompletedProcess:
         """
         Execute a command.
 
@@ -23,6 +24,8 @@ class Runner(ABC):
 
         :param cwd: Current working directory.
 
+        :param env: Modified environment.
+
         :return: Result of the command execution.
         """
 
@@ -32,16 +35,16 @@ class SubprocessRunner(Runner):
     Executes a command as a subprocess.
     """
 
-    def execute(self, cmd: list[str] | str, cwd=None) -> CompletedProcess:
+    def execute(self, cmd: list[str] | str, cwd=None, env=None) -> CompletedProcess:
         if isinstance(cmd, str):
             cmd = cmd.split()
 
-        result = CompletedProcess(cmd, cwd)
+        env = {**os.environ, **env} if env else os.environ
+        result = CompletedProcess(cmd, cwd, env)
         result.started = datetime.now()
 
         try:
-
-            process = subprocess.run(cmd, capture_output=True, text=True, check=False, cwd=cwd)
+            process = subprocess.run(cmd, capture_output=True, text=True, check=False, cwd=cwd, env=env)
             result.exitcode = process.returncode
 
             if process.stdout is not None:
@@ -63,9 +66,10 @@ class CompletedProcess:
     FAILED = "failed"
     EXCEPTION = "exception"
 
-    def __init__(self, cmd: list[str], cwd: str):
+    def __init__(self, cmd: list[str], cwd: str, env: dict[str, str]):
         self.cmd: list[str] = cmd
         self.cwd: str = cwd
+        self.env: dict[str, str] = env
         self.exitcode: int = None
         self.stdout: str = None
         self.stderr: str = None
