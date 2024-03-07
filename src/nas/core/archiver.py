@@ -13,7 +13,7 @@ class Archiver(ABC):
     """
 
     @abstractmethod
-    def archive(self, folder: str, archive: str) -> ArchivalResult:
+    def archive(self, folder: str, archive: str) -> ArchivalStatus:
         """
         Archive a folder.
 
@@ -21,7 +21,7 @@ class Archiver(ABC):
 
         :param archive: A file path where the archive should be created.
 
-        :return: Result of the folder archival.
+        :return: Status of the folder archival.
         """
 
 
@@ -34,7 +34,7 @@ class RarArchiver(Archiver):
         self._runner = runner
         self._password = password
 
-    def archive(self, folder: str, archive: str) -> ArchivalResult:
+    def archive(self, folder: str, archive: str) -> ArchivalStatus:
 
         # Ensure destination folder exists
         directory_path = os.path.dirname(archive)
@@ -63,10 +63,10 @@ class RarArchiver(Archiver):
             ]
         )
 
-        return ArchivalResult(proc, folder, archive)
+        return ArchivalStatus(proc, folder, archive)
 
 
-class ArchivalResult:
+class ArchivalStatus:
 
     def __init__(self, proc: CompletedProcess, folder: str, archive: str):
         self.proc = proc

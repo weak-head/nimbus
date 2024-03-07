@@ -19,19 +19,19 @@ class Service(ABC):
         self.name: str = name
 
     @abstractmethod
-    def start(self) -> OperationResult:
+    def start(self) -> OperationStatus:
         """
         Start the service.
         """
 
     @abstractmethod
-    def stop(self) -> OperationResult:
+    def stop(self) -> OperationStatus:
         """
         Stop the service.
         """
 
 
-class OperationResult:
+class OperationStatus:
     """
     The outcome of the service operation.
     """
@@ -82,16 +82,16 @@ class DockerService(Service):
         self._secrets = secrets
         self._runner = runner
 
-    def _execute(self, operation: str, commands: list[str]) -> OperationResult:
-        result = OperationResult(self.name, operation)
+    def _execute(self, operation: str, commands: list[str]) -> OperationStatus:
+        status = OperationStatus(self.name, operation)
         for cmd in commands:
             proc = self._runner.execute(cmd, self._folder, self._secrets)
-            result.processes.append(proc)
+            status.processes.append(proc)
             if not proc.successful:
                 break
-        return result
+        return status
 
-    def start(self) -> OperationResult:
+    def start(self) -> OperationStatus:
         return self._execute(
             "Start",
             [

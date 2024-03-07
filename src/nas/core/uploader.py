@@ -17,7 +17,7 @@ class Uploader(ABC):
     """
 
     @abstractmethod
-    def upload(self, filepath: str, key: str, on_progress: Callable = None) -> UploadResult:
+    def upload(self, filepath: str, key: str, on_progress: Callable = None) -> UploadStatus:
         """
         Upload a file to the pre-configured destination.
 
@@ -32,7 +32,7 @@ class Uploader(ABC):
                 - elapsed time (`timedelta`)
                 - average upload speed, bytes per second (`int`)
 
-        :return: Result of the file upload.
+        :return: Status of the file upload.
         """
 
 
@@ -86,10 +86,10 @@ class AwsUploader(Uploader):
         #  - https://docs.aws.amazon.com/AmazonS3/latest/userguide/storage-class-intro.html
         self._storage_class = storage_class
 
-    def upload(self, filepath: str, key: str, on_progress: Callable = None) -> UploadResult:
-        result = UploadResult(filepath, key)
-        result.started = datetime.now()
-        result.size = os.stat(filepath).st_size
+    def upload(self, filepath: str, key: str, on_progress: Callable = None) -> UploadStatus:
+        status = UploadStatus(filepath, key)
+        status.started = datetime.now()
+        status.size = os.stat(filepath).st_size
 
         try:
 
@@ -102,13 +102,13 @@ class AwsUploader(Uploader):
             )
 
         except S3UploadFailedError as e:
-            result.exception = e
+            status.exception = e
 
-        result.completed = datetime.now()
-        return result
+        status.completed = datetime.now()
+        return status
 
 
-class UploadResult:
+class UploadStatus:
 
     SUCCESS = "success"
     FAILED = "failed"
@@ -123,12 +123,12 @@ class UploadResult:
 
     @property
     def status(self) -> str:
-        return UploadResult.FAILED if self.exception else UploadResult.SUCCESS
+        return UploadStatus.FAILED if self.exception else UploadStatus.SUCCESS
 
     @property
     def successful(self) -> bool:
         return (
-            self.status == UploadResult.SUCCESS
+            self.status == UploadStatus.SUCCESS
             and self.filepath
             and self.key
             and self.size

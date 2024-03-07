@@ -8,11 +8,11 @@ from argparse import Namespace
 from nas.cmd import Backup, Down, Up
 from nas.config import Config
 from nas.core.archiver import RarArchiver
-from nas.core.provider import DictionaryProvider
+from nas.core.provider import DictionaryProvider, DirectoryProvider
 from nas.core.runner import SubprocessRunner
+from nas.core.secrets import Secrets
+from nas.core.service import ServiceFactory
 from nas.core.uploader import AwsUploader
-from nas.report.format import Formatter
-from nas.report.writer import LogWriter
 
 
 class UpAdapter:
@@ -30,12 +30,18 @@ class UpAdapter:
         """
 
         services = args.services
-        root_folder = config.services.path
 
-        log = LogWriter(Formatter())
+        services_root = config.commands.deploy.services
+        service_provider = DirectoryProvider(services_root)
+
+        secrets_dict = config.commands.deploy.secrets
+        secrets_provider = DictionaryProvider(secrets_dict)
+        secrets = Secrets(secrets_provider)
+
         runner = SubprocessRunner()
-        up = Up(root_folder, runner, log)
+        factory = ServiceFactory(runner, secrets)
 
+        up = Up(service_provider, factory)
         up.execute(services)
 
 
@@ -54,12 +60,18 @@ class DownAdapter:
         """
 
         services = args.services
-        root_folder = config.services.path
 
-        log = LogWriter(Formatter())
+        services_root = config.commands.deploy.services
+        service_provider = DirectoryProvider(services_root)
+
+        secrets_dict = config.commands.deploy.secrets
+        secrets_provider = DictionaryProvider(secrets_dict)
+        secrets = Secrets(secrets_provider)
+
         runner = SubprocessRunner()
-        down = Down(root_folder, runner, log)
+        factory = ServiceFactory(runner, secrets)
 
+        down = Down(service_provider, factory)
         down.execute(services)
 
 
@@ -89,7 +101,6 @@ class BackupAdapter:
         # Rar config
         rar_password = config.integrations.rar.password
 
-        writer = LogWriter(Formatter())
         provider = DictionaryProvider(known_folders)
         runner = SubprocessRunner()
         archiver = RarArchiver(runner, rar_password)
@@ -111,5 +122,5 @@ class BackupAdapter:
                 case _:
                     uploader = None
 
-        backup = Backup(destination, writer, provider, archiver, uploader)
+        backup = Backup(destination, provider, archiver, uploader)
         backup.execute(patterns)

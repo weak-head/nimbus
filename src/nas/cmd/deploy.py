@@ -2,11 +2,11 @@ from __future__ import annotations
 
 from abc import abstractmethod
 from datetime import datetime
+from typing import Any
 
-from nas.cmd.abstract import ActionInfo, Command, Pipeline
-from nas.core.provider import Provider, Resources
-from nas.core.service import OperationResult, Service, ServiceFactory
-from nas.report.writer import Writer
+from nas.cmd.abstract import Action, ActionResult, Command, MappingActionResult
+from nas.core.provider import Provider
+from nas.core.service import OperationStatus, Service, ServiceFactory
 
 
 class Deployment(Command):
@@ -14,63 +14,67 @@ class Deployment(Command):
     Manage service deployment.
     """
 
-    def __init__(self, writer: Writer, provider: Provider, factory: ServiceFactory, name: str):
-        super().__init__(writer, provider)
+    def __init__(self, name: str, provider: Provider, factory: ServiceFactory):
+        super().__init__(name, provider)
         self._factory = factory
-        self._name = name
 
-    def _build_pipeline(self, arguments: list[str]) -> Pipeline:
-        pi = Pipeline(self._name)
-        pi.config = {}
-        pi.pipeline = [self._build_services, self._deploy]
-        pi.arguments = arguments
-        pi.resources = self._provider.resolve(arguments)
-        return pi
+    def _config(self) -> dict[str, Any]:
+        return {}
 
-    def _build_services(self, resources: Resources) -> ServicesInfo:
-        info = ServicesInfo(started=datetime.now())
+    def _pipeline(self) -> list[Action]:
+        return [
+            Action(self._map_resources),
+            Action(self._create_services),
+            Action(self._deploy),
+        ]
 
-        for res in resources.items:
-            info.entries.extend(self._factory.services(res))
+    def _create_services(self, mapping: MappingActionResult) -> CreateServicesActionResult:
+        result = CreateServicesActionResult()
 
-        info.completed = datetime.now()
-        return info
+        for service_resource in mapping.entries:
+            result.entries.extend(self._factory.services(service_resource))
 
-    def _deploy(self, si: ServicesInfo) -> DeploymentInfo:
-        info = DeploymentInfo(started=datetime.now())
+        result.completed = datetime.now()
+        return result
 
-        for service in si.entries:
-            info.entries.append(self._operation(service))
+    def _deploy(self, services: CreateServicesActionResult) -> DeploymentActionResult:
+        result = DeploymentActionResult(self._name)
 
-        info.completed = datetime.now()
-        return info
+        for service in services.entries:
+            result.entries.append(self._operation(service))
+
+        result.completed = datetime.now()
+        return result
 
     @abstractmethod
-    def _operation(self, service: Service) -> OperationResult:
+    def _operation(self, service: Service) -> OperationStatus:
         pass
 
 
 class Up(Deployment):
 
-    def __init__(self, writer: Writer, provider: Provider, factory: ServiceFactory):
-        super().__init__(writer, provider, factory, "Up")
+    def __init__(self, provider: Provider, factory: ServiceFactory):
+        super().__init__("Up", provider, factory)
 
-    def _operation(self, service: Service) -> OperationResult:
+    def _operation(self, service: Service) -> OperationStatus:
         return service.start()
 
 
 class Down(Deployment):
 
-    def __init__(self, writer: Writer, provider: Provider, factory: ServiceFactory):
-        super().__init__(writer, provider, factory, "Down")
+    def __init__(self, provider: Provider, factory: ServiceFactory):
+        super().__init__("Down", provider, factory)
 
-    def _operation(self, service: Service) -> OperationResult:
+    def _operation(self, service: Service) -> OperationStatus:
         return service.stop()
 
 
-class ServicesInfo(ActionInfo[Service]):
+class CreateServicesActionResult(ActionResult[list[Service]]):
     pass
 
 
-class DeploymentInfo(ActionInfo[OperationResult]):
-    pass
+class DeploymentActionResult(ActionResult[list[OperationStatus]]):
+
+    def __init__(self, operation: str, started: datetime = None):
+        super().__init__(started)
+        self.operation = operation

@@ -19,11 +19,11 @@ commands:
   #  - up
   #  - down
   deploy:
-    services:
-      providers:
-        directory:
-          - ~/services
-          - /mnt/services
+    services: ~/services
+      # providers:
+        # directory:
+          # - ~/services
+          # - /mnt/services
     # Depending on the type of a service, the secrets
     # could be mapped to environment variables, provided
     # as arguments to the service startup or mapped as files.

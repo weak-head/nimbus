@@ -3,12 +3,11 @@ from __future__ import annotations
 import errno
 from typing import Any, Callable
 
-from nas.cmd.abstract import Pipeline
-from nas.cmd.backup import BackupInfo, UploadInfo
-from nas.core.archiver import ArchivalResult
-from nas.core.provider import DictionaryResource, DirectoryResource
+from nas.cmd.backup import BackupActionResult, UploadActionResult
+from nas.core.archiver import ArchivalStatus
+from nas.core.provider import DirectoryResource
 from nas.core.runner import CompletedProcess
-from nas.core.uploader import UploadResult
+from nas.core.uploader import UploadStatus
 from nas.report.writer import Writer
 
 
@@ -32,12 +31,10 @@ class PrettyPrinter:
     def _types(self) -> dict[type, Callable[[Writer, Any], None]]:
         return {
             CompletedProcess: self._process,
-            UploadResult: self._upload_result,
-            ArchivalResult: self._archive_result,
-            Pipeline: self._pipeline_info,
-            BackupInfo: self._backup_info,
-            UploadInfo: self._upload_info,
-            DictionaryResource: self._dictionary_resource,
+            UploadStatus: self._upload_status,
+            ArchivalStatus: self._archive_status,
+            BackupActionResult: self._backup_action_result,
+            UploadActionResult: self._upload_action_result,
             DirectoryResource: self._directory_resource,
         }
 
@@ -72,7 +69,7 @@ class PrettyPrinter:
         if break_after:
             writer.entry()
 
-    def _archive_result(self, writer: Writer, archive: ArchivalResult, break_after=True) -> None:
+    def _archive_status(self, writer: Writer, archive: ArchivalStatus, break_after=True) -> None:
         self._process(writer, archive.proc, break_after=False)
 
         writer.entry("Archive", archive.archive)
@@ -82,7 +79,7 @@ class PrettyPrinter:
         if break_after:
             writer.entry()
 
-    def _upload_result(self, writer: Writer, upload: UploadResult, break_after=True) -> None:
+    def _upload_status(self, writer: Writer, upload: UploadStatus, break_after=True) -> None:
         writer.entry("Status", upload.status)
         writer.entry("Started", upload.started, formatter="datetime")
         writer.entry("Completed", upload.completed, formatter="datetime")
@@ -97,17 +94,11 @@ class PrettyPrinter:
         if break_after:
             writer.entry()
 
-    def _pipeline_info(self, writer: Writer, pipe: Pipeline) -> None:
+    def _backup_action_result(self, writer: Writer, backups: BackupActionResult) -> None:
         pass
 
-    def _backup_info(self, writer: Writer, backups: BackupInfo) -> None:
-        pass
-
-    def _upload_info(self, writer: Writer, uploads: UploadInfo) -> None:
+    def _upload_action_result(self, writer: Writer, uploads: UploadActionResult) -> None:
         pass
 
     def _directory_resource(self, writer: Writer, resource: DirectoryResource) -> None:
         pass
-
-    def _dictionary_resource(self, writer: Writer, resource: DictionaryResource) -> None:
-        writer.section(resource.name).entry(*resource.artifacts, layout="list")

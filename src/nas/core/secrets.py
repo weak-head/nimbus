@@ -15,10 +15,8 @@ class Secrets:
         """
         Retrieve a consolidated collection of secrets for a specified service.
         """
-        resources = self._service_secrets.resolve([name_pattern])
-        if resources.empty:
-            return {}
-
-        # Each resource is a service, and the 'artifacts' is
-        # a dictionary with key/value pairs of service secrets.
-        return {key: value for srv in resources.items for key, value in srv.artifacts.items()}
+        secrets = {}
+        for service in self._service_secrets.resolve([name_pattern]):
+            if isinstance(service.artifacts, dict):
+                secrets = secrets | service.artifacts
+        return secrets

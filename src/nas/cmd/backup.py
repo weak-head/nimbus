@@ -3,12 +3,12 @@ from __future__ import annotations
 import os
 from datetime import datetime
 from pathlib import Path
+from typing import Any
 
-from nas.cmd.abstract import ActionInfo, Command, Pipeline
-from nas.core.archiver import ArchivalResult, Archiver
-from nas.core.provider import Provider, Resources
+from nas.cmd.abstract import Action, ActionResult, Command, MappingActionResult
+from nas.core.archiver import ArchivalStatus, Archiver
+from nas.core.provider import Provider
 from nas.core.uploader import Uploader
-from nas.report.writer import Writer
 
 
 class Backup(Command):
@@ -16,44 +16,51 @@ class Backup(Command):
     Create and upload backups.
     """
 
-    def __init__(self, path: str, writer: Writer, provider: Provider, archiver: Archiver, uploader: Uploader = None):
-        super().__init__(writer, provider)
-        self._destination = path
+    def __init__(self, destination: str, provider: Provider, archiver: Archiver, uploader: Uploader = None):
+        super().__init__("Backup", provider)
+        self._destination = destination
         self._archiver = archiver
         self._uploader = uploader
 
-    def _build_pipeline(self, arguments: list[str]) -> Pipeline:
-        pi = Pipeline("Backup")
-        pi.config = {"Destination": self._destination, "Upload": bool(self._uploader)}
-        pi.pipeline = [self._backup, self._upload] if self._uploader else [self._backup]
-        pi.arguments = arguments
-        pi.resources = self._provider.resolve(arguments)
-        return pi
+    def _config(self) -> dict[str, Any]:
+        return {
+            "Destination": self._destination,
+            "Upload": bool(self._uploader),
+        }
 
-    def _backup(self, resources: Resources) -> BackupInfo:
-        info = BackupInfo(started=datetime.now())
+    def _pipeline(self) -> list[Action]:
+        pipeline = [
+            Action(self._map_resources),
+            Action(self._backup),
+        ]
+        if self._uploader:
+            pipeline.append(Action(self._upload))
+        return pipeline
 
-        for resource in resources.items:
-            for artifact in resource.artifacts:
-                entry = BackupEntry(resource.name, artifact)
+    def _backup(self, mapping: MappingActionResult) -> BackupActionResult:
+        info = BackupActionResult()
+
+        for group in mapping.entries:
+            for directory in group.artifacts:
+                backup = BackupEntry(group.name, directory)
 
                 archive_path = self._compose_path(
                     self._destination,
-                    entry.group,
-                    entry.folder,
+                    backup.group,
+                    backup.folder,
                     info.started,
                 )
 
-                entry.archive = self._archiver.archive(entry.folder, archive_path)
-                info.entries.append(entry)
+                backup.archive = self._archiver.archive(backup.folder, archive_path)
+                info.entries.append(backup)
 
         info.completed = datetime.now()
         return info
 
-    def _upload(self, backups: BackupInfo) -> UploadInfo:
-        info = UploadInfo(started=datetime.now())
+    def _upload(self, backups: BackupActionResult) -> UploadActionResult:
+        info = UploadActionResult()
 
-        # TODO: implement me
+        # implement me
 
         info.completed = datetime.now()
         return info
@@ -79,7 +86,7 @@ class BackupEntry:
     def __init__(self, group: str, folder: str):
         self.group: str = group
         self.folder: str = folder
-        self.archive: ArchivalResult = None
+        self.archive: ArchivalStatus = None
 
     @property
     def successful(self) -> bool:
@@ -92,9 +99,9 @@ class UploadEntry:
         self.backup: BackupEntry = None
 
 
-class BackupInfo(ActionInfo[BackupEntry]):
+class BackupActionResult(ActionResult[list[BackupEntry]]):
     pass
 
 
-class UploadInfo(ActionInfo[UploadEntry]):
+class UploadActionResult(ActionResult[list[UploadEntry]]):
     pass

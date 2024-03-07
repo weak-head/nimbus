@@ -2,13 +2,11 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from datetime import datetime, timedelta
-from typing import Any, Callable
+from typing import Any, Callable, Generic, TypeVar
 
-from nas.core.provider import Provider, Resources
-from nas.report.writer import Writer
+from nas.core.provider import Provider, Resource
 
-type ActionHandler = Callable[[Any], ActionInfo]
-"""A single action in the command execution pipeline."""
+T = TypeVar("T")
 
 
 class Command(ABC):
@@ -17,56 +15,91 @@ class Command(ABC):
     All commands should follow the APIs defined by this class.
     """
 
-    def __init__(self, writer: Writer, provider: Provider):
-        self._writer = writer
-        self._provider = provider
+    def __init__(self, name: str, provider: Provider) -> None:
+        self._name: str = name
+        self._provider: Provider = provider
 
-    def execute(self, arguments: list[str]) -> None:
-        """
-        Initiates execution of the command.
-        """
+    def execute(self, arguments: list[str]) -> ExecutionResult:
+        result = ExecutionResult(self._name)
+        result.arguments = arguments
+        result.config = self._config()
 
-        pi = self._build_pipeline(arguments)
-        self._writer.entry(pi)
+        data = arguments
+        for action in self._pipeline():
+            data = action(data)
+            result.actions.append(data)
+            if not data.success:
+                break
 
-        if pi.resources.empty:
-            return
+        result.completed = datetime.now()
+        return result
 
-        data = pi.resources
-        for handler in pi.pipeline:
-            data = handler(data)
-            self._writer.entry(data)
+    def _map_resources(self, arguments: list[str]) -> MappingActionResult:
+        res = MappingActionResult()
+        res.entries = self._provider.resolve(arguments)
+        res.completed = datetime.now()
+        return res
 
     @abstractmethod
-    def _build_pipeline(self, arguments: list[str]) -> Pipeline:
+    def _config(self) -> dict[str, Any]:
         """
-        Builds the command execution pipeline.
+        The command execution configuration outlines the parameters used for the command execution.
+        It primarily serves reporting purposes.
+        """
+
+    @abstractmethod
+    def _pipeline(self) -> list[Action]:
+        """
+        The command execution pipeline defines the logic for executing the command.
+        It serves as a sequence of actions that guide the execution process.
         """
 
 
-class Pipeline:
+class ExecutionResult:
     """
-    tbd
+    Result of a command execution.
     """
 
-    def __init__(self, name: str):
-        self.name: str = name
-        self.pipeline: list[ActionHandler] = []
-        self.config: dict[str, Any] = {}
+    def __init__(self, command: str, started: datetime = None) -> None:
+        self.command: str = command
         self.arguments: list[str] = []
-        self.resources: Resources = []
-
-
-class ActionInfo[T]:
-    """
-    Base class for all action results.
-    """
-
-    def __init__(self, started: datetime = None):
-        self.entries: list[T] = []
-        self.started: datetime = started
+        self.config: dict[str, Any] = {}
+        self.actions: list[ActionResult] = []
+        self.started: datetime = started if started else datetime.now()
         self.completed: datetime = None
 
     @property
     def elapsed(self) -> timedelta:
         return self.completed - self.started
+
+
+class Action:
+    """
+    A single action in the command execution pipeline.
+    """
+
+    def __init__(self, func: Callable[[Any], ActionResult]) -> None:
+        self._func = func
+
+    def __call__(self, data: Any) -> ActionResult:
+        return self._func(data)
+
+
+class ActionResult[T](Generic[T]):
+    """
+    Base class for all action results.
+    """
+
+    def __init__(self, started: datetime = None):
+        self.entries: T = None
+        self.started: datetime = started if started else datetime.now()
+        self.completed: datetime = None
+        self.success: bool = True
+
+    @property
+    def elapsed(self) -> timedelta:
+        return self.completed - self.started
+
+
+class MappingActionResult(ActionResult[list[Resource]]):
+    pass
