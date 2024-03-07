@@ -3,13 +3,13 @@ from __future__ import annotations
 import errno
 from typing import Any, Callable
 
-from nas.cmd.abstract import Pipeline
-from nas.cmd.backup import BackupInfo, UploadInfo
+from nas.cmd.backup import BackupResult, UploadResult
 from nas.core.archiver import ArchivalResult
 from nas.core.provider import DictionaryResource, DirectoryResource
 from nas.core.runner import CompletedProcess
-from nas.core.uploader import UploadResult
 from nas.report.writer import Writer
+
+# from nas.core.uploader import UploadResult
 
 
 class PrettyPrinter:
@@ -32,11 +32,11 @@ class PrettyPrinter:
     def _types(self) -> dict[type, Callable[[Writer, Any], None]]:
         return {
             CompletedProcess: self._process,
-            UploadResult: self._upload_result,
+            # UploadResult: self._upload_result,
             ArchivalResult: self._archive_result,
-            Pipeline: self._pipeline_info,
-            BackupInfo: self._backup_info,
-            UploadInfo: self._upload_info,
+            # Pipeline: self._pipeline_info,
+            BackupResult: self._backup_info,
+            UploadResult: self._upload_info,
             DictionaryResource: self._dictionary_resource,
             DirectoryResource: self._directory_resource,
         }
@@ -82,28 +82,28 @@ class PrettyPrinter:
         if break_after:
             writer.entry()
 
-    def _upload_result(self, writer: Writer, upload: UploadResult, break_after=True) -> None:
-        writer.entry("Status", upload.status)
-        writer.entry("Started", upload.started, formatter="datetime")
-        writer.entry("Completed", upload.completed, formatter="datetime")
-        writer.entry("Elapsed", upload.elapsed, formatter="duration")
-        writer.entry("Size", upload.size, formatter="size")
-        writer.entry("Speed", upload.speed, formatter="speed")
+    # def _upload_result(self, writer: Writer, upload: UploadResult, break_after=True) -> None:
+    #     writer.entry("Status", upload.status)
+    #     writer.entry("Started", upload.started, formatter="datetime")
+    #     writer.entry("Completed", upload.completed, formatter="datetime")
+    #     writer.entry("Elapsed", upload.elapsed, formatter="duration")
+    #     writer.entry("Size", upload.size, formatter="size")
+    #     writer.entry("Speed", upload.speed, formatter="speed")
 
-        if upload.exception:
-            exc = writer.section("Exception")
-            exc.entry(upload.exception, layout="multiline")
+    #     if upload.exception:
+    #         exc = writer.section("Exception")
+    #         exc.entry(upload.exception, layout="multiline")
 
-        if break_after:
-            writer.entry()
+    #     if break_after:
+    #         writer.entry()
 
-    def _pipeline_info(self, writer: Writer, pipe: Pipeline) -> None:
+    # def _pipeline_info(self, writer: Writer, pipe: Pipeline) -> None:
+    # pass
+
+    def _backup_info(self, writer: Writer, backups: BackupResult) -> None:
         pass
 
-    def _backup_info(self, writer: Writer, backups: BackupInfo) -> None:
-        pass
-
-    def _upload_info(self, writer: Writer, uploads: UploadInfo) -> None:
+    def _upload_info(self, writer: Writer, uploads: UploadResult) -> None:
         pass
 
     def _directory_resource(self, writer: Writer, resource: DirectoryResource) -> None:

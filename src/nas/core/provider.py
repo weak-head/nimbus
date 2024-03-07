@@ -3,7 +3,7 @@ from __future__ import annotations
 import fnmatch
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import Any
+from typing import Any, Generic, TypeVar
 
 
 class Provider(ABC):
@@ -12,7 +12,7 @@ class Provider(ABC):
     All providers should follow the APIs defined by this class.
     """
 
-    def resolve(self, patterns: list[str]) -> Resources:
+    def resolve(self, patterns: list[str]) -> list[Resource]:
         """
         Resolve available resources using a set of glob patterns.
 
@@ -29,7 +29,7 @@ class Provider(ABC):
             if not patterns or any((resource.match(pat) for pat in patterns)):
                 matches.append(resource)
 
-        return Resources(sorted(matches, key=lambda res: res.name))
+        return sorted(matches, key=lambda res: res.name)
 
     @abstractmethod
     def _resources(self) -> list[Resource]:
@@ -69,20 +69,10 @@ class DictionaryProvider(Provider):
         return [DictionaryResource(key, value) for key, value in self._groups.items()]
 
 
-class Resources:
-    """
-    A logical grouping of several resources.
-    """
-
-    def __init__(self, items: list[Resource]):
-        self.items: list[Resource] = items
-
-    @property
-    def empty(self) -> bool:
-        return len(self.items) == 0
+T = TypeVar("T")
 
 
-class Resource[T]:
+class Resource[T](Generic[T]):
     """
     Resource is a grouping of a unique resource name
     and a list of custom artifacts of any type.
