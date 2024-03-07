@@ -5,8 +5,8 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any
 
-from nas.cmd.abstract import Action, ActionResult, Command, MappingResult
-from nas.core.archiver import ArchivalResult, Archiver
+from nas.cmd.abstract import Action, ActionResult, Command, MappingActionResult
+from nas.core.archiver import ArchivalStatus, Archiver
 from nas.core.provider import Provider
 from nas.core.uploader import Uploader
 
@@ -30,15 +30,15 @@ class Backup(Command):
 
     def _pipeline(self) -> list[Action]:
         pipeline = [
-            self._map_resources,
-            self._backup,
+            Action(self._map_resources),
+            Action(self._backup),
         ]
         if self._uploader:
-            pipeline.append(self._upload)
+            pipeline.append(Action(self._upload))
         return pipeline
 
-    def _backup(self, mapping: MappingResult) -> BackupResult:
-        info = BackupResult()
+    def _backup(self, mapping: MappingActionResult) -> BackupActionResult:
+        info = BackupActionResult()
 
         for group in mapping.entries:
             for directory in group.artifacts:
@@ -57,8 +57,8 @@ class Backup(Command):
         info.completed = datetime.now()
         return info
 
-    def _upload(self, backups: BackupResult) -> UploadResult:
-        info = UploadResult()
+    def _upload(self, backups: BackupActionResult) -> UploadActionResult:
+        info = UploadActionResult()
 
         # implement me
 
@@ -86,7 +86,7 @@ class BackupEntry:
     def __init__(self, group: str, folder: str):
         self.group: str = group
         self.folder: str = folder
-        self.archive: ArchivalResult = None
+        self.archive: ArchivalStatus = None
 
     @property
     def successful(self) -> bool:
@@ -99,9 +99,9 @@ class UploadEntry:
         self.backup: BackupEntry = None
 
 
-class BackupResult(ActionResult[list[BackupEntry]]):
+class BackupActionResult(ActionResult[list[BackupEntry]]):
     pass
 
 
-class UploadResult(ActionResult[list[UploadEntry]]):
+class UploadActionResult(ActionResult[list[UploadEntry]]):
     pass

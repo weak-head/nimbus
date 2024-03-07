@@ -6,6 +6,8 @@ from typing import Any, Callable, Generic, TypeVar
 
 from nas.core.provider import Provider, Resource
 
+T = TypeVar("T")
+
 
 class Command(ABC):
     """
@@ -32,8 +34,8 @@ class Command(ABC):
         result.completed = datetime.now()
         return result
 
-    def _map_resources(self, arguments: list[str]) -> MappingResult:
-        res = MappingResult()
+    def _map_resources(self, arguments: list[str]) -> MappingActionResult:
+        res = MappingActionResult()
         res.entries = self._provider.resolve(arguments)
         res.completed = datetime.now()
         return res
@@ -83,9 +85,6 @@ class Action:
         return self._func(data)
 
 
-T = TypeVar("T")
-
-
 class ActionResult[T](Generic[T]):
     """
     Base class for all action results.
@@ -102,5 +101,5 @@ class ActionResult[T](Generic[T]):
         return self.completed - self.started
 
 
-class MappingResult(ActionResult[list[Resource]]):
+class MappingActionResult(ActionResult[list[Resource]]):
     pass

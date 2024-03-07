@@ -5,6 +5,8 @@ from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import Any, Generic, TypeVar
 
+T = TypeVar("T")
+
 
 class Provider(ABC):
     """
@@ -65,17 +67,14 @@ class DictionaryProvider(Provider):
     def __init__(self, groups: dict[str, Any]):
         self._groups = groups
 
-    def _resources(self) -> list[DictionaryResource]:
-        return [DictionaryResource(key, value) for key, value in self._groups.items()]
-
-
-T = TypeVar("T")
+    def _resources(self) -> list[Resource]:
+        return [Resource(key, value) for key, value in self._groups.items()]
 
 
 class Resource[T](Generic[T]):
     """
     Resource is a grouping of a unique resource name
-    and a list of custom artifacts of any type.
+    and one or many custom artifacts of any type.
     """
 
     def __init__(self, name: str, artifacts: T = None):
@@ -87,8 +86,4 @@ class Resource[T](Generic[T]):
 
 
 class DirectoryResource(Resource[list[str]]):
-    pass
-
-
-class DictionaryResource(Resource):
     pass

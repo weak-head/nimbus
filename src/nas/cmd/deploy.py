@@ -4,9 +4,9 @@ from abc import abstractmethod
 from datetime import datetime
 from typing import Any
 
-from nas.cmd.abstract import Action, ActionResult, Command, MappingResult
+from nas.cmd.abstract import Action, ActionResult, Command, MappingActionResult
 from nas.core.provider import Provider
-from nas.core.service import OperationResult, Service, ServiceFactory
+from nas.core.service import OperationStatus, Service, ServiceFactory
 
 
 class Deployment(Command):
@@ -23,13 +23,13 @@ class Deployment(Command):
 
     def _pipeline(self) -> list[Action]:
         return [
-            self._map_resources,
-            self._create_services,
-            self._deploy,
+            Action(self._map_resources),
+            Action(self._create_services),
+            Action(self._deploy),
         ]
 
-    def _create_services(self, mapping: MappingResult) -> ServiceCreationResult:
-        result = ServiceCreationResult()
+    def _create_services(self, mapping: MappingActionResult) -> CreateServicesActionResult:
+        result = CreateServicesActionResult()
 
         for service_resource in mapping.entries:
             result.entries.extend(self._factory.services(service_resource))
@@ -37,8 +37,8 @@ class Deployment(Command):
         result.completed = datetime.now()
         return result
 
-    def _deploy(self, services: ServiceCreationResult) -> DeploymentResult:
-        result = DeploymentResult(self._name)
+    def _deploy(self, services: CreateServicesActionResult) -> DeploymentActionResult:
+        result = DeploymentActionResult(self._name)
 
         for service in services.entries:
             result.entries.append(self._operation(service))
@@ -47,7 +47,7 @@ class Deployment(Command):
         return result
 
     @abstractmethod
-    def _operation(self, service: Service) -> OperationResult:
+    def _operation(self, service: Service) -> OperationStatus:
         pass
 
 
@@ -56,7 +56,7 @@ class Up(Deployment):
     def __init__(self, provider: Provider, factory: ServiceFactory):
         super().__init__("Up", provider, factory)
 
-    def _operation(self, service: Service) -> OperationResult:
+    def _operation(self, service: Service) -> OperationStatus:
         return service.start()
 
 
@@ -65,15 +65,15 @@ class Down(Deployment):
     def __init__(self, provider: Provider, factory: ServiceFactory):
         super().__init__("Down", provider, factory)
 
-    def _operation(self, service: Service) -> OperationResult:
+    def _operation(self, service: Service) -> OperationStatus:
         return service.stop()
 
 
-class ServiceCreationResult(ActionResult[list[Service]]):
+class CreateServicesActionResult(ActionResult[list[Service]]):
     pass
 
 
-class DeploymentResult(ActionResult[list[OperationResult]]):
+class DeploymentActionResult(ActionResult[list[OperationStatus]]):
 
     def __init__(self, operation: str, started: datetime = None):
         super().__init__(started)
