@@ -1,89 +1,59 @@
 from __future__ import annotations
 
 import fnmatch
-from abc import ABC, abstractmethod
-from pathlib import Path
-from typing import Any, Generic, TypeVar
-
-T = TypeVar("T")
+from abc import abstractmethod
+from typing import Generic, Iterator, TypeVar
 
 
-class Provider(ABC):
+class Resource:
     """
-    Defines an abstract resource provider.
-    All providers should follow the APIs defined by this class.
+    An abstract resource serves as a foundational concept.
+    It represents a cohesive unit that combines a unique resource name with
+    a collection of custom attributes or artifacts.
+    The specific nature of the resource is further clarified by its subclasses.
     """
 
-    def resolve(self, patterns: list[str]) -> list[Resource]:
+    def __init__(self, name: str):
+        self.name: str = name
+
+    def match(self, selector: str) -> bool:
+        return fnmatch.filter([self.name], selector)
+
+
+T = TypeVar("T", bound=Resource)
+
+
+class Provider[T](Generic[T]):
+    """
+    An abstract resource provider serves as a foundational concept.
+    It establishes the guidelines that all providers must adhere to
+    by following the APIs defined in this class.
+    The primary responsibility of a provider is to resolve a collection
+    of available resources based on specified selectors and subsequently
+    return a filtered list of these resources.
+    """
+
+    def resolve(self, selectors: list[str]) -> list[T]:
         """
-        Resolve available resources using a set of glob patterns.
+        Resolve available resources using a set of selectors.
 
-        :param patterns: A set of glob patterns used to match resources.
-            Each pattern should follow the typical glob matching rules:
+        :param selectors: A set of selectors used to match resources.
+            Each selector should follow the typical glob matching rules:
                 *     - matches any number of any characters including none
                 ?     - matches any single character
                 [abc] - matches one character given in the bracket
                 [a-z] - matches one character from the range given in the bracket
         """
 
-        matches = []
+        matches: list[T] = []
         for resource in self._resources():
-            if not patterns or any((resource.match(pat) for pat in patterns)):
+            if not selectors or any((resource.match(sel) for sel in selectors)):
                 matches.append(resource)
 
         return sorted(matches, key=lambda res: res.name)
 
     @abstractmethod
-    def _resources(self) -> list[Resource]:
+    def _resources(self) -> Iterator[T]:
         """
         Returns a complete collection of all available resources.
         """
-
-
-class DirectoryProvider(Provider):
-    """
-    Provider that maps all directories under the specified path to
-    a list of resources, where a directory name is mapped to the resource name.
-    """
-
-    def __init__(self, root_dir: str):
-        self._root_dir = root_dir
-
-    def _resources(self) -> list[DirectoryResource]:
-        resources = []
-        for obj in Path(self._root_dir).iterdir():
-            if obj.is_dir():
-                resources.append(DirectoryResource(obj.name, [obj.as_posix()]))
-
-        return resources
-
-
-class DictionaryProvider(Provider):
-    """
-    Provider that uses a given dictionary for the resource resolution.
-    Each key in the dictionary is mapped to the resource name.
-    """
-
-    def __init__(self, groups: dict[str, Any]):
-        self._groups = groups
-
-    def _resources(self) -> list[Resource]:
-        return [Resource(key, value) for key, value in self._groups.items()]
-
-
-class Resource[T](Generic[T]):
-    """
-    Resource is a grouping of a unique resource name
-    and one or many custom artifacts of any type.
-    """
-
-    def __init__(self, name: str, artifacts: T = None):
-        self.name: str = name
-        self.artifacts = artifacts
-
-    def match(self, pattern: str) -> bool:
-        return len(fnmatch.filter([self.name], pattern)) > 0
-
-
-class DirectoryResource(Resource[list[str]]):
-    pass

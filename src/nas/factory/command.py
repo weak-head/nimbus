@@ -6,7 +6,7 @@ from nas.cmd import Backup, Down, Up
 from nas.cmd.abstract import Command
 from nas.config import Config
 from nas.factory.component import ComponentFactory
-from nas.provider.abstract import DictionaryProvider
+from nas.provider.backup import BackupProvider
 
 
 class CommandFactory(ABC):
@@ -35,9 +35,9 @@ class CfgCommandFactory(CommandFactory):
 
     def create_backup(self) -> Command:
         destination = self._config.commands.backup.destination
-        known_folders = self._config.commands.backup.groups
+        directory_groups = self._config.commands.backup.groups
 
-        provider = DictionaryProvider(known_folders)
+        provider = BackupProvider(directory_groups)
         archiver = self._component_factory.create_archiver()
         uploader = self._component_factory.create_uploader()
 

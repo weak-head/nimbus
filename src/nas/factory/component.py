@@ -8,7 +8,8 @@ from nas.core.runner import Runner, SubprocessRunner
 from nas.core.uploader import AwsUploader, Uploader
 from nas.factory.secrets import Secrets
 from nas.factory.service import ServiceFactory
-from nas.provider.abstract import DictionaryProvider, DirectoryProvider, Provider
+from nas.provider.secrets import SecretsProvider
+from nas.provider.service import ServiceProvider
 
 
 class ComponentFactory(ABC):
@@ -33,7 +34,7 @@ class ComponentFactory(ABC):
         pass
 
     @abstractmethod
-    def create_service_provider(self) -> Provider:
+    def create_service_provider(self) -> ServiceProvider:
         pass
 
     @abstractmethod
@@ -70,12 +71,12 @@ class CfgComponentFactory(ComponentFactory):
 
     def create_secrets(self) -> Secrets:
         secrets_dict = self._config.commands.deploy.secrets
-        secrets_provider = DictionaryProvider(secrets_dict)
+        secrets_provider = SecretsProvider(secrets_dict)
         return Secrets(secrets_provider)
 
-    def create_service_provider(self) -> Provider:
+    def create_service_provider(self) -> ServiceProvider:
         services_root = self._config.commands.deploy.services
-        return DirectoryProvider(services_root)
+        return ServiceProvider(services_root)
 
     def create_service_factory(self) -> ServiceFactory:
         runner = self.create_runner()

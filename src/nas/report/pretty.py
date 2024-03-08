@@ -7,7 +7,6 @@ from nas.cmd.backup import BackupActionResult, UploadActionResult
 from nas.core.archiver import ArchivalStatus
 from nas.core.runner import CompletedProcess
 from nas.core.uploader import UploadStatus
-from nas.provider.abstract import DirectoryResource
 from nas.report.writer import Writer
 
 
@@ -35,7 +34,6 @@ class PrettyPrinter:
             ArchivalStatus: self._archive_status,
             BackupActionResult: self._backup_action_result,
             UploadActionResult: self._upload_action_result,
-            DirectoryResource: self._directory_resource,
         }
 
     def _process(self, writer: Writer, proc: CompletedProcess, cmd=False, cwd=False, break_after=True) -> None:
@@ -98,7 +96,4 @@ class PrettyPrinter:
         pass
 
     def _upload_action_result(self, writer: Writer, uploads: UploadActionResult) -> None:
-        pass
-
-    def _directory_resource(self, writer: Writer, resource: DirectoryResource) -> None:
         pass

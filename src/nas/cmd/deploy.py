@@ -7,7 +7,7 @@ from typing import Any
 from nas.cmd.abstract import Action, ActionResult, Command, MappingActionResult
 from nas.core.service import OperationStatus, Service
 from nas.factory.service import ServiceFactory
-from nas.provider.abstract import Provider
+from nas.provider.service import ServiceProvider
 
 
 class Deployment(Command):
@@ -15,7 +15,7 @@ class Deployment(Command):
     Manage service deployment.
     """
 
-    def __init__(self, name: str, provider: Provider, factory: ServiceFactory):
+    def __init__(self, name: str, provider: ServiceProvider, factory: ServiceFactory):
         super().__init__(name, provider)
         self._factory = factory
 
@@ -54,7 +54,7 @@ class Deployment(Command):
 
 class Up(Deployment):
 
-    def __init__(self, provider: Provider, factory: ServiceFactory):
+    def __init__(self, provider: ServiceProvider, factory: ServiceFactory):
         super().__init__("Up", provider, factory)
 
     def _operation(self, service: Service) -> OperationStatus:
@@ -63,7 +63,7 @@ class Up(Deployment):
 
 class Down(Deployment):
 
-    def __init__(self, provider: Provider, factory: ServiceFactory):
+    def __init__(self, provider: ServiceProvider, factory: ServiceFactory):
         super().__init__("Down", provider, factory)
 
     def _operation(self, service: Service) -> OperationStatus:
