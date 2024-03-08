@@ -4,7 +4,7 @@ from abc import ABC, abstractmethod
 from datetime import datetime, timedelta
 from typing import Any, Callable, Generic, TypeVar
 
-from nas.core.provider import Provider, Resource
+from nas.provider.abstract import Provider, Resource
 
 T = TypeVar("T")
 

@@ -5,9 +5,9 @@ from typing import Any, Callable
 
 from nas.cmd.backup import BackupActionResult, UploadActionResult
 from nas.core.archiver import ArchivalStatus
-from nas.core.provider import DirectoryResource
 from nas.core.runner import CompletedProcess
 from nas.core.uploader import UploadStatus
+from nas.provider.abstract import DirectoryResource
 from nas.report.writer import Writer
 
 

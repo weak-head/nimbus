@@ -1,4 +1,4 @@
-from nas.core.provider import Provider
+from nas.provider.abstract import Provider
 
 
 class Secrets:

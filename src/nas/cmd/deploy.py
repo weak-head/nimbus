@@ -5,8 +5,9 @@ from datetime import datetime
 from typing import Any
 
 from nas.cmd.abstract import Action, ActionResult, Command, MappingActionResult
-from nas.core.provider import Provider
-from nas.core.service import OperationStatus, Service, ServiceFactory
+from nas.core.service import OperationStatus, Service
+from nas.factory.service import ServiceFactory
+from nas.provider.abstract import Provider
 
 
 class Deployment(Command):

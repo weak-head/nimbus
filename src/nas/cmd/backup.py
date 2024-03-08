@@ -7,8 +7,8 @@ from typing import Any
 
 from nas.cmd.abstract import Action, ActionResult, Command, MappingActionResult
 from nas.core.archiver import ArchivalStatus, Archiver
-from nas.core.provider import Provider
 from nas.core.uploader import Uploader
+from nas.provider.abstract import Provider
 
 
 class Backup(Command):
