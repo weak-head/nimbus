@@ -1,14 +1,5 @@
-"""
-CLI API parser with support of the following commands:
-  - up [services...]
-  - down [services...]
-  - backup [groups...]
-  - snapshot
-"""
-
 from argparse import ArgumentParser
 
-from nas.cli.adapters import BackupAdapter, DownAdapter, UpAdapter
 from nas.config import Config
 
 
@@ -52,7 +43,7 @@ def up_parser(parser: ArgumentParser, config: Config):
         help="Services that should be started",
     )
 
-    parser.set_defaults(func=UpAdapter.execute)
+    parser.set_defaults(func=None)
 
 
 def down_parser(parser: ArgumentParser, config: Config):
@@ -76,7 +67,7 @@ def down_parser(parser: ArgumentParser, config: Config):
         help="Services that should be stopped",
     )
 
-    parser.set_defaults(func=DownAdapter.execute)
+    parser.set_defaults(func=None)
 
 
 def backup_parser(parser: ArgumentParser, config: Config):
@@ -100,4 +91,4 @@ def backup_parser(parser: ArgumentParser, config: Config):
         help="Multiple patterns to match against the configured backup groups.",
     )
 
-    parser.set_defaults(func=BackupAdapter.execute)
+    parser.set_defaults(func=None)

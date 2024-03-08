@@ -3,7 +3,7 @@ import os
 import sys
 from datetime import datetime
 
-from nas.cli.parser import create_parser
+from nas.cli import create_parser
 from nas.config import Config
 from nas.report.format import Formatter
 from nas.report.writer import LogWriter

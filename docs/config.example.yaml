@@ -1,59 +1,39 @@
 
-
-integrations:
-  rar:
+# Archiver profiles
+archivers:
+  rar-protected: # archiver profile
+    provider: rar
     password: SuperSecretPassword
-  aws:
+
+# Uploader profiles
+uploaders:
+  aws-archive: # uploader profile
+    provider: aws
     access_key: XXXXXXXXXXXXXXXXXXXX
     secret_key: XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+    bucket: my.domain.archive
+    storage_class: DEEP_ARCHIVE # STANDARD | INTELLIGENT_TIERING | DEEP_ARCHIVE
 
-# Configuration for all available commands.
-# Some commands are grouped under logical sections.
-# For example, both 'up' and 'down' commands belong to the same
-# logical 'deployment' group. Therefore, it makes sense to have shared
-# configuration for these commands.
-commands:
+services:
+  docker-compose: # each subfolder under specified is a service
+    - ~/services
+    - /path/to/directory
 
-  # All deployment commands use this configuration.
-  # Such commands include:
-  #  - up
-  #  - down
-  deploy:
-    services: ~/services
-      # providers:
-        # directory:
-          # - ~/services
-          # - /mnt/services
-    # Depending on the type of a service, the secrets
-    # could be mapped to environment variables, provided
-    # as arguments to the service startup or mapped as files.
-    secrets:
-      plex:
-        PLEX_DATA_MEDIA: /mnt/media
-        PLEX_DATA_MUSIC: /mnt/music
-      gitlab:
-        GITLAB_SSH_PORT: 22
-        GITLAB_HTTP_PORT: 80
-
-  backup:
-    destination: /mnt/backups
-    upload:
-      enabled: true
-      providers:
-        aws:
-          bucket: my.domain.archive
-          storage_class: DEEP_ARCHIVE # STANDARD | INTELLIGENT_TIERING | DEEP_ARCHIVE
-    groups:
-      config:
-        - ~/.ssh
-        - /path/to/some/config/folder
-      docs:
-        - ~/Documents
-      apps:
-        - /mnt/ssd/nextcloud/
-        - /mnt/ssd/gitlab
-        - /mnt/ssd/syncthing
-      media:
-        - ~/Pictures
-        - ~/Music
-        - ~/Videos
+backups:
+  destination: /mnt/backups
+  archiver: rar-protected # profile
+  uploader: aws-archive # profile
+  directories: 
+    config: # group
+      - ~/.ssh
+      - /path/to/some/config/folder
+    docs:
+      - ~/Documents
+    apps:
+      - /mnt/ssd/nextcloud/
+      - /mnt/ssd/gitlab
+      - /mnt/ssd/syncthing
+    media:
+      - ~/Pictures
+      - ~/Music
+      - ~/Videos
