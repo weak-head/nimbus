@@ -15,7 +15,9 @@ uploaders:
     storage_class: DEEP_ARCHIVE # STANDARD | INTELLIGENT_TIERING | DEEP_ARCHIVE
 
 services:
-  docker-compose: # each subfolder under specified is a service
+  # This could be either a parent directory with a nested services, 
+  # or a full path to a directory with a single service.
+  docker-compose: 
     - ~/services
     - /path/to/directory
 

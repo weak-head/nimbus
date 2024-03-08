@@ -16,19 +16,30 @@ class ServiceResource(Resource):
 
 
 class ServiceProvider(Provider[ServiceResource]):
+    """
+    This class provides a recursive mechanism for
+    discovering services within all parent folders.
+    By traversing through parent folders, it facilitates
+    the identification and interaction with services,
+    """
 
-    def __init__(self, root_dir: str):
-        self._root_dir = root_dir
+    def __init__(self, root_directories: list[str]):
+        self._root_dirs: list[str] = root_directories
 
     def _resources(self) -> Iterator[ServiceResource]:
-        for obj in Path(self._root_dir).iterdir():
-            if obj.is_dir():
-                directory = obj.as_posix()
-                yield ServiceResource(
-                    obj.name,
-                    self._get_service_kind(directory),
-                    directory,
-                )
+        for root_dir in self._root_dirs:
+            yield from self._discover_services(root_dir)
+
+    def _discover_services(self, root_path: str) -> Iterator[ServiceResource]:
+        path = Path(root_path).expanduser()
+        service_kind = self._get_service_kind(path.as_posix())
+
+        if service_kind != "unknown":
+            yield ServiceResource(path.name, service_kind, path.as_posix())
+        else:
+            for obj in path.iterdir():
+                if obj.is_dir():
+                    yield from self._discover_services(obj.as_posix())
 
     def _get_service_kind(self, directory: str) -> str:
         compose_file_names = [
