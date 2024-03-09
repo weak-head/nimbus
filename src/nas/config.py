@@ -13,19 +13,18 @@ class Config:
     def __init__(self, config: dict):
         self._config = config
 
-    def __getattr__(self, *args):
-        val = dict.get(self._config, *args)
+    def __getattr__(self, key):
+        return self[key]
+
+    def __getitem__(self, key):
+        val = self._config.get(key)
         return Config(val) if isinstance(val, dict) else val
 
     @staticmethod
     def load(file_path: str = None) -> Config:
         """
-        Load configuration from file. When the file path is omitted,
-        the default search paths are used.
-
-        :param file_path: Path to the configuration file.
-
-        :return: Initialized configuration.
+        Load configuration from file.
+        When the file path is omitted, the default search paths are used.
         """
 
         # Default search paths for the configuration location.

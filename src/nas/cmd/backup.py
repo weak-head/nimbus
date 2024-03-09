@@ -7,8 +7,8 @@ from typing import Any
 
 from nas.cmd.abstract import Action, ActionResult, Command, MappingActionResult
 from nas.core.archiver import ArchivalStatus, Archiver
-from nas.core.provider import Provider
 from nas.core.uploader import Uploader
+from nas.provider.backup import BackupProvider
 
 
 class Backup(Command):
@@ -16,7 +16,7 @@ class Backup(Command):
     Create and upload backups.
     """
 
-    def __init__(self, destination: str, provider: Provider, archiver: Archiver, uploader: Uploader = None):
+    def __init__(self, destination: str, provider: BackupProvider, archiver: Archiver, uploader: Uploader = None):
         super().__init__("Backup", provider)
         self._destination = destination
         self._archiver = archiver
