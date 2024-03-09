@@ -1,11 +1,15 @@
 
-# Archiver profiles
+# Archiver profiles.
+# Supported providers:
+#   - rar
 archivers:
   rar-protected: # archiver profile
     provider: rar
     password: SuperSecretPassword
 
-# Uploader profiles
+# Uploader profiles.
+# Supported providers:
+#   - aws
 uploaders:
   aws-archive: # uploader profile
     provider: aws
@@ -17,7 +21,7 @@ uploaders:
 services:
   # This could be either a parent directory with a nested services, 
   # or a full path to a directory with a single service.
-  docker-compose: 
+  directories:
     - ~/services
     - /path/to/directory
 

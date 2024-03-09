@@ -29,26 +29,27 @@ class CommandFactory(ABC):
 
 class CfgCommandFactory(CommandFactory):
 
-    def __init__(self, config: Config, component_factory: ComponentFactory) -> None:
+    def __init__(self, config: Config, components: ComponentFactory) -> None:
         self._config = config
-        self._component_factory = component_factory
+        self._components = components
 
     def create_backup(self) -> Command:
-        destination = self._config.commands.backup.destination
-        directory_groups = self._config.commands.backup.groups
-
-        provider = BackupProvider(directory_groups)
-        archiver = self._component_factory.create_archiver()
-        uploader = self._component_factory.create_uploader()
-
-        return Backup(destination, provider, archiver, uploader)
+        cfg = self._config.commands.backup
+        return Backup(
+            cfg.destination,
+            BackupProvider(cfg.directories),
+            self._components.create_archiver(cfg.archiver),
+            self._components.create_uploader(cfg.uploader),
+        )
 
     def create_up(self) -> Command:
-        service_provider = self._component_factory.create_service_provider()
-        factory = self._component_factory.create_service_factory()
-        return Up(service_provider, factory)
+        return Up(
+            self._components.create_service_provider(),
+            self._components.create_service_factory(),
+        )
 
     def create_down(self) -> Command:
-        service_provider = self._component_factory.create_service_provider()
-        factory = self._component_factory.create_service_factory()
-        return Down(service_provider, factory)
+        return Down(
+            self._components.create_service_provider(),
+            self._components.create_service_factory(),
+        )

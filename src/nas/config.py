@@ -13,8 +13,11 @@ class Config:
     def __init__(self, config: dict):
         self._config = config
 
-    def __getattr__(self, *args):
-        val = dict.get(self._config, *args)
+    def __getattr__(self, key):
+        return self[key]
+
+    def __getitem__(self, key):
+        val = self._config.get(key)
         return Config(val) if isinstance(val, dict) else val
 
     @staticmethod

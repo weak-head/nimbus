@@ -51,34 +51,43 @@ class CfgComponentFactory(ComponentFactory):
         return SubprocessRunner()
 
     def create_archiver(self, profile: str) -> Archiver:
-        rar_password = self._config.integrations.rar.password
-        runner = self.create_runner()
-        return RarArchiver(runner, rar_password)
+        profile_cfg = self._config.archivers[profile]
 
-    def create_uploader(self, profile: str) -> Uploader:
-        upload_enabled = self._config.commands.backup.upload.enabled
-        if not upload_enabled:
+        if not profile_cfg:
             return None
 
-        match self._config.commands.backup.upload.provider:
-            case "aws":
-                aws_access_key = self._config.integrations.aws.access_key
-                aws_secret_key = self._config.integrations.aws.secret_key
-                aws_bucket = self._config.commands.backup.upload.aws.bucket
-                aws_storage = self._config.commands.backup.upload.aws.storage_class
+        if profile_cfg.provider == "rar":
+            return RarArchiver(
+                self.create_runner(),
+                profile_cfg.password,
+            )
 
-                return AwsUploader(aws_access_key, aws_secret_key, aws_bucket, aws_storage)
+        return None
+
+    def create_uploader(self, profile: str) -> Uploader:
+        profile_cfg = self._config.uploaders[profile]
+
+        if not profile_cfg:
+            return None
+
+        if profile_cfg.provider == "aws":
+            return AwsUploader(
+                profile_cfg.access_key,
+                profile_cfg.secret_key,
+                profile_cfg.bucket,
+                profile_cfg.storage_class,
+            )
+
+        return None
 
     def create_secrets(self) -> Secrets:
-        secrets_dict = self._config.commands.deploy.secrets
-        secrets_provider = SecretsProvider(secrets_dict)
-        return Secrets(secrets_provider)
+        return Secrets(SecretsProvider({}))
 
     def create_service_provider(self) -> ServiceProvider:
-        services_root = self._config.commands.deploy.services
-        return ServiceProvider(services_root)
+        return ServiceProvider(self._config.services.directories)
 
     def create_service_factory(self) -> ServiceFactory:
-        runner = self.create_runner()
-        secrets = self.create_secrets()
-        return ServiceFactory(runner, secrets)
+        return ServiceFactory(
+            self.create_runner(),
+            self.create_secrets(),
+        )
