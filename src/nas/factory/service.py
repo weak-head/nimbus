@@ -1,6 +1,6 @@
 from nas.core.runner import Runner
 from nas.core.service import DockerService, Service
-from nas.factory.secrets import Secrets
+from nas.provider.secrets import Secrets
 from nas.provider.service import ServiceResource
 
 

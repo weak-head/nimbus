@@ -23,12 +23,8 @@ class Config:
     @staticmethod
     def load(file_path: str = None) -> Config:
         """
-        Load configuration from file. When the file path is omitted,
-        the default search paths are used.
-
-        :param file_path: Path to the configuration file.
-
-        :return: Initialized configuration.
+        Load configuration from file.
+        When the file path is omitted, the default search paths are used.
         """
 
         # Default search paths for the configuration location.

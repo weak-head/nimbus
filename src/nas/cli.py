@@ -4,17 +4,9 @@ from nas.config import Config
 
 
 def create_parser(config: Config) -> ArgumentParser:
-    """
-    Create the root-level argument parser that delegates a
-    parsing logic to a particular subparser.
-
-    :param config: Application configuration.
-    :return: Fully initialized argument parser.
-    """
     parser = ArgumentParser("nas")
     subparsers = parser.add_subparsers()
 
-    # -- Init subparsers
     up_parser(subparsers.add_parser("up"), config)
     down_parser(subparsers.add_parser("down"), config)
     backup_parser(subparsers.add_parser("backup"), config)
@@ -23,21 +15,8 @@ def create_parser(config: Config) -> ArgumentParser:
 
 
 def up_parser(parser: ArgumentParser, config: Config):
-    """
-    Initialize 'up' command parser.
-
-    :param parser: The parser, that would be initialized as 'up' command.
-    :param config: Application configuration.
-    :return: None
-    """
-
-    # -- nargs:
-    # --   n => exact count 'n'
-    # --   ? => 0 or 1
-    # --   + => 1+
-    # --   * => 0+
     parser.add_argument(
-        "services",
+        "selectors",
         nargs="*",
         default="",
         help="Services that should be started",
@@ -47,21 +26,8 @@ def up_parser(parser: ArgumentParser, config: Config):
 
 
 def down_parser(parser: ArgumentParser, config: Config):
-    """
-    Initialize 'down' command parser.
-
-    :param parser: The parser, that would be initialized as 'down' command.
-    :param config: Application configuration.
-    :return: None
-    """
-
-    # -- nargs:
-    # --   n => exact count 'n'
-    # --   ? => 0 or 1
-    # --   + => 1+
-    # --   * => 0+
     parser.add_argument(
-        "services",
+        "selectors",
         nargs="*",
         default="",
         help="Services that should be stopped",
@@ -71,21 +37,8 @@ def down_parser(parser: ArgumentParser, config: Config):
 
 
 def backup_parser(parser: ArgumentParser, config: Config):
-    """
-    Initialize 'backup' command parser.
-
-    :param parser: The parser, that would be initialized as 'backup' command.
-    :param config: Application configuration.
-    :return: None
-    """
-
-    # -- nargs:
-    # --   n => exact count 'n'
-    # --   ? => 0 or 1
-    # --   + => 1+
-    # --   * => 0+
     parser.add_argument(
-        "patterns",
+        "selectors",
         nargs="*",
         default="",
         help="Multiple patterns to match against the configured backup groups.",

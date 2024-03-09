@@ -6,9 +6,8 @@ from nas.config import Config
 from nas.core.archiver import Archiver, RarArchiver
 from nas.core.runner import Runner, SubprocessRunner
 from nas.core.uploader import AwsUploader, Uploader
-from nas.factory.secrets import Secrets
 from nas.factory.service import ServiceFactory
-from nas.provider.secrets import SecretsProvider
+from nas.provider.secrets import Secrets, SecretsProvider
 from nas.provider.service import ServiceProvider
 
 
@@ -51,31 +50,31 @@ class CfgComponentFactory(ComponentFactory):
         return SubprocessRunner()
 
     def create_archiver(self, profile: str) -> Archiver:
-        profile_cfg = self._config.archivers[profile]
+        cfg = self._config.archivers[profile]
 
-        if not profile_cfg:
+        if not cfg:
             return None
 
-        if profile_cfg.provider == "rar":
+        if cfg.provider == "rar":
             return RarArchiver(
                 self.create_runner(),
-                profile_cfg.password,
+                cfg.password,
             )
 
         return None
 
     def create_uploader(self, profile: str) -> Uploader:
-        profile_cfg = self._config.uploaders[profile]
+        cfg = self._config.uploaders[profile]
 
-        if not profile_cfg:
+        if not cfg:
             return None
 
-        if profile_cfg.provider == "aws":
+        if cfg.provider == "aws":
             return AwsUploader(
-                profile_cfg.access_key,
-                profile_cfg.secret_key,
-                profile_cfg.bucket,
-                profile_cfg.storage_class,
+                cfg.access_key,
+                cfg.secret_key,
+                cfg.bucket,
+                cfg.storage_class,
             )
 
         return None
