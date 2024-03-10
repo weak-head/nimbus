@@ -16,7 +16,7 @@ class ServiceFactory:
         self._runner = runner
         self._secrets = secrets
 
-    def services(self, resource: ServiceResource) -> Service:
+    def create_service(self, resource: ServiceResource) -> Service:
         if resource.kind == "docker-compose":
             secrets = self._secrets.service(resource.name)
             return DockerService(resource.name, resource.directory, secrets, self._runner)

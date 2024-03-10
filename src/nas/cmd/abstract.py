@@ -4,8 +4,6 @@ from abc import ABC, abstractmethod
 from datetime import datetime, timedelta
 from typing import Any, Callable, Generic, TypeVar
 
-from nas.provider.abstract import Provider, Resource
-
 T = TypeVar("T")
 
 
@@ -15,9 +13,8 @@ class Command(ABC):
     All commands should follow the APIs defined by this class.
     """
 
-    def __init__(self, name: str, provider: Provider) -> None:
+    def __init__(self, name: str) -> None:
         self._name: str = name
-        self._provider: Provider = provider
 
     def execute(self, arguments: list[str]) -> ExecutionResult:
         result = ExecutionResult(self._name)
@@ -33,12 +30,6 @@ class Command(ABC):
 
         result.completed = datetime.now()
         return result
-
-    def _map_resources(self, arguments: list[str]) -> MappingActionResult:
-        res = MappingActionResult()
-        res.entries = self._provider.resolve(arguments)
-        res.completed = datetime.now()
-        return res
 
     @abstractmethod
     def _config(self) -> dict[str, Any]:
@@ -99,7 +90,3 @@ class ActionResult[T](Generic[T]):
     @property
     def elapsed(self) -> timedelta:
         return self.completed - self.started
-
-
-class MappingActionResult(ActionResult[list[Resource]]):
-    pass
