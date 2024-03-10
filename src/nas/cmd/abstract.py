@@ -73,7 +73,11 @@ class Action:
         self._func = func
 
     def __call__(self, data: Any) -> ActionResult:
-        return self._func(data)
+        started = datetime.now()
+        ar = self._func(data)
+        ar.started = started
+        ar.completed = datetime.now()
+        return ar
 
 
 class ActionResult[T](Generic[T]):
@@ -81,9 +85,9 @@ class ActionResult[T](Generic[T]):
     Base class for all action results.
     """
 
-    def __init__(self, started: datetime = None):
-        self.entries: T = None
-        self.started: datetime = started if started else datetime.now()
+    def __init__(self, entries: T = None):
+        self.entries: T = entries
+        self.started: datetime = None
         self.completed: datetime = None
         self.success: bool = True
 

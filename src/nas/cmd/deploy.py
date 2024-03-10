@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from abc import abstractmethod
-from datetime import datetime
 from typing import Any
 
 from nas.cmd.abstract import Action, ActionResult, Command
@@ -31,28 +30,20 @@ class Deployment(Command):
         ]
 
     def _map_services(self, arguments: list[str]) -> ServiceMappingActionResult:
-        result = ServiceMappingActionResult()
-        result.entries = self._provider.resolve(arguments)
-        result.completed = datetime.now()
-        return result
+        return ServiceMappingActionResult(
+            self._provider.resolve(arguments),
+        )
 
     def _create_services(self, mapping: ServiceMappingActionResult) -> CreateServicesActionResult:
-        result = CreateServicesActionResult()
-
-        for service_resource in mapping.entries:
-            result.entries.append(self._factory.create_service(service_resource))
-
-        result.completed = datetime.now()
-        return result
+        return CreateServicesActionResult(
+            [self._factory.create_service(srv) for srv in mapping.entries],
+        )
 
     def _deploy(self, services: CreateServicesActionResult) -> DeploymentActionResult:
-        result = DeploymentActionResult(self._name)
-
-        for service in services.entries:
-            result.entries.append(self._operation(service))
-
-        result.completed = datetime.now()
-        return result
+        return DeploymentActionResult(
+            self._name,
+            [self._operation(service) for service in services.entries],
+        )
 
     @abstractmethod
     def _operation(self, service: Service) -> OperationStatus:
@@ -87,6 +78,6 @@ class CreateServicesActionResult(ActionResult[list[Service]]):
 
 class DeploymentActionResult(ActionResult[list[OperationStatus]]):
 
-    def __init__(self, operation: str, started: datetime = None):
-        super().__init__(started)
+    def __init__(self, operation: str, entries: list[OperationStatus] = None):
+        super().__init__(entries)
         self.operation = operation

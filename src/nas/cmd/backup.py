@@ -30,22 +30,20 @@ class Backup(Command):
         }
 
     def _pipeline(self) -> list[Action]:
-        pipeline = [
+        upload = [Action(self._upload)] if self._uploader else []
+        return [
             Action(self._map_directories),
             Action(self._backup),
+            *upload,
         ]
-        if self._uploader:
-            pipeline.append(Action(self._upload))
-        return pipeline
 
     def _map_directories(self, arguments: list[str]) -> DirectoryMappingActionResult:
-        result = DirectoryMappingActionResult()
-        result.entries = self._provider.resolve(arguments)
-        result.completed = datetime.now()
-        return result
+        return DirectoryMappingActionResult(
+            self._provider.resolve(arguments),
+        )
 
     def _backup(self, mapping: DirectoryMappingActionResult) -> BackupActionResult:
-        result = BackupActionResult()
+        result = BackupActionResult([])
 
         for group in mapping.entries:
             for directory in group.directories:
@@ -55,13 +53,16 @@ class Backup(Command):
                     self._destination,
                     backup.group,
                     backup.folder,
-                    result.started,
+                    datetime.now(),
                 )
 
-                backup.archive = self._archiver.archive(backup.folder, archive_path)
+                backup.archive = self._archiver.archive(
+                    backup.folder,
+                    archive_path,
+                )
+
                 result.entries.append(backup)
 
-        result.completed = datetime.now()
         return result
 
     def _upload(self, backups: BackupActionResult) -> UploadActionResult:
@@ -69,7 +70,6 @@ class Backup(Command):
 
         # implement me
 
-        result.completed = datetime.now()
         return result
 
     def _compose_path(self, destination: str, group: str, folder: str, today: datetime) -> str:
