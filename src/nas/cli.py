@@ -1,47 +1,48 @@
-from argparse import ArgumentParser
+from argparse import ArgumentParser, Namespace
 
+from nas.factory.command import CommandFactory
 from nas.config import Config
 
 
-def create_parser(config: Config) -> ArgumentParser:
-    parser = ArgumentParser("nas")
-    subparsers = parser.add_subparsers()
+class CLI:
 
-    up_parser(subparsers.add_parser("up"), config)
-    down_parser(subparsers.add_parser("down"), config)
-    backup_parser(subparsers.add_parser("backup"), config)
+    def __init__(self, factory: CommandFactory):
+        self._factory = factory
 
-    return parser
+    def exec(self, config: Config, args: list[str]):
+        parser = self._create_parser()
+        try:
+            parsed = parser.parse_args(args)
+            parsed.func(parsed, config)
+        except AttributeError:
+            parser.print_help()
 
+    def _up(self, args: Namespace, config: Config):
+        pass
 
-def up_parser(parser: ArgumentParser, config: Config):
-    parser.add_argument(
-        "selectors",
-        nargs="*",
-        default="",
-        help="Services that should be started",
-    )
+    def _down(self, args: Namespace, config: Config):
+        pass
 
-    parser.set_defaults(func=None)
+    def _backup(self, args: Namespace, config: Config):
+        pass
 
+    def _create_parser(self) -> ArgumentParser:
+        parser = ArgumentParser("nas")
+        commands = parser.add_subparsers()
 
-def down_parser(parser: ArgumentParser, config: Config):
-    parser.add_argument(
-        "selectors",
-        nargs="*",
-        default="",
-        help="Services that should be stopped",
-    )
+        # -- Up
+        up = commands.add_parser("up")
+        up.add_argument("selectors", nargs="*", default="")
+        up.set_defaults(func=self._up)
 
-    parser.set_defaults(func=None)
+        # -- Down
+        down = commands.add_parser("down")
+        down.add_argument("selectors", nargs="*", default="")
+        down.set_defaults(func=self._down)
 
+        # -- Backup
+        backup = commands.add_parser("backup")
+        backup.add_argument("selectors", nargs="*", default="")
+        backup.set_defaults(func=self._backup)
 
-def backup_parser(parser: ArgumentParser, config: Config):
-    parser.add_argument(
-        "selectors",
-        nargs="*",
-        default="",
-        help="Multiple patterns to match against the configured backup groups.",
-    )
-
-    parser.set_defaults(func=None)
+        return parser

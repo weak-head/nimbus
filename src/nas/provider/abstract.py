@@ -23,7 +23,7 @@ class Resource:
 T = TypeVar("T", bound=Resource)
 
 
-class Provider[T](Generic[T]):
+class Provider(Generic[T]):
     """
     An abstract resource provider serves as a foundational concept.
     It establishes the guidelines that all providers must adhere to

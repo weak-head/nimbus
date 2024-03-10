@@ -3,15 +3,16 @@ import os
 import sys
 from datetime import datetime
 
-from nas.cli import create_parser
+from nas.cli import CLI
 from nas.config import Config
+from nas.factory.command import CfgCommandFactory
+from nas.factory.component import CfgComponentFactory
 from nas.report.format import Formatter
 from nas.report.writer import LogWriter
 
 
 def main() -> int:
 
-    # -- Config
     config = Config.load()
     if config is None:
         print(
@@ -24,13 +25,13 @@ def main() -> int:
     configure_log()
     write_startup_header()
 
-    # -- Parser
-    parser = create_parser(config)
-    try:
-        args = parser.parse_args()
-        args.func(args, config)
-    except AttributeError:
-        parser.print_help()
+    cli = CLI(
+        CfgCommandFactory(
+            config,
+            CfgComponentFactory(config),
+        )
+    )
+    cli.exec(config, sys.argv[1:])
 
     return 0
 
