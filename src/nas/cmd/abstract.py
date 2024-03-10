@@ -34,15 +34,17 @@ class Command(ABC):
     @abstractmethod
     def _config(self) -> dict[str, Any]:
         """
-        The command execution configuration outlines the parameters used for the command execution.
+        The command execution configuration outlines
+        the parameters used for the command execution.
         It primarily serves reporting purposes.
         """
 
     @abstractmethod
     def _pipeline(self) -> list[Action]:
         """
-        The command execution pipeline defines the logic for executing the command.
-        It serves as a sequence of actions that guide the execution process.
+        The command execution pipeline defines the logic
+        for executing the command. It serves as a sequence of
+        actions that guide the execution process.
         """
 
 

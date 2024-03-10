@@ -24,9 +24,11 @@ class SecretsProvider(Provider[SecretResource]):
 
 class Secrets:
     """
-    The `Secrets` class encapsulates a small amount of sensitive data, such as a password, token, or key.
-    It provides methods to query and manage this sensitive information based on the associated resource.
-    This abstraction ensures secure handling of confidential data within your application.
+    The `Secrets` class encapsulates a small amount of sensitive data,
+    such as a password, token, or key. It provides methods to query and
+    manage this sensitive information based on the associated resource.
+    This abstraction ensures secure handling of confidential data
+    within your application.
     """
 
     def __init__(self, service_secrets: SecretsProvider):
