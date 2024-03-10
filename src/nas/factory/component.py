@@ -80,7 +80,7 @@ class CfgComponentFactory(ComponentFactory):
         return None
 
     def create_secrets(self) -> Secrets:
-        return Secrets(SecretsProvider({}))
+        return Secrets(SecretsProvider(self._config.services.environment))
 
     def create_service_provider(self) -> ServiceProvider:
         return ServiceProvider(self._config.services.directories)

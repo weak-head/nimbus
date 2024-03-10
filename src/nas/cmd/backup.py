@@ -5,10 +5,10 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any
 
-from nas.cmd.abstract import Action, ActionResult, Command, MappingActionResult
+from nas.cmd.abstract import Action, ActionResult, Command
 from nas.core.archiver import ArchivalStatus, Archiver
 from nas.core.uploader import Uploader
-from nas.provider.backup import BackupProvider
+from nas.provider.backup import BackupProvider, BackupResource
 
 
 class Backup(Command):
@@ -17,8 +17,9 @@ class Backup(Command):
     """
 
     def __init__(self, destination: str, provider: BackupProvider, archiver: Archiver, uploader: Uploader = None):
-        super().__init__("Backup", provider)
+        super().__init__("Backup")
         self._destination = destination
+        self._provider = provider
         self._archiver = archiver
         self._uploader = uploader
 
@@ -29,41 +30,47 @@ class Backup(Command):
         }
 
     def _pipeline(self) -> list[Action]:
-        pipeline = [
-            Action(self._map_resources),
+        upload = [Action(self._upload)] if self._uploader else []
+        return [
+            Action(self._map_directories),
             Action(self._backup),
+            *upload,
         ]
-        if self._uploader:
-            pipeline.append(Action(self._upload))
-        return pipeline
 
-    def _backup(self, mapping: MappingActionResult) -> BackupActionResult:
-        info = BackupActionResult()
+    def _map_directories(self, arguments: list[str]) -> DirectoryMappingActionResult:
+        return DirectoryMappingActionResult(
+            self._provider.resolve(arguments),
+        )
+
+    def _backup(self, mapping: DirectoryMappingActionResult) -> BackupActionResult:
+        result = BackupActionResult([])
 
         for group in mapping.entries:
-            for directory in group.artifacts:
+            for directory in group.directories:
                 backup = BackupEntry(group.name, directory)
 
                 archive_path = self._compose_path(
                     self._destination,
                     backup.group,
                     backup.folder,
-                    info.started,
+                    datetime.now(),
                 )
 
-                backup.archive = self._archiver.archive(backup.folder, archive_path)
-                info.entries.append(backup)
+                backup.archive = self._archiver.archive(
+                    backup.folder,
+                    archive_path,
+                )
 
-        info.completed = datetime.now()
-        return info
+                result.entries.append(backup)
+
+        return result
 
     def _upload(self, backups: BackupActionResult) -> UploadActionResult:
-        info = UploadActionResult()
+        result = UploadActionResult()
 
         # implement me
 
-        info.completed = datetime.now()
-        return info
+        return result
 
     def _compose_path(self, destination: str, group: str, folder: str, today: datetime) -> str:
         suffix = 0
@@ -97,6 +104,10 @@ class UploadEntry:
 
     def __init__(self):
         self.backup: BackupEntry = None
+
+
+class DirectoryMappingActionResult(ActionResult[list[BackupResource]]):
+    pass
 
 
 class BackupActionResult(ActionResult[list[BackupEntry]]):
