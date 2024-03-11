@@ -3,9 +3,25 @@ import os
 import sys
 from datetime import datetime
 
-from nas.cli import CLI
+from nas.cli.parser import parse_args
+from nas.cli.runner import backup, down, up
+from nas.config import Config, safe_load, search_config
+from nas.factory.command import CfgCommandFactory, CommandFactory
+from nas.factory.component import CfgComponentFactory
 from nas.report.format import Formatter
 from nas.report.writer import LogWriter
+
+
+class ExitCode:
+
+    INCORRECT_USAGE = 2
+    """Incorrect command (or argument) usage"""
+
+    UNABLE_TO_EXECUTE = 126
+    """Command invoked cannot execute."""
+
+    CMD_NOT_FOUND = 127
+    """Command not found, or PATH error"""
 
 
 def main() -> int:
@@ -13,8 +29,39 @@ def main() -> int:
     configure_log()
     write_startup_header()
 
-    cli = CLI()
-    return cli.exec(sys.argv[1:])
+    return execute(sys.argv[1:])
+
+
+def execute(args: list[str]) -> int:
+    ns = parse_args(args, up, down, backup)
+    if not ns:
+        return ExitCode.INCORRECT_USAGE
+
+    config_path = search_config(ns.config_path)
+    if not config_path:
+        file = ns.config_path if ns.config_path else "~/.nas/config.yml"
+        print(
+            f'The configuration file "{file}" is not found.',
+            file=sys.stderr,
+        )
+        return ExitCode.CMD_NOT_FOUND
+
+    config = safe_load(config_path)
+    if not config:
+        print(
+            "Configuration load failed: Invalid file format.",
+            file=sys.stderr,
+        )
+        return ExitCode.UNABLE_TO_EXECUTE
+
+    factory = build_factory(config)
+    ns.func(ns, factory)
+
+    return 0
+
+
+def build_factory(config: Config) -> CommandFactory:
+    return CfgCommandFactory(config, CfgComponentFactory(config))
 
 
 def configure_log() -> None:

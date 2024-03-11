@@ -1,5 +1,9 @@
 from __future__ import annotations
 
+import os.path
+
+import yaml
+
 
 class Config:
     """
@@ -15,3 +19,30 @@ class Config:
     def __getitem__(self, key):
         val = self._config.get(key)
         return Config(val) if isinstance(val, dict) else val
+
+
+def search_config(file_path: str = None) -> str | None:
+    # Default search paths for the configuration location.
+    # The order in the list defines the search and load priority.
+    search_paths = [
+        "~/.nas/config.yml",
+        "~/.nas/config.yaml",
+    ]
+
+    if file_path:
+        search_paths = [file_path]
+
+    for candidate in search_paths:
+        resolved_path = os.path.abspath(os.path.expanduser(candidate))
+        if os.path.exists(resolved_path):
+            return resolved_path
+
+    return None
+
+
+def safe_load(file_path: str) -> Config | None:
+    try:
+        with open(file_path, mode="r", encoding="utf-8") as file:
+            return Config(yaml.safe_load(file))
+    except yaml.error.YAMLError:
+        return None
