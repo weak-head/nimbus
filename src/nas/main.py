@@ -5,7 +5,7 @@ from datetime import datetime
 
 from nas.cli.parser import parse_args
 from nas.cli.runner import CommandRunner
-from nas.config import Config, resolve_config, safe_load, SEARCH_PATHS
+from nas.config import SEARCH_PATHS, Config, resolve_config, safe_load
 from nas.factory.command import CfgCommandFactory, CommandFactory
 from nas.factory.component import CfgComponentFactory
 from nas.report.format import Formatter
