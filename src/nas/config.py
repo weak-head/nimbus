@@ -4,6 +4,13 @@ import os.path
 
 import yaml
 
+# Default search paths for the configuration location.
+# The order in the list defines the search and load priority.
+SEARCH_PATHS = (
+    "~/.nas/config.yml",
+    "~/.nas/config.yaml",
+)
+
 
 class Config:
     """
@@ -21,22 +28,12 @@ class Config:
         return Config(val) if isinstance(val, dict) else val
 
 
-def search_config(file_path: str = None) -> str | None:
-    # Default search paths for the configuration location.
-    # The order in the list defines the search and load priority.
-    search_paths = [
-        "~/.nas/config.yml",
-        "~/.nas/config.yaml",
-    ]
-
-    if file_path:
-        search_paths = [file_path]
-
+def resolve_config(file_path: str = None) -> str | None:
+    search_paths = [file_path] if file_path else SEARCH_PATHS
     for candidate in search_paths:
         resolved_path = os.path.abspath(os.path.expanduser(candidate))
         if os.path.exists(resolved_path):
             return resolved_path
-
     return None
 
 
