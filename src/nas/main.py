@@ -4,7 +4,7 @@ import sys
 from datetime import datetime
 
 from nas.cli.parser import parse_args
-from nas.cli.runner import backup, down, up
+from nas.cli.runner import CommandRunner
 from nas.config import Config, resolve_config, safe_load
 from nas.factory.command import CfgCommandFactory, CommandFactory
 from nas.factory.component import CfgComponentFactory
@@ -32,11 +32,11 @@ def main() -> int:
     configure_log()
     write_startup_header()
 
-    return execute(sys.argv[1:])
+    return execute(CommandRunner(), sys.argv[1:])
 
 
-def execute(args: list[str]) -> int:
-    ns = parse_args(args, up, down, backup)
+def execute(runner: CommandRunner, args: list[str]) -> int:
+    ns = parse_args(args, runner)
     if not ns:
         return ExitCode.INCORRECT_USAGE
 
@@ -58,13 +58,26 @@ def execute(args: list[str]) -> int:
         return ExitCode.UNABLE_TO_EXECUTE
 
     factory = build_factory(config)
-    ns.func(ns, factory)
+    if not factory:
+        print(
+            "Startup error: Invalid configuration detected.",
+            file=sys.stderr,
+        )
+        return ExitCode.UNABLE_TO_EXECUTE
+    runner.set_factory(factory)
 
+    runner.run_default(ns)
     return ExitCode.SUCCESS
 
 
 def build_factory(config: Config) -> CommandFactory:
-    return CfgCommandFactory(config, CfgComponentFactory(config))
+    try:
+        return CfgCommandFactory(
+            config,
+            CfgComponentFactory(config),
+        )
+    except AttributeError:
+        return None
 
 
 def configure_log() -> None:

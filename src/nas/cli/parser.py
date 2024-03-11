@@ -1,19 +1,11 @@
 from argparse import ArgumentParser, Namespace
-from typing import Callable
+
+from nas.cli.runner import Runner
 
 
-def parse_args(
-    args: list[str],
-    func_up: Callable,
-    func_down: Callable,
-    func_backup: Callable,
-) -> Namespace | None:
+def parse_args(args: list[str], runner: Runner) -> Namespace | None:
 
-    parser = create_parser(
-        func_up,
-        func_down,
-        func_backup,
-    )
+    parser = create_parser(runner)
 
     if not args:
         parser.print_help()
@@ -27,11 +19,7 @@ def parse_args(
     return None
 
 
-def create_parser(
-    func_up: Callable,
-    func_down: Callable,
-    func_backup: Callable,
-) -> ArgumentParser:
+def create_parser(runner: Runner) -> ArgumentParser:
 
     parser = ArgumentParser("nas")
     parser.add_argument("--config", dest="config_path", default=None)
@@ -40,16 +28,16 @@ def create_parser(
     # -- Up
     up = commands.add_parser("up")
     up.add_argument("selectors", nargs="*", default="")
-    up.set_defaults(func=func_up)
+    up.set_defaults(func=runner.up)
 
     # -- Down
     down = commands.add_parser("down")
     down.add_argument("selectors", nargs="*", default="")
-    down.set_defaults(func=func_down)
+    down.set_defaults(func=runner.down)
 
     # -- Backup
     backup = commands.add_parser("backup")
     backup.add_argument("selectors", nargs="*", default="")
-    backup.set_defaults(func=func_backup)
+    backup.set_defaults(func=runner.backup)
 
     return parser
