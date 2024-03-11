@@ -4,7 +4,6 @@ import sys
 from datetime import datetime
 
 from nas.cli import CLI
-from nas.factory.builder import CfgFactoryBuilder
 from nas.report.format import Formatter
 from nas.report.writer import LogWriter
 
@@ -14,8 +13,7 @@ def main() -> int:
     configure_log()
     write_startup_header()
 
-    builder = CfgFactoryBuilder()
-    cli = CLI(builder)
+    cli = CLI()
     return cli.exec(sys.argv[1:])
 
 
