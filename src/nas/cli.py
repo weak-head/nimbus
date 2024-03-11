@@ -1,21 +1,38 @@
+import sys
 from argparse import ArgumentParser, Namespace
 
-from nas.factory.command import CommandFactory
 from nas.config import Config
+from nas.factory.builder import Builder
+from nas.factory.command import CommandFactory
 
 
 class CLI:
 
-    def __init__(self, factory: CommandFactory):
-        self._factory = factory
+    def __init__(self, builder: Builder):
+        self._builder: Builder = builder
+        self._config: Config = None
+        self._factory: CommandFactory = None
 
-    def exec(self, config: Config, args: list[str]):
+    def exec(self, args: list[str]) -> int:
         parser = self._create_parser()
         try:
             parsed = parser.parse_args(args)
+
+            config = Config.load(parsed.config)
+            if config is None:
+                file = parsed.config if parsed.config else "~./nas/config.yaml"
+                print(f'The configuration file "{file}" is not found.', file=sys.stderr)
+                return 126
+
+            # yaml.parser.ParserError
+
+            self._config = config
+            self._factory = self._builder.build_factory(config)
             parsed.func(parsed, config)
         except AttributeError:
             parser.print_help()
+
+        return 0
 
     def _up(self, args: Namespace, config: Config):
         pass
@@ -28,6 +45,7 @@ class CLI:
 
     def _create_parser(self) -> ArgumentParser:
         parser = ArgumentParser("nas")
+        parser.add_argument("--config", dest="config", default=None)
         commands = parser.add_subparsers()
 
         # -- Up

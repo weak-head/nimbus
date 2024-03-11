@@ -4,36 +4,19 @@ import sys
 from datetime import datetime
 
 from nas.cli import CLI
-from nas.config import Config
-from nas.factory.command import CfgCommandFactory
-from nas.factory.component import CfgComponentFactory
+from nas.factory.builder import CfgFactoryBuilder
 from nas.report.format import Formatter
 from nas.report.writer import LogWriter
 
 
 def main() -> int:
 
-    config = Config.load()
-    if config is None:
-        print(
-            "The configuration file (~./nas/config.yaml) is not found.",
-            file=sys.stderr,
-        )
-        return 126
-
-    # -- Log
     configure_log()
     write_startup_header()
 
-    cli = CLI(
-        CfgCommandFactory(
-            config,
-            CfgComponentFactory(config),
-        )
-    )
-    cli.exec(config, sys.argv[1:])
-
-    return 0
+    builder = CfgFactoryBuilder()
+    cli = CLI(builder)
+    return cli.exec(sys.argv[1:])
 
 
 def configure_log() -> None:
