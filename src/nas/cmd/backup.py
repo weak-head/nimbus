@@ -74,14 +74,14 @@ class Backup(Command):
 
     def _compose_path(self, destination: str, group: str, folder: str, today: datetime) -> str:
         suffix = 0
-        today_path = today.strftime("%Y-%m-%d")
+        today_path = today.strftime("%Y-%m-%d_%H%M")
         archive_name = Path(folder).name
-        base_path = os.path.join(destination, group, today_path, archive_name)
+        base_path = os.path.join(destination, group, archive_name, f"{archive_name}_{today_path}")
 
         # Don't overwrite the existing backups under the same path.
         # Find the next available name that matches the pattern.
         while True:
-            archive_path = base_path + f"_{suffix:02d}.rar" if suffix > 0 else ".rar"
+            archive_path = base_path + (f"_{suffix:02d}.rar" if suffix > 0 else ".rar")
             if os.path.exists(archive_path):
                 suffix += 1
             else:

@@ -39,15 +39,15 @@ class CommandRunner(Runner):
         self._reporter = reporter
 
     def up(self, args: Namespace):
-        self._execute(self._factory.create_up(), args)
+        self._execute(self._factory.create_up(), args.selectors)
 
     def down(self, args: Namespace):
-        self._execute(self._factory.create_down(), args)
+        self._execute(self._factory.create_down(), args.selectors)
 
     def backup(self, args: Namespace):
-        self._execute(self._factory.create_backup(), args)
+        self._execute(self._factory.create_backup(), args.selectors)
 
-    def _execute(self, cmd: Command, args: Namespace):
+    def _execute(self, cmd: Command, args: list[str]):
         result = cmd.execute(args)
 
         if self._reporter:

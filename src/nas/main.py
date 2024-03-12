@@ -80,7 +80,7 @@ def execute(runner: CommandRunner, args: list[str]) -> int:
     if not reporter:
         print("tbd")
         return ExitCode.UNABLE_TO_EXECUTE
-    runner.set_reporter()
+    runner.set_reporter(reporter)
 
     runner.run_default(ns)
 

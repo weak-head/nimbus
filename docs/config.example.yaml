@@ -39,7 +39,7 @@ services:
 # Serves as a structured framework for managing 
 # and standardizing backup processes, 
 # enhancing data preservation and retrieval.
-backups:
+backup:
   destination: /mnt/backups
   archiver: rar-protected
   uploader: aws-archive

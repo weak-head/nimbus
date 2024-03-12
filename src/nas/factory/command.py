@@ -34,7 +34,7 @@ class CfgCommandFactory(CommandFactory):
         self._components = components
 
     def create_backup(self) -> Command:
-        cfg = self._config.commands.backup
+        cfg = self._config.backup
         return Backup(
             cfg.destination,
             BackupProvider(cfg.directories),

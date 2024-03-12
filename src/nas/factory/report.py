@@ -32,10 +32,10 @@ class CfgReporterFactory(ReporterFactory):
     def report_file(self, extension: str) -> str:
         cfg = self._config.report
 
-        directory = Path(cfg.location).absolute().as_posix()
+        directory = Path(cfg.location).expanduser().as_posix()
         os.makedirs(directory, exist_ok=True)
 
-        now = datetime.now().strftime("%Y-%m-%d_%H%M%S")
+        now = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
         return os.path.join(directory, f"{now}.{extension}")
 
     def create_formatter(self) -> Formatter:
