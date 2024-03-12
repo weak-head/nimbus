@@ -1,8 +1,10 @@
 from __future__ import annotations
 
 import errno
-from typing import Any, Callable
+from abc import ABC, abstractmethod
+from datetime import datetime
 
+from nas.cmd.abstract import ExecutionResult
 from nas.cmd.backup import BackupActionResult, UploadActionResult
 from nas.core.archiver import ArchivalStatus
 from nas.core.runner import CompletedProcess
@@ -10,31 +12,58 @@ from nas.core.uploader import UploadStatus
 from nas.report.writer import Writer
 
 
-class PrettyPrinter:
+class Reporter(ABC):
+
+    @abstractmethod
+    def write(self, result: ExecutionResult) -> None:
+        pass
+
+
+class ReportWriter(Reporter):
     """
     Knows an internal structure of the core objects and outputs them to `Writer`.
     """
 
-    def can_print(self, *parts) -> bool:
-        types = tuple(self._types.keys())
-        return any(issubclass(part, types) for part in parts)
+    def __init__(self, writer: Writer) -> None:
+        self._writer = writer
 
-    def print(self, writer: Writer, *parts, **rules) -> None:
-        for part in parts:
-            if type(part) in self._types:
-                self._types[type(part)](writer, part)
-            else:
-                writer.entry(part, **rules)
+    def write(self, result: ExecutionResult) -> None:
+        self.header()
 
-    @property
-    def _types(self) -> dict[type, Callable[[Writer, Any], None]]:
-        return {
-            CompletedProcess: self._process,
-            UploadStatus: self._upload_status,
-            ArchivalStatus: self._archive_status,
-            BackupActionResult: self._backup_action_result,
-            UploadActionResult: self._upload_action_result,
-        }
+        self.space()
+        self.summary(result)
+
+        self.space()
+        self.details(result)
+
+        self.footer()
+
+    def space(self) -> None:
+        self._writer.entry("")
+
+    def header(self) -> None:
+        self._writer.entry("=" * 80)
+        self._writer.entry(f'== {datetime.today().strftime("%Y-%m-%d %H:%M:%S")}')
+
+    def footer(self) -> None:
+        self._writer.entry("=" * 80)
+
+    def summary(self, result: ExecutionResult) -> None:
+        s = self._writer.section("Summary")
+        s.entry("Command", result.command)
+        s.entry("Arguments", (" ".join(result.arguments)).strip())
+
+        if result.config:
+            cfg = s.section("Configuration")
+            for key, value in result.config.items():
+                cfg.entry(key, value)
+
+        s.entry("Started", result.started, formatter="datetime")
+        s.entry("Completed", result.completed, formatter="datetime")
+        s.entry("Elapsed", result.elapsed, formatter="duration")
+
+    def details(self, result: ExecutionResult) -> None:
+        pass
 
     def _process(self, writer: Writer, proc: CompletedProcess, cmd=False, cwd=False, break_after=True) -> None:
         if cmd:

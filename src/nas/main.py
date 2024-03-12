@@ -5,6 +5,8 @@ from nas.cli.runner import CommandRunner
 from nas.config import SEARCH_PATHS, Config, resolve_config, safe_load
 from nas.factory.command import CfgCommandFactory, CommandFactory
 from nas.factory.component import CfgComponentFactory
+from nas.factory.report import CfgReporterFactory
+from nas.report.reporter import Reporter
 
 
 class ExitCode:
@@ -74,7 +76,14 @@ def execute(runner: CommandRunner, args: list[str]) -> int:
         return ExitCode.UNABLE_TO_EXECUTE
     runner.set_factory(factory)
 
+    reporter = build_reporter(config)
+    if not reporter:
+        print("tbd")
+        return ExitCode.UNABLE_TO_EXECUTE
+    runner.set_reporter()
+
     runner.run_default(ns)
+
     return ExitCode.SUCCESS
 
 
@@ -84,5 +93,12 @@ def build_factory(config: Config) -> CommandFactory:
             config,
             CfgComponentFactory(config),
         )
+    except AttributeError:
+        return None
+
+
+def build_reporter(config: Config) -> Reporter:
+    try:
+        return CfgReporterFactory(config).create_reporter()
     except AttributeError:
         return None
