@@ -82,7 +82,7 @@ class Action:
         return ar
 
 
-class ActionResult[T](Generic[T]):
+class ActionResult(Generic[T]):
     """
     Base class for all action results.
     """
