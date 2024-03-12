@@ -1,3 +1,7 @@
+report:
+  location: ~/reports
+  format: txt
+
 
 # Collections of individual profiles, 
 # each tailored to configure a specific archiver.

@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-import logging
 from abc import ABC, abstractmethod
+from pathlib import Path
 
-from nas.report.format import Formatter
+from nas.report.formatter import Formatter
 
 
 class Writer(ABC):
@@ -62,26 +62,28 @@ class Writer(ABC):
         """
 
 
-class LogWriter(Writer):
+class TextWriter(Writer):
     """
-    Writer that uses `logging` package.
+    Writer that outputs a plain text file.
     """
 
     def __init__(
         self,
+        file_path: str,
         formatter: Formatter,
         indent: int = 0,
         indent_size: int = 4,
         indent_char: str = " ",
         column_width: int = 40,
-        parent: LogWriter = None,
+        parent: TextWriter = None,
     ):
+        self._file_path: str = Path(file_path).resolve().as_posix()
         self._formatter: Formatter = formatter
         self._indent: int = indent
         self._indent_size: int = indent_size
         self._indent_char: str = indent_char
         self._column_width: int = column_width
-        self._parent: LogWriter = parent
+        self._parent: TextWriter = parent
 
     def entry(self, *parts, **rules):
         match rules.get("layout", "default"):
@@ -120,40 +122,19 @@ class LogWriter(Writer):
 
             offset = 0
 
-        logging.info("".join(message).rstrip())
+        with open(self._file_path, mode="a", encoding="utf-8") as file:
+            file.write("".join(message).rstrip())
+            file.write("\n")
 
-    def section(self, title: str) -> LogWriter:
+    def section(self, title: str) -> TextWriter:
         self.entry(title)
 
-        return LogWriter(
+        return TextWriter(
+            self._file_path,
             self._formatter,
             indent=self._indent + self._indent_size,
             indent_size=self._indent_size,
             indent_char=self._indent_char,
             column_width=self._column_width,
             parent=self,
-        )
-
-
-class PrettyWriter(Writer):
-    """
-    Writer decorator that uses `PrettyPrinter` to write prettified messages.
-    """
-
-    def __init__(self, writer: Writer, pretty_printer):
-        self._writer = writer
-        self._pretty = pretty_printer
-
-    def entry(self, *parts, **rules):
-        # Try to pretty print the entry,
-        # fallback to the decorated writer on failure.
-        if self._pretty.can_print(*parts):
-            self._pretty.print(self, *parts, **rules)
-        else:
-            self._writer.entry(*parts, **rules)
-
-    def section(self, title: str) -> PrettyWriter:
-        return PrettyWriter(
-            self._writer.section(title),
-            self._pretty,
         )
