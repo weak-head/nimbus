@@ -105,7 +105,7 @@ class Formatter:
         # Convert time parts to string, adjusting suffixes when value is '1'.
         time_parts = [f"{value} {name[:-1] if value == 1 else name}" for name, value in time_parts if value > 0]
 
-        return " ".join(time_parts) if time_parts else "less than one second"
+        return " ".join(time_parts) if time_parts else "< 1 second"
 
     def datetime(self, d: dt.datetime) -> str:
         return d.strftime(self._datetime_fmt)

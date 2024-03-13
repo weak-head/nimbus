@@ -6,6 +6,7 @@ from datetime import datetime
 
 from nas.cmd.abstract import ExecutionResult
 from nas.cmd.backup import BackupActionResult, UploadActionResult
+from nas.cmd.deploy import DeploymentActionResult
 from nas.core.archiver import ArchivalStatus
 from nas.core.runner import CompletedProcess
 from nas.core.uploader import UploadStatus
@@ -31,58 +32,80 @@ class ReportWriter(Reporter):
 
     def write(self, result: ExecutionResult) -> None:
         self.header()
-
-        self.breather()
         self.summary(result)
-
-        self.breather()
         self.details(result)
-
         self.footer()
-
-    def breather(self) -> None:
-        self._writer.line("")
 
     def header(self) -> None:
         self._writer.line("=" * 80)
         self._writer.line(f"== {self._formatter.datetime(datetime.now())}")
 
     def footer(self) -> None:
+        self._writer.line("")
         self._writer.line("=" * 80)
 
     def summary(self, result: ExecutionResult) -> None:
         s = self._writer.section("Summary")
         s.row("Command", result.command)
         s.row("Arguments", (" ".join(result.arguments)).strip())
+        s.row("Started", self._formatter.datetime(result.started))
+        s.row("Completed", self._formatter.datetime(result.completed))
+        s.row("Elapsed", self._formatter.duration(result.elapsed))
 
         if result.config:
             cfg = s.section("Configuration")
             for key, value in result.config.items():
                 cfg.row(key, value)
 
-        s.row("Started", self._formatter.datetime(result.started))
-        s.row("Completed", self._formatter.datetime(result.completed))
-        s.row("Elapsed", self._formatter.duration(result.elapsed))
-
         for action in result.actions:
             if issubclass(type(action), BackupActionResult):
                 self.summary_backups(s, result.config["Destination"], action)
+            elif issubclass(type(action), UploadActionResult):
+                self.summary_upload(s, action)
+            elif issubclass(type(action), DeploymentActionResult):
+                self.summary_deploy(s, action)
 
     def summary_backups(self, w: Writer, base: str, result: BackupActionResult) -> None:
-        total_size = sum(b.archive.size for b in result.entries if b.success)
-        w.row("Total size", self._formatter.size(total_size))
+        if created := sorted(
+            (
+                b.archive.archive.replace(base, "")[1:],
+                self._formatter.size(b.archive.size),
+                self._formatter.duration(b.archive.proc.elapsed),
+                self._formatter.speed(b.archive.speed),
+            )
+            for b in result.entries
+            if b.success
+        ):
+            total_size = self._formatter.size(sum(b.archive.size for b in result.entries if b.success))
+            b = w.section(f"-- Successful backups [ 📁 {total_size} ] -- (ﾉ◕ヮ◕)ﾉ")
 
-        w.line("")
-        created_backups = sorted(b.archive.archive.replace(base, "")[1:] for b in result.entries if b.success)
-        if created_backups:
-            b = w.section("😀 Successful backups 😀 ( ͡° ͜ʖ ͡°)")
-            b.list(created_backups, style="number")
+            max_name = len(max(created, key=lambda elem: len(elem[0]))[0])
+            max_size = len(max(created, key=lambda elem: len(elem[1]))[1])
+            max_dura = len(max(created, key=lambda elem: len(elem[2]))[2])
+            max_spee = len(max(created, key=lambda elem: len(elem[3]))[3])
 
-        w.line("")
-        failed_backups = sorted(b.folder for b in result.entries if not b.success)
-        if failed_backups:
-            b = w.section("😕 Failed backups 😕 ¯\\_(ツ)_/¯")
-            b.list(failed_backups, style="number")
+            created = [
+                (
+                    name.ljust(max_name),
+                    size.ljust(max_size),
+                    duration.ljust(max_dura),
+                    speed.ljust(max_spee),
+                )
+                for name, size, duration, speed in created
+            ]
+            created = [f"{name} [ 📁 {size} | ⌚ {duration} | ⚡ {speed} ]" for name, size, duration, speed in created]
+
+            b.list(created, style="number")
+
+        if failed := sorted(b.folder for b in result.entries if not b.success):
+            b = w.section("-- Failed backups -- ¯\\_(ツ)_/¯")
+            b.list(failed, style="number")
+
+    def summary_upload(self, w: Writer, result: UploadActionResult) -> None:
+        pass
+
+    def summary_deploy(self, w: Writer, result: DeploymentActionResult) -> None:
+        pass
 
     def details(self, result: ExecutionResult) -> None:
         pass
@@ -142,9 +165,3 @@ class ReportWriter(Reporter):
 
         if break_after:
             writer.entry()
-
-    def _backup_action_result(self, writer: Writer, backups: BackupActionResult) -> None:
-        pass
-
-    def _upload_action_result(self, writer: Writer, uploads: UploadActionResult) -> None:
-        pass

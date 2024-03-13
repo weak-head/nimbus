@@ -42,8 +42,8 @@ def test_speed(bytes_per_second, readable_speed):
 @pytest.mark.parametrize(
     "duration, readable_duration",
     [
-        (timedelta(), "less than one second"),
-        (timedelta(microseconds=550), "less than one second"),
+        (timedelta(), "< 1 second"),
+        (timedelta(microseconds=550), "< 1 second"),
         (timedelta(seconds=1), "1 second"),
         (timedelta(seconds=2), "2 seconds"),
         (timedelta(seconds=29), "29 seconds"),
