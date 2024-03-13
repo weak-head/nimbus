@@ -68,30 +68,29 @@ class TextWriter(Writer):
     def __init__(
         self,
         file: FileDescriptorOrPath,
+        indent_char: str,
+        section_indent: int,
+        column_width: int,
         indent: int = 0,
-        indent_size: int = 4,
-        indent_char: str = " ",
-        column_width: int = 40,
         parent: TextWriter = None,
     ):
         self._file: FileDescriptorOrPath = file
         self._indent: int = indent
-        self._indent_size: int = indent_size
+        self._section_indent: int = section_indent
         self._indent_char: str = indent_char
         self._column_width: int = column_width
         self._parent: TextWriter = parent
 
     def section(self, title: str) -> TextWriter:
-        # if self._parent is None:
         self.line("")
         self.line(title)
 
         return TextWriter(
             self._file,
-            self._indent + self._indent_size,
-            self._indent_size,
             self._indent_char,
+            self._section_indent,
             self._column_width,
+            self._indent + self._section_indent,
             self,
         )
 

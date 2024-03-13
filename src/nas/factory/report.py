@@ -4,7 +4,7 @@ from datetime import datetime
 from pathlib import Path
 
 from nas.config import Config
-from nas.report.formatter import Formatter
+from nas.report.format import Formatter
 from nas.report.reporter import Reporter, ReportWriter
 from nas.report.writer import TextWriter, Writer
 
@@ -48,7 +48,12 @@ class CfgReporterFactory(ReporterFactory):
             return None
 
         if cfg.format == "txt":
-            return TextWriter(self.report_file("txt"))
+            return TextWriter(
+                self.report_file("txt"),
+                indent_char=" ",
+                section_indent=4,
+                column_width=30,
+            )
 
         return None
 

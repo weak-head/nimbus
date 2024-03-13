@@ -1,6 +1,6 @@
 import datetime as dt
 import math
-from typing import Any
+from typing import Any, Callable, Iterator
 
 
 class Formatter:
@@ -59,40 +59,40 @@ class Formatter:
         # Kilobytes
         kb = int(size_bytes // 1024)
         if kb < 1024:
-            return f"{kb} KB"
+            return f"{ceil(kb, size_bytes)} KB"
 
         # Megabytes
         mb = int(kb // 1024)
         if mb < 1024:
-            return f"{_ceil(mb, kb)} MB"
+            return f"{ceil(mb, kb)} MB"
 
         # Gigabytes
         gb = int(mb // 1024)
         if gb < 1024:
-            return f"{_ceil(gb, mb)} GB"
+            return f"{ceil(gb, mb)} GB"
 
         # Terabytes
         tb = int(gb // 1024)
-        return f"{_ceil(tb, gb)} TB"
+        return f"{ceil(tb, gb)} TB"
 
     def speed(self, bps: int) -> str:
         # bytes/second
         if bps < 1024:
-            return f"{bps} bytes/second"
+            return f"{bps} B/s"
 
         # KB/s
         kbps = int(bps // 1024)
         if kbps < 1024:
-            return f"{_ceil(kbps, bps)} KB/s"
+            return f"{ceil(kbps, bps)} KB/s"
 
         # MB/s
         mbps = int(kbps // 1024)
         if mbps < 1024:
-            return f"{_ceil(mbps, kbps)} MB/s"
+            return f"{ceil(mbps, kbps)} MB/s"
 
         # GB/s
         gbps = int(mbps // 1024)
-        return f"{_ceil(gbps, mbps)} GB/s"
+        return f"{ceil(gbps, mbps)} GB/s"
 
     def duration(self, elapsed: dt.timedelta) -> str:
         data = {}
@@ -117,5 +117,42 @@ class Formatter:
         return t.strftime(self._time_fmt)
 
 
-def _ceil(characteristic: int, mantissa: int) -> str:
-    return f"{characteristic}.{math.ceil(int(mantissa % 1024) / 100)}"
+def ceil(integral: int, fractional: int) -> str:
+    return f"{integral}.{math.ceil(int(fractional % 1024) / 100):1d}"
+
+
+def align(entries: list[list[str]], amap: str = "l") -> Iterator[list[str]]:
+    """
+    Ensure that all fields in each entry of the list are left, right or center-justified.
+    It is assumed that every entry contains the same number of fields, all of which are of string type.
+    """
+    if not entries or not amap:
+        yield from entries
+        return
+
+    handlers: dict[str, Callable[[str, int], str]] = {
+        "l": lambda val, ln: val.ljust(ln),
+        "r": lambda val, ln: val.rjust(ln),
+        "c": lambda val, ln: val.center(ln),
+    }
+
+    if len(amap) == 1:
+        if amap not in handlers:
+            yield from entries
+            return
+        amap = amap * len(entries[0])
+    else:
+        for a in amap:
+            if a not in handlers:
+                yield from entries
+                return
+
+    entries = [[field.strip() for field in entry] for entry in entries]
+
+    max_field_len = [
+        len(max(entries, key=lambda elem, fld=entry_field: len(elem[fld]))[entry_field])
+        for entry_field in range(len(entries[0]))
+    ]
+
+    for entry in entries:
+        yield [handlers[amap[field]](entry[field], max_field_len[field]) for field in range(len(entry))]

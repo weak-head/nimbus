@@ -2,7 +2,7 @@ from datetime import datetime, timedelta
 
 import pytest
 
-from nas.report.formatter import Formatter
+from nas.report.format import Formatter, align
 
 
 @pytest.mark.parametrize(
@@ -10,8 +10,8 @@ from nas.report.formatter import Formatter
     [
         (0, "0 bytes"),
         (174, "174 bytes"),
-        (3820, "3 KB"),
-        (4.5 * 1024, "4 KB"),
+        (3820, "3.8 KB"),
+        (4.5 * 1024, "4.6 KB"),
         (5 * 1024 * 1024, "5.0 MB"),
         (5.093 * 1024 * 1024, "5.1 MB"),
         (5.211 * 1024 * 1024, "5.3 MB"),
@@ -28,7 +28,7 @@ def test_size(size, readable_size):
 @pytest.mark.parametrize(
     "bytes_per_second, readable_speed",
     [
-        (75, "75 bytes/second"),
+        (75, "75 B/s"),
         (75 * 1024, "75.0 KB/s"),
         (214.6 * 1024 * 1024, "214.7 MB/s"),
         (135.6 * 1024 * 1024, "135.7 MB/s"),
@@ -89,3 +89,86 @@ def test_date(date_fmt, d, readable_d):
 )
 def test_time(time_fmt, t, readable_t):
     assert Formatter(time_fmt=time_fmt).time(t) == readable_t
+
+
+@pytest.mark.parametrize(
+    "alignment, entries, aligned",
+    [
+        ("l", [], []),
+        ("", [], []),
+        (
+            "",
+            [
+                [" a1", "b1  ", "  c1"],
+                ["a2 ", "  b2", "c2  "],
+            ],
+            [
+                [" a1", "b1  ", "  c1"],
+                ["a2 ", "  b2", "c2  "],
+            ],
+        ),
+        (
+            None,
+            [
+                [" a1", "b1  ", "  c1"],
+                ["a2 ", "  b2", "c2  "],
+            ],
+            [
+                [" a1", "b1  ", "  c1"],
+                ["a2 ", "  b2", "c2  "],
+            ],
+        ),
+        (
+            "non-existing-value",
+            [
+                [" a1", "b1  ", "  c1"],
+                ["a2 ", "  b2", "c2  "],
+            ],
+            [
+                [" a1", "b1  ", "  c1"],
+                ["a2 ", "  b2", "c2  "],
+            ],
+        ),
+        (
+            "l",
+            [
+                [" a1", "b11  ", "  c1"],
+                ["a22 ", "  b2", "c233  "],
+                [" a333 ", "  b3   ", "c333  "],
+            ],
+            [
+                ["a1  ", "b11", "c1  "],
+                ["a22 ", "b2 ", "c233"],
+                ["a333", "b3 ", "c333"],
+            ],
+        ),
+        (
+            "r",
+            [
+                [" a1", "b11  ", "  c1"],
+                ["a22 ", "  b2", "c233  "],
+            ],
+            [
+                [" a1", "b11", "  c1"],
+                ["a22", " b2", "c233"],
+            ],
+        ),
+        (
+            "rlc",
+            [
+                ["     a111111", "b11  ", " c1"],
+                ["a22 ", "  b2", "  c22 "],
+                [" a333 ", "  b33333", "c333  "],
+                ["a4", "     b4", " c444444  "],
+            ],
+            [
+                ["a111111", "b11   ", "   c1  "],
+                ["    a22", "b2    ", "  c22  "],
+                ["   a333", "b33333", "  c333 "],
+                ["     a4", "b4    ", "c444444"],
+            ],
+        ),
+    ],
+)
+def test_align(alignment, entries, aligned):
+    assert list(align(entries, alignment)) == aligned

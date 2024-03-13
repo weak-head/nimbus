@@ -10,7 +10,7 @@ from nas.cmd.deploy import DeploymentActionResult
 from nas.core.archiver import ArchivalStatus
 from nas.core.runner import CompletedProcess
 from nas.core.uploader import UploadStatus
-from nas.report.formatter import Formatter
+from nas.report.format import Formatter, align
 from nas.report.writer import Writer
 
 
@@ -37,20 +37,23 @@ class ReportWriter(Reporter):
         self.footer()
 
     def header(self) -> None:
-        self._writer.line("=" * 80)
+        self._writer.line("=" * 120)
         self._writer.line(f"== {self._formatter.datetime(datetime.now())}")
 
     def footer(self) -> None:
         self._writer.line("")
-        self._writer.line("=" * 80)
+        self._writer.line("=" * 120)
 
     def summary(self, result: ExecutionResult) -> None:
         s = self._writer.section("Summary")
         s.row("Command", result.command)
-        s.row("Arguments", (" ".join(result.arguments)).strip())
         s.row("Started", self._formatter.datetime(result.started))
         s.row("Completed", self._formatter.datetime(result.completed))
         s.row("Elapsed", self._formatter.duration(result.elapsed))
+
+        if result.arguments:
+            arg = s.section("Arguments")
+            arg.list(result.arguments, style="bullet")
 
         if result.config:
             cfg = s.section("Configuration")
@@ -79,22 +82,7 @@ class ReportWriter(Reporter):
             total_size = self._formatter.size(sum(b.archive.size for b in result.entries if b.success))
             b = w.section(f"-- Successful backups [ 📁 {total_size} ] -- (ﾉ◕ヮ◕)ﾉ")
 
-            max_name = len(max(created, key=lambda elem: len(elem[0]))[0])
-            max_size = len(max(created, key=lambda elem: len(elem[1]))[1])
-            max_dura = len(max(created, key=lambda elem: len(elem[2]))[2])
-            max_spee = len(max(created, key=lambda elem: len(elem[3]))[3])
-
-            created = [
-                (
-                    name.ljust(max_name),
-                    size.ljust(max_size),
-                    duration.ljust(max_dura),
-                    speed.ljust(max_spee),
-                )
-                for name, size, duration, speed in created
-            ]
-            created = [f"{name} [ 📁 {size} | ⌚ {duration} | ⚡ {speed} ]" for name, size, duration, speed in created]
-
+            created = [f"{name} [ 📁 {size} | ⌚ {dur} | ⚡ {sp} ]" for name, size, dur, sp in align(created, "lrrr")]
             b.list(created, style="number")
 
         if failed := sorted(b.folder for b in result.entries if not b.success):
