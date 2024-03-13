@@ -126,7 +126,7 @@ class UploadStatus:
         return UploadStatus.FAILED if self.exception else UploadStatus.SUCCESS
 
     @property
-    def successful(self) -> bool:
+    def success(self) -> bool:
         return (
             self.status == UploadStatus.SUCCESS
             and self.filepath
@@ -142,4 +142,4 @@ class UploadStatus:
 
     @property
     def speed(self) -> int:
-        return int(self.size // self.elapsed.total_seconds()) if self.successful else 0
+        return int(self.size // self.elapsed.total_seconds()) if self.success else 0

@@ -96,8 +96,8 @@ class BackupEntry:
         self.archive: ArchivalStatus = None
 
     @property
-    def successful(self) -> bool:
-        return self.archive and self.archive.successful
+    def success(self) -> bool:
+        return self.archive and self.archive.success
 
 
 class UploadEntry:
@@ -111,7 +111,10 @@ class DirectoryMappingActionResult(ActionResult[list[BackupResource]]):
 
 
 class BackupActionResult(ActionResult[list[BackupEntry]]):
-    pass
+
+    @property
+    def success(self) -> bool:
+        return any(b.success for b in self.entries)
 
 
 class UploadActionResult(ActionResult[list[UploadEntry]]):

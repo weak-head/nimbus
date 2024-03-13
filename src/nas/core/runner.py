@@ -86,7 +86,7 @@ class CompletedProcess:
         return CompletedProcess.SUCCESS
 
     @property
-    def successful(self) -> bool:
+    def success(self) -> bool:
         return self.status == CompletedProcess.SUCCESS and self.cmd and self.started and self.completed
 
     @property

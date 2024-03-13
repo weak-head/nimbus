@@ -48,10 +48,7 @@ class CfgReporterFactory(ReporterFactory):
             return None
 
         if cfg.format == "txt":
-            return TextWriter(
-                self.report_file("txt"),
-                self.create_formatter(),
-            )
+            return TextWriter(self.report_file("txt"))
 
         return None
 
@@ -61,4 +58,7 @@ class CfgReporterFactory(ReporterFactory):
         if not writer:
             return None
 
-        return ReportWriter(writer)
+        return ReportWriter(
+            writer,
+            self.create_formatter(),
+        )

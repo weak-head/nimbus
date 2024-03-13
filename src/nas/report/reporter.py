@@ -9,6 +9,7 @@ from nas.cmd.backup import BackupActionResult, UploadActionResult
 from nas.core.archiver import ArchivalStatus
 from nas.core.runner import CompletedProcess
 from nas.core.uploader import UploadStatus
+from nas.report.formatter import Formatter
 from nas.report.writer import Writer
 
 
@@ -24,43 +25,64 @@ class ReportWriter(Reporter):
     Knows an internal structure of the core objects and outputs them to `Writer`.
     """
 
-    def __init__(self, writer: Writer) -> None:
+    def __init__(self, writer: Writer, formatter: Formatter) -> None:
         self._writer = writer
+        self._formatter = formatter
 
     def write(self, result: ExecutionResult) -> None:
         self.header()
 
-        self.space()
+        self.breather()
         self.summary(result)
 
-        self.space()
+        self.breather()
         self.details(result)
 
         self.footer()
 
-    def space(self) -> None:
-        self._writer.entry("")
+    def breather(self) -> None:
+        self._writer.line("")
 
     def header(self) -> None:
-        self._writer.entry("=" * 80)
-        self._writer.entry(f'== {datetime.today().strftime("%Y-%m-%d %H:%M:%S")}')
+        self._writer.line("=" * 80)
+        self._writer.line(f"== {self._formatter.datetime(datetime.now())}")
 
     def footer(self) -> None:
-        self._writer.entry("=" * 80)
+        self._writer.line("=" * 80)
 
     def summary(self, result: ExecutionResult) -> None:
         s = self._writer.section("Summary")
-        s.entry("Command", result.command)
-        s.entry("Arguments", (" ".join(result.arguments)).strip())
+        s.row("Command", result.command)
+        s.row("Arguments", (" ".join(result.arguments)).strip())
 
         if result.config:
             cfg = s.section("Configuration")
             for key, value in result.config.items():
-                cfg.entry(key, value)
+                cfg.row(key, value)
 
-        s.entry("Started", result.started, formatter="datetime")
-        s.entry("Completed", result.completed, formatter="datetime")
-        s.entry("Elapsed", result.elapsed, formatter="duration")
+        s.row("Started", self._formatter.datetime(result.started))
+        s.row("Completed", self._formatter.datetime(result.completed))
+        s.row("Elapsed", self._formatter.duration(result.elapsed))
+
+        for action in result.actions:
+            if issubclass(type(action), BackupActionResult):
+                self.summary_backups(s, result.config["Destination"], action)
+
+    def summary_backups(self, w: Writer, base: str, result: BackupActionResult) -> None:
+        total_size = sum(b.archive.size for b in result.entries if b.success)
+        w.row("Total size", self._formatter.size(total_size))
+
+        w.line("")
+        created_backups = sorted(b.archive.archive.replace(base, "")[1:] for b in result.entries if b.success)
+        if created_backups:
+            b = w.section("😀 Successful backups 😀 ( ͡° ͜ʖ ͡°)")
+            b.list(created_backups, style="number")
+
+        w.line("")
+        failed_backups = sorted(b.folder for b in result.entries if not b.success)
+        if failed_backups:
+            b = w.section("😕 Failed backups 😕 ¯\\_(ツ)_/¯")
+            b.list(failed_backups, style="number")
 
     def details(self, result: ExecutionResult) -> None:
         pass
@@ -73,9 +95,9 @@ class ReportWriter(Reporter):
             writer.entry("Cwd", proc.cwd)
 
         writer.entry("Status", proc.status)
-        writer.entry("Started", proc.started, formatter="datetime")
-        writer.entry("Completed", proc.completed, formatter="datetime")
-        writer.entry("Elapsed", proc.elapsed, formatter="duration")
+        writer.entry("Started", self._formatter.datetime(proc.started))
+        writer.entry("Completed", self._formatter.datetime(proc.completed))
+        writer.entry("Elapsed", self._formatter.duration(proc.elapsed))
 
         if proc.exitcode is not None and proc.exitcode != 0:
             decoded = errno.errorcode.get(proc.exitcode, "unknown")
