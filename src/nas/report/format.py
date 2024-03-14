@@ -4,46 +4,37 @@ from typing import Callable, Iterator
 
 
 def size(size_bytes: int) -> str:
-    # Bytes
     if size_bytes < 1024:
         return f"{size_bytes} bytes"
 
-    # Kilobytes
     kb = int(size_bytes // 1024)
     if kb < 1024:
         return f"{ceil(kb, size_bytes)} KB"
 
-    # Megabytes
     mb = int(kb // 1024)
     if mb < 1024:
         return f"{ceil(mb, kb)} MB"
 
-    # Gigabytes
     gb = int(mb // 1024)
     if gb < 1024:
         return f"{ceil(gb, mb)} GB"
 
-    # Terabytes
     tb = int(gb // 1024)
     return f"{ceil(tb, gb)} TB"
 
 
 def speed(bps: int) -> str:
-    # bytes/second
     if bps < 1024:
         return f"{bps} B/s"
 
-    # KB/s
     kbps = int(bps // 1024)
     if kbps < 1024:
         return f"{ceil(kbps, bps)} KB/s"
 
-    # MB/s
     mbps = int(kbps // 1024)
     if mbps < 1024:
         return f"{ceil(mbps, kbps)} MB/s"
 
-    # GB/s
     gbps = int(mbps // 1024)
     return f"{ceil(gbps, mbps)} GB/s"
 
@@ -80,12 +71,31 @@ def ceil(integral: int, fractional: int) -> str:
     return f"{integral}.{math.ceil(int(fractional % 1024) / 100):1d}"
 
 
-def align(entries: list[list[str]], amap: str = "l") -> Iterator[list[str]]:
+def align(entries: list[list[str]], alignment: str = "l") -> Iterator[list[str]]:
     """
-    Ensure that all fields in each entry of the list are left, right or center-justified.
-    It is assumed that every entry contains the same number of fields, all of which are of string type.
+    Ensure that all fields in each entry of the list are left, right,
+    or center-justified. It is assumed that every entry contains the
+    same number of fields, all of which are of string type.
+    The alignment can be specified at either the field-level or the entry-level.
+    When alignment is specified at the field-level, alignment instructions
+    should be provided independently for each field.
+    For entry-level alignment, it is applied uniformly to all fields within the entry.
+
+    :param entries: A list with entries each containing one or several fields.
+        Each entry in the list should contain the same number of fields,
+        all of which are of string type.
+
+    :param alignment: Specifies the alignment for the entry.
+        - If a single character is used, it sets the alignment for all
+          fields (entry-level).
+        - When using a string of characters, each character corresponds
+          to the alignment of the respective field (field-level).
+        You can use the following alignment values:
+            * 'l' - left alignment (text positioned along the left edge of its container).
+            * 'r' - right alignment (text positioned along the right edge of its container).
+            * 'c' - center alignment (text equidistant from both the left and right edges of the container).
     """
-    if not entries or not amap:
+    if not entries or not alignment:
         yield from entries
         return
 
@@ -95,10 +105,10 @@ def align(entries: list[list[str]], amap: str = "l") -> Iterator[list[str]]:
         "c": lambda val, ln: val.center(ln),
     }
 
-    if len(amap) == 1:
-        amap = amap * len(entries[0])
+    if len(alignment) == 1:
+        alignment = alignment * len(entries[0])
 
-    if any(a not in handlers for a in amap) or len(amap) < len(entries[0]):
+    if any(a not in handlers for a in alignment) or len(alignment) < len(entries[0]):
         yield from entries
         return
 
@@ -110,4 +120,4 @@ def align(entries: list[list[str]], amap: str = "l") -> Iterator[list[str]]:
     ]
 
     for entry in entries:
-        yield [handlers[amap[field]](entry[field], max_field_len[field]) for field in range(len(entry))]
+        yield [handlers[alignment[field]](entry[field], max_field_len[field]) for field in range(len(entry))]

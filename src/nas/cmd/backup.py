@@ -116,6 +116,10 @@ class BackupActionResult(ActionResult[list[BackupEntry]]):
     def success(self) -> bool:
         return any(b.success for b in self.entries)
 
+    @property
+    def total_size(self) -> int:
+        return sum(entry.archive.size for entry in self.entries if entry.success)
+
 
 class UploadActionResult(ActionResult[list[UploadEntry]]):
     pass
