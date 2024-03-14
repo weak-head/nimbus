@@ -4,16 +4,11 @@ from datetime import datetime
 from pathlib import Path
 
 from nas.config import Config
-from nas.report.format import Formatter
 from nas.report.reporter import Reporter, ReportWriter
 from nas.report.writer import TextWriter, Writer
 
 
 class ReporterFactory(ABC):
-
-    @abstractmethod
-    def create_formatter(self) -> Formatter:
-        pass
 
     @abstractmethod
     def create_writer(self) -> Writer:
@@ -38,9 +33,6 @@ class CfgReporterFactory(ReporterFactory):
         now = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
         return os.path.join(directory, f"{now}.{extension}")
 
-    def create_formatter(self) -> Formatter:
-        return Formatter()
-
     def create_writer(self) -> Writer:
         cfg = self._config.report
 
@@ -63,7 +55,4 @@ class CfgReporterFactory(ReporterFactory):
         if not writer:
             return None
 
-        return ReportWriter(
-            writer,
-            self.create_formatter(),
-        )
+        return ReportWriter(writer)

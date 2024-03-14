@@ -1,16 +1,12 @@
 from __future__ import annotations
 
-import errno
 from abc import ABC, abstractmethod
 from datetime import datetime
 
+import nas.report.format as fmt
 from nas.cmd.abstract import ExecutionResult
 from nas.cmd.backup import BackupActionResult, UploadActionResult
 from nas.cmd.deploy import DeploymentActionResult
-from nas.core.archiver import ArchivalStatus
-from nas.core.runner import CompletedProcess
-from nas.core.uploader import UploadStatus
-from nas.report.format import Formatter, align
 from nas.report.writer import Writer
 
 
@@ -26,9 +22,8 @@ class ReportWriter(Reporter):
     Knows an internal structure of the core objects and outputs them to `Writer`.
     """
 
-    def __init__(self, writer: Writer, formatter: Formatter) -> None:
+    def __init__(self, writer: Writer) -> None:
         self._writer = writer
-        self._formatter = formatter
 
     def write(self, result: ExecutionResult) -> None:
         self.header()
@@ -38,7 +33,7 @@ class ReportWriter(Reporter):
 
     def header(self) -> None:
         self._writer.line("=" * 120)
-        self._writer.line(f"== {self._formatter.datetime(datetime.now())}")
+        self._writer.line(f"== {fmt.datetime(datetime.now())}")
 
     def footer(self) -> None:
         self._writer.line("")
@@ -47,9 +42,9 @@ class ReportWriter(Reporter):
     def summary(self, result: ExecutionResult) -> None:
         s = self._writer.section("Summary")
         s.row("Command", result.command)
-        s.row("Started", self._formatter.datetime(result.started))
-        s.row("Completed", self._formatter.datetime(result.completed))
-        s.row("Elapsed", self._formatter.duration(result.elapsed))
+        s.row("Started", fmt.datetime(result.started))
+        s.row("Completed", fmt.datetime(result.completed))
+        s.row("Elapsed", fmt.duration(result.elapsed))
 
         if result.arguments:
             arg = s.section("Arguments")
@@ -72,17 +67,20 @@ class ReportWriter(Reporter):
         if created := sorted(
             (
                 b.archive.archive.replace(base, "")[1:],
-                self._formatter.size(b.archive.size),
-                self._formatter.duration(b.archive.proc.elapsed),
-                self._formatter.speed(b.archive.speed),
+                fmt.size(b.archive.size),
+                fmt.duration(b.archive.proc.elapsed),
+                fmt.speed(b.archive.speed),
             )
             for b in result.entries
             if b.success
         ):
-            total_size = self._formatter.size(sum(b.archive.size for b in result.entries if b.success))
+            total_size = fmt.size(sum(b.archive.size for b in result.entries if b.success))
             b = w.section(f"-- Successful backups [ 📁 {total_size} ] -- (ﾉ◕ヮ◕)ﾉ")
 
-            created = [f"{name} [ 📁 {size} | ⌚ {dur} | ⚡ {sp} ]" for name, size, dur, sp in align(created, "lrrr")]
+            created = [
+                f"{name} [ 📁 {size} | ⌚ {duration} | ⚡ {speed} ]"
+                for name, size, duration, speed in fmt.align(created, "lrrr")
+            ]
             b.list(created, style="number")
 
         if failed := sorted(b.folder for b in result.entries if not b.success):
@@ -98,58 +96,58 @@ class ReportWriter(Reporter):
     def details(self, result: ExecutionResult) -> None:
         pass
 
-    def _process(self, writer: Writer, proc: CompletedProcess, cmd=False, cwd=False, break_after=True) -> None:
-        if cmd:
-            writer.entry("Cmd", (" ".join(proc.cmd)).strip())
+    # def _process(self, writer: Writer, proc: CompletedProcess, cmd=False, cwd=False, break_after=True) -> None:
+    #     if cmd:
+    #         writer.entry("Cmd", (" ".join(proc.cmd)).strip())
 
-        if cwd:
-            writer.entry("Cwd", proc.cwd)
+    #     if cwd:
+    #         writer.entry("Cwd", proc.cwd)
 
-        writer.entry("Status", proc.status)
-        writer.entry("Started", self._formatter.datetime(proc.started))
-        writer.entry("Completed", self._formatter.datetime(proc.completed))
-        writer.entry("Elapsed", self._formatter.duration(proc.elapsed))
+    #     writer.entry("Status", proc.status)
+    #     writer.entry("Started", self._formatter.datetime(proc.started))
+    #     writer.entry("Completed", self._formatter.datetime(proc.completed))
+    #     writer.entry("Elapsed", self._formatter.duration(proc.elapsed))
 
-        if proc.exitcode is not None and proc.exitcode != 0:
-            decoded = errno.errorcode.get(proc.exitcode, "unknown")
-            writer.entry("Exit code", f"{proc.exitcode} ({decoded})")
+    #     if proc.exitcode is not None and proc.exitcode != 0:
+    #         decoded = errno.errorcode.get(proc.exitcode, "unknown")
+    #         writer.entry("Exit code", f"{proc.exitcode} ({decoded})")
 
-        if proc.stdout and proc.stdout.strip():
-            stdout = writer.section("StdOut")
-            stdout.entry(proc.stdout, layout="multiline")
+    #     if proc.stdout and proc.stdout.strip():
+    #         stdout = writer.section("StdOut")
+    #         stdout.entry(proc.stdout, layout="multiline")
 
-        if proc.stderr and proc.stderr.strip():
-            stderr = writer.section("StdErr")
-            stderr.entry(proc.stderr, layout="multiline")
+    #     if proc.stderr and proc.stderr.strip():
+    #         stderr = writer.section("StdErr")
+    #         stderr.entry(proc.stderr, layout="multiline")
 
-        if proc.exception:
-            exc = writer.section("Exception")
-            exc.entry(proc.exception, layout="multiline")
+    #     if proc.exception:
+    #         exc = writer.section("Exception")
+    #         exc.entry(proc.exception, layout="multiline")
 
-        if break_after:
-            writer.entry()
+    #     if break_after:
+    #         writer.entry()
 
-    def _archive_status(self, writer: Writer, archive: ArchivalStatus, break_after=True) -> None:
-        self._process(writer, archive.proc, break_after=False)
+    # def _archive_status(self, writer: Writer, archive: ArchivalStatus, break_after=True) -> None:
+    #     self._process(writer, archive.proc, break_after=False)
 
-        writer.entry("Archive", archive.archive)
-        writer.entry("Archive size", archive.size, formatter="size")
-        writer.entry("Archival speed", archive.speed, formatter="speed")
+    #     writer.entry("Archive", archive.archive)
+    #     writer.entry("Archive size", archive.size, formatter="size")
+    #     writer.entry("Archival speed", archive.speed, formatter="speed")
 
-        if break_after:
-            writer.entry()
+    #     if break_after:
+    #         writer.entry()
 
-    def _upload_status(self, writer: Writer, upload: UploadStatus, break_after=True) -> None:
-        writer.entry("Status", upload.status)
-        writer.entry("Started", upload.started, formatter="datetime")
-        writer.entry("Completed", upload.completed, formatter="datetime")
-        writer.entry("Elapsed", upload.elapsed, formatter="duration")
-        writer.entry("Size", upload.size, formatter="size")
-        writer.entry("Speed", upload.speed, formatter="speed")
+    # def _upload_status(self, writer: Writer, upload: UploadStatus, break_after=True) -> None:
+    #     writer.entry("Status", upload.status)
+    #     writer.entry("Started", upload.started, formatter="datetime")
+    #     writer.entry("Completed", upload.completed, formatter="datetime")
+    #     writer.entry("Elapsed", upload.elapsed, formatter="duration")
+    #     writer.entry("Size", upload.size, formatter="size")
+    #     writer.entry("Speed", upload.speed, formatter="speed")
 
-        if upload.exception:
-            exc = writer.section("Exception")
-            exc.entry(upload.exception, layout="multiline")
+    #     if upload.exception:
+    #         exc = writer.section("Exception")
+    #         exc.entry(upload.exception, layout="multiline")
 
-        if break_after:
-            writer.entry()
+    #     if break_after:
+    #         writer.entry()
