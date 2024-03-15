@@ -63,7 +63,8 @@ def execute(runner: CommandRunner, args: list[str]) -> int:
         return ExitCode.UNABLE_TO_EXECUTE
 
     factory = build_factory(config)
-    if not factory:
+    reporter = build_reporter(config)
+    if not factory or not reporter:
         print(
             "The application encountered an issue during startup due to an invalid configuration.\n"
             "Please follow these steps to troubleshoot:\n"
@@ -74,12 +75,8 @@ def execute(runner: CommandRunner, args: list[str]) -> int:
             file=sys.stderr,
         )
         return ExitCode.UNABLE_TO_EXECUTE
-    runner.set_factory(factory)
 
-    reporter = build_reporter(config)
-    if not reporter:
-        print("tbd")
-        return ExitCode.UNABLE_TO_EXECUTE
+    runner.set_factory(factory)
     runner.set_reporter(reporter)
 
     runner.run_default(ns)
