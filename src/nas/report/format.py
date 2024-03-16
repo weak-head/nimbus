@@ -1,121 +1,123 @@
 import datetime as dt
 import math
-from typing import Any
+from typing import Callable, Iterator
 
 
-class Formatter:
+def size(size_bytes: int) -> str:
+    if size_bytes < 1024:
+        return f"{size_bytes} bytes"
+
+    kb = int(size_bytes // 1024)
+    if kb < 1024:
+        return f"{ceil(kb, size_bytes)} KB"
+
+    mb = int(kb // 1024)
+    if mb < 1024:
+        return f"{ceil(mb, kb)} MB"
+
+    gb = int(mb // 1024)
+    if gb < 1024:
+        return f"{ceil(gb, mb)} GB"
+
+    tb = int(gb // 1024)
+    return f"{ceil(tb, gb)} TB"
+
+
+def speed(bps: int) -> str:
+    if bps < 1024:
+        return f"{bps} B/s"
+
+    kbps = int(bps // 1024)
+    if kbps < 1024:
+        return f"{ceil(kbps, bps)} KB/s"
+
+    mbps = int(kbps // 1024)
+    if mbps < 1024:
+        return f"{ceil(mbps, kbps)} MB/s"
+
+    gbps = int(mbps // 1024)
+    return f"{ceil(gbps, mbps)} GB/s"
+
+
+def duration(elapsed: dt.timedelta) -> str:
+    data = {}
+    data["d"], remaining = divmod(elapsed.total_seconds(), 86_400)
+    data["h"], remaining = divmod(remaining, 3_600)
+    data["m"], data["s"] = divmod(remaining, 60)
+
+    data = {k: round(v) for k, v in data.items()}
+    for n in "dhms":
+        if data[n] != 0:
+            break
+        del data[n]
+
+    time_parts = [f"{v}{k}" if k == "d" else f"{v:02d}{k}" for k, v in data.items()]
+    return " ".join(time_parts) if time_parts else "< 01s"
+
+
+def datetime(d: dt.datetime, fmt: str = None) -> str:
+    return d.strftime(fmt if fmt else "%Y-%m-%d %H:%M:%S")
+
+
+def date(d: dt.datetime, fmt: str = None) -> str:
+    return d.strftime(fmt if fmt else "%Y-%m-%d")
+
+
+def time(t: dt.datetime, fmt: str = None) -> str:
+    return t.strftime(fmt if fmt else "%H:%M:%S")
+
+
+def ceil(integral: int, fractional: int) -> str:
+    return f"{integral}.{math.ceil(int(fractional % 1024) / 100):1d}"
+
+
+def align(entries: list[list[str]], alignment: str = "l") -> Iterator[list[str]]:
     """
-    Formats data to human readable representation.
+    Ensure that all fields in each entry of the list are left, right,
+    or center-justified. It is assumed that every entry contains the
+    same number of fields, all of which are of string type.
+    The alignment can be specified at either the field-level or the entry-level.
+    When alignment is specified at the field-level, alignment instructions
+    should be provided independently for each field.
+    For entry-level alignment, it is applied uniformly to all fields within the entry.
+
+    :param entries: A list with entries each containing one or several fields.
+        Each entry in the list should contain the same number of fields,
+        all of which are of string type.
+
+    :param alignment: Specifies the alignment for the entry.
+        - If a single character is used, it sets the alignment for all
+          fields (entry-level).
+        - When using a string of characters, each character corresponds
+          to the alignment of the respective field (field-level).
+        You can use the following alignment values:
+            * 'l' - left alignment (text positioned along the left edge of its container).
+            * 'r' - right alignment (text positioned along the right edge of its container).
+            * 'c' - center alignment (text equidistant from both the left and right edges of the container).
     """
+    if not entries or not alignment:
+        yield from entries
+        return
 
-    def __init__(
-        self,
-        datetime_fmt: str = "%Y-%m-%d %H:%M:%S",
-        date_fmt: str = "%Y-%m-%d",
-        time_fmt: str = "%H:%M:%S",
-    ):
-        self._datetime_fmt = datetime_fmt
-        self._date_fmt = date_fmt
-        self._time_fmt = time_fmt
+    handlers: dict[str, Callable[[str, int], str]] = {
+        "l": lambda val, ln: val.ljust(ln),
+        "r": lambda val, ln: val.rjust(ln),
+        "c": lambda val, ln: val.center(ln),
+    }
 
-    @property
-    def profiles(self) -> tuple[str, ...]:
-        return ("datetime", "date", "time", "size", "speed", "duration")
+    if len(alignment) == 1:
+        alignment = alignment * len(entries[0])
 
-    def format(self, entry: Any, profile: str) -> str:
-        match profile:
+    if any(a not in handlers for a in alignment) or len(alignment) < len(entries[0]):
+        yield from entries
+        return
 
-            case "datetime":
-                if isinstance(entry, dt.datetime):
-                    return self.datetime(entry)
+    entries = [[field.strip() for field in entry] for entry in entries]
 
-            case "date":
-                if isinstance(entry, dt.datetime):
-                    return self.date(entry)
+    max_field_len = [
+        len(max(entries, key=lambda elem, fld=entry_field: len(elem[fld]))[entry_field])
+        for entry_field in range(len(entries[0]))
+    ]
 
-            case "time":
-                if isinstance(entry, dt.datetime):
-                    return self.time(entry)
-
-            case "size":
-                if isinstance(entry, int):
-                    return self.size(entry)
-
-            case "speed":
-                if isinstance(entry, int):
-                    return self.speed(entry)
-
-            case "duration":
-                if isinstance(entry, dt.timedelta):
-                    return self.duration(entry)
-
-        return str(entry)
-
-    def size(self, size_bytes: int) -> str:
-        # Bytes
-        if size_bytes < 1024:
-            return f"{size_bytes} bytes"
-
-        # Kilobytes
-        kb = int(size_bytes // 1024)
-        if kb < 1024:
-            return f"{kb} KB"
-
-        # Megabytes
-        mb = int(kb // 1024)
-        if mb < 1024:
-            return f"{_ceil(mb, kb)} MB"
-
-        # Gigabytes
-        gb = int(mb // 1024)
-        if gb < 1024:
-            return f"{_ceil(gb, mb)} GB"
-
-        # Terabytes
-        tb = int(gb // 1024)
-        return f"{_ceil(tb, gb)} TB"
-
-    def speed(self, bps: int) -> str:
-        # bytes/second
-        if bps < 1024:
-            return f"{bps} bytes/second"
-
-        # KB/s
-        kbps = int(bps // 1024)
-        if kbps < 1024:
-            return f"{_ceil(kbps, bps)} KB/s"
-
-        # MB/s
-        mbps = int(kbps // 1024)
-        if mbps < 1024:
-            return f"{_ceil(mbps, kbps)} MB/s"
-
-        # GB/s
-        gbps = int(mbps // 1024)
-        return f"{_ceil(gbps, mbps)} GB/s"
-
-    def duration(self, elapsed: dt.timedelta) -> str:
-        data = {}
-        data["days"], remaining = divmod(elapsed.total_seconds(), 86_400)
-        data["hours"], remaining = divmod(remaining, 3_600)
-        data["minutes"], data["seconds"] = divmod(remaining, 60)
-
-        time_parts = ((name, round(value)) for name, value in data.items())
-
-        # Convert time parts to string, adjusting suffixes when value is '1'.
-        time_parts = [f"{value} {name[:-1] if value == 1 else name}" for name, value in time_parts if value > 0]
-
-        return " ".join(time_parts) if time_parts else "less than one second"
-
-    def datetime(self, d: dt.datetime) -> str:
-        return d.strftime(self._datetime_fmt)
-
-    def date(self, d: dt.datetime) -> str:
-        return d.strftime(self._date_fmt)
-
-    def time(self, t: dt.datetime) -> str:
-        return t.strftime(self._time_fmt)
-
-
-def _ceil(characteristic: int, mantissa: int) -> str:
-    return f"{characteristic}.{math.ceil(int(mantissa % 1024) / 100)}"
+    for entry in entries:
+        yield [handlers[alignment[field]](entry[field], max_field_len[field]) for field in range(len(entry))]

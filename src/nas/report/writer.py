@@ -1,9 +1,10 @@
 from __future__ import annotations
 
-import logging
 from abc import ABC, abstractmethod
+from typing import TYPE_CHECKING
 
-from nas.report.format import Formatter
+if TYPE_CHECKING:
+    from _typeshed import FileDescriptorOrPath
 
 
 class Writer(ABC):
@@ -11,43 +12,6 @@ class Writer(ABC):
     Defines an abstract message writer.
     All writers should follow the APIs defined by this class.
     """
-
-    @abstractmethod
-    def entry(self, *parts, **rules) -> None:
-        """
-        Write a message following the specified rules. The message can be a single
-        part or composed of several parts. If the message is composed of several parts,
-        each message part would be aligned and formatted according to the provided formatting rules.
-        If no specific rules are given, default formatting rules will be applied.
-
-        :param parts: One or more message parts that logically form a complete entry.
-
-        :param rules: Message formatting and processing rules.
-            These rules are used by the `Writer` to format the entire message or
-            individual message parts (if the message is provided as a several parts).
-            You can specify the following rules:
-
-                - formatter: Determines formatting options for each message part.
-                    The specified formatter is applied to each message part.
-                    Message part is converted to a string, if the formatter cannot be applied.
-                    You can provide the following formatter values:
-                        * default
-                        * datetime
-                        * date
-                        * time
-                        * size
-                        * speed
-                        * duration
-
-                - layout: Defines the layout of the entire massage or individual message parts.
-                    Each concrete 'Writer` implementation could have it's own meaning
-                    and interpretation of the layout rule. Refer to the actual implementation
-                    of a particular `Writer` for the details of the layout formatting.
-                    You can provide the following layout values:
-                        * default
-                        * multiline
-                        * list
-        """
 
     @abstractmethod
     def section(self, title: str) -> Writer:
@@ -61,58 +25,103 @@ class Writer(ABC):
         :return: A new instance of `Writer`, that is designated to the created section.
         """
 
+    @abstractmethod
+    def line(self, msg: str) -> None:
+        """
+        Write a message. The content can be a single line of text or span multiple lines,
+        each separated by a newline character. If the message consists of several lines,
+        ensure that each line adheres to the expected formatting guidelines set by the writer.
 
-class LogWriter(Writer):
+        :param msg: A text that span one or multiple lines.
+        """
+
+    @abstractmethod
+    def row(self, columns: list[str]) -> None:
+        """
+        Create a row consisting of multiple columns. Each column is aligned
+        according to the formatting guidelines specified by the writer.
+
+        :param columns: Several columns that logically form a complete row.
+        """
+
+    @abstractmethod
+    def list(self, entries: list[str], style: str = None) -> None:
+        """
+        Outputs a list of strings, which can be formatted as either
+        a numbered list or a bullet list. Ensure that the alignment
+        adheres to the specified formatting guidelines provided by the writer.
+
+        :param entries: A list containing one or more strings for output.
+
+        :param style: The presentation style of the list.
+            You can specify the following values:
+                - bullet
+                - number
+        """
+
+
+class TextWriter(Writer):
     """
-    Writer that uses `logging` package.
+    Writer that outputs a plain text file.
     """
 
     def __init__(
         self,
-        formatter: Formatter,
+        file: FileDescriptorOrPath,
+        indent_char: str,
+        section_indent: int,
+        column_width: int,
         indent: int = 0,
-        indent_size: int = 4,
-        indent_char: str = " ",
-        column_width: int = 40,
-        parent: LogWriter = None,
+        parent: TextWriter = None,
     ):
-        self._formatter: Formatter = formatter
+        self._file: FileDescriptorOrPath = file
         self._indent: int = indent
-        self._indent_size: int = indent_size
+        self._section_indent: int = section_indent
         self._indent_char: str = indent_char
         self._column_width: int = column_width
-        self._parent: LogWriter = parent
+        self._parent: TextWriter = parent
 
-    def entry(self, *parts, **rules):
-        match rules.get("layout", "default"):
+    def section(self, title: str) -> TextWriter:
+        self.line("")
+        self.line(title)
 
-            case "default":
-                self._entry(*parts, **rules)
+        return TextWriter(
+            self._file,
+            self._indent_char,
+            self._section_indent,
+            self._column_width,
+            self._indent + self._section_indent,
+            self,
+        )
 
-            case "multiline":
-                for part in parts:
-                    for msg in part.split("\n"):
-                        self._entry(msg, **rules)
+    def line(self, msg: str) -> None:
+        for single_line in msg.split("\n"):
+            self._entry([single_line])
 
-            case "list":
-                rules["_prepend"] = "- "
-                for part in parts:
-                    self._entry(part, **rules)
+    def row(self, *columns) -> None:
+        self._entry(columns)
 
-    def _entry(self, *parts, **rules):
+    def list(self, entries: list[str], style: str = None) -> None:
+        prepend = ""
+        for ix, entry in enumerate(entries):
+            match style:
+                case "bullet":
+                    prepend = "- "
+                case "number":
+                    prepend = f"{ix+1}. " if len(entries) < 10 else f"{ix+1:02d}. "
+            self._entry([prepend + entry])
+
+    def _entry(self, parts: list[str]):
         message = []
         message.append(self._indent_char * self._indent)
         offset = self._indent
 
-        prepend = rules.get("_prepend", "")
-        formatter = rules.get("formatter", "default")
-
         # Format and align each message part,
         # to match the configured width
         for entry in parts:
-            string_entry = prepend + self._formatter.format(entry, formatter)
-            offset += len(string_entry)
-            message.append(string_entry)
+            str_entry = str(entry)
+            offset += len(str_entry)
+            message.append(str_entry)
 
             # Fill the missing space, to align the next column
             align_size = self._column_width - (offset % self._column_width)
@@ -120,40 +129,5 @@ class LogWriter(Writer):
 
             offset = 0
 
-        logging.info("".join(message).rstrip())
-
-    def section(self, title: str) -> LogWriter:
-        self.entry(title)
-
-        return LogWriter(
-            self._formatter,
-            indent=self._indent + self._indent_size,
-            indent_size=self._indent_size,
-            indent_char=self._indent_char,
-            column_width=self._column_width,
-            parent=self,
-        )
-
-
-class PrettyWriter(Writer):
-    """
-    Writer decorator that uses `PrettyPrinter` to write prettified messages.
-    """
-
-    def __init__(self, writer: Writer, pretty_printer):
-        self._writer = writer
-        self._pretty = pretty_printer
-
-    def entry(self, *parts, **rules):
-        # Try to pretty print the entry,
-        # fallback to the decorated writer on failure.
-        if self._pretty.can_print(*parts):
-            self._pretty.print(self, *parts, **rules)
-        else:
-            self._writer.entry(*parts, **rules)
-
-    def section(self, title: str) -> PrettyWriter:
-        return PrettyWriter(
-            self._writer.section(title),
-            self._pretty,
-        )
+        with open(self._file, mode="a", encoding="utf-8") as file:
+            file.write("".join(message).rstrip() + "\n")

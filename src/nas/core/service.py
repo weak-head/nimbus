@@ -43,7 +43,7 @@ class DockerService(Service):
         for cmd in commands:
             proc = self._runner.execute(cmd, self._directory, self._env)
             status.processes.append(proc)
-            if not proc.successful:
+            if not proc.success:
                 break
         return status
 
@@ -79,5 +79,5 @@ class OperationStatus:
         self.processes: list[CompletedProcess] = []
 
     @property
-    def successful(self) -> bool:
-        return all(proc.successful for proc in self.processes)
+    def success(self) -> bool:
+        return all(proc.success for proc in self.processes)

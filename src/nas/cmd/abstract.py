@@ -65,6 +65,10 @@ class ExecutionResult:
     def elapsed(self) -> timedelta:
         return self.completed - self.started
 
+    @property
+    def success(self) -> bool:
+        return all(a.success for a in self.actions)
+
 
 class Action:
     """
@@ -91,8 +95,11 @@ class ActionResult(Generic[T]):
         self.entries: T = entries
         self.started: datetime = None
         self.completed: datetime = None
-        self.success: bool = True
 
     @property
     def elapsed(self) -> timedelta:
         return self.completed - self.started
+
+    @property
+    def success(self) -> bool:
+        return True

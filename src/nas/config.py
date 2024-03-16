@@ -27,6 +27,9 @@ class Config:
         val = self._config.get(key)
         return Config(val) if isinstance(val, dict) else val
 
+    def items(self):
+        return self._config.items()
+
 
 def resolve_config(file_path: str = None) -> str | None:
     search_paths = [file_path] if file_path else SEARCH_PATHS

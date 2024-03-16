@@ -74,13 +74,13 @@ class ArchivalStatus:
         self.archive = archive
 
     @property
-    def successful(self) -> bool:
-        return self.proc.successful and self.folder and self.archive and os.path.exists(self.archive)
+    def success(self) -> bool:
+        return self.proc.success and self.folder and self.archive and os.path.exists(self.archive)
 
     @property
     def size(self) -> int:
-        return os.stat(self.archive).st_size if self.successful else None
+        return os.stat(self.archive).st_size if self.success else None
 
     @property
     def speed(self) -> int:
-        return int(self.size // self.proc.elapsed.total_seconds()) if self.successful else 0
+        return int(self.size // self.proc.elapsed.total_seconds()) if self.success else 0

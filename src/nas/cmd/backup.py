@@ -74,14 +74,14 @@ class Backup(Command):
 
     def _compose_path(self, destination: str, group: str, folder: str, today: datetime) -> str:
         suffix = 0
-        today_path = today.strftime("%Y-%m-%d")
+        today_path = today.strftime("%Y-%m-%d_%H%M")
         archive_name = Path(folder).name
-        base_path = os.path.join(destination, group, today_path, archive_name)
+        base_path = os.path.join(destination, group, archive_name, f"{archive_name}_{today_path}")
 
         # Don't overwrite the existing backups under the same path.
         # Find the next available name that matches the pattern.
         while True:
-            archive_path = base_path + f"_{suffix:02d}.rar" if suffix > 0 else ".rar"
+            archive_path = base_path + (f"_{suffix:02d}.rar" if suffix > 0 else ".rar")
             if os.path.exists(archive_path):
                 suffix += 1
             else:
@@ -96,8 +96,8 @@ class BackupEntry:
         self.archive: ArchivalStatus = None
 
     @property
-    def successful(self) -> bool:
-        return self.archive and self.archive.successful
+    def success(self) -> bool:
+        return self.archive and self.archive.success
 
 
 class UploadEntry:
@@ -111,7 +111,14 @@ class DirectoryMappingActionResult(ActionResult[list[BackupResource]]):
 
 
 class BackupActionResult(ActionResult[list[BackupEntry]]):
-    pass
+
+    @property
+    def success(self) -> bool:
+        return any(b.success for b in self.entries)
+
+    @property
+    def total_size(self) -> int:
+        return sum(entry.archive.size for entry in self.entries if entry.success)
 
 
 class UploadActionResult(ActionResult[list[UploadEntry]]):
