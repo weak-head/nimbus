@@ -48,6 +48,6 @@ class ServiceProvider(Provider[ServiceResource]):
             "docker-compose.yaml",
             "docker-compose.yml",
         ]
-        if any(exists(join(directory, file) for file in compose_file_names)):
+        if any(exists(join(directory, file)) for file in compose_file_names):
             return "docker-compose"
         return "unknown"
