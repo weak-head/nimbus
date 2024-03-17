@@ -81,3 +81,11 @@ class DeploymentActionResult(ActionResult[list[OperationStatus]]):
     def __init__(self, operation: str, entries: list[OperationStatus] = None):
         super().__init__(entries)
         self.operation = operation
+
+    @property
+    def successful(self) -> list[OperationStatus]:
+        return [srv for srv in self.entries if srv.success]
+
+    @property
+    def failed(self) -> list[OperationStatus]:
+        return [srv for srv in self.entries if not srv.success]

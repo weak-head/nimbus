@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
+from datetime import timedelta
+from functools import reduce
 
 from nas.core.runner import CompletedProcess, Runner
 
@@ -39,7 +41,7 @@ class DockerService(Service):
         self._runner = runner
 
     def _execute(self, operation: str, commands: list[str]) -> OperationStatus:
-        status = OperationStatus(self.name, operation)
+        status = OperationStatus(self.name, operation, "docker")
         for cmd in commands:
             proc = self._runner.execute(cmd, self._directory, self._env)
             status.processes.append(proc)
@@ -73,11 +75,16 @@ class OperationStatus:
     The outcome of the service operation.
     """
 
-    def __init__(self, service: str, operation: str):
+    def __init__(self, service: str, operation: str, kind: str):
         self.service: str = service
         self.operation: str = operation
+        self.kind: str = kind
         self.processes: list[CompletedProcess] = []
 
     @property
     def success(self) -> bool:
         return all(proc.success for proc in self.processes)
+
+    @property
+    def elapsed(self) -> timedelta:
+        return reduce(lambda a, b: a + b.elapsed, self.processes, timedelta(seconds=0))

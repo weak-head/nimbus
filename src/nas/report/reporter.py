@@ -1,7 +1,8 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from datetime import datetime
+from datetime import datetime, timedelta
+from functools import reduce
 
 import nas.report.format as fmt
 from nas.cmd.abstract import ExecutionResult
@@ -10,7 +11,7 @@ from nas.cmd.backup import (
     DirectoryMappingActionResult,
     UploadActionResult,
 )
-from nas.cmd.deploy import DeploymentActionResult, ServiceMappingActionResult
+from nas.cmd.deploy import DeploymentActionResult
 from nas.report.writer import Writer
 
 
@@ -86,9 +87,10 @@ class ReportWriter(Reporter):
         w.row("Groups", ", ".join(groups) if groups else "[none]")
 
     def summary_service_deployment(self, w: Writer, result: DeploymentActionResult) -> None:
-        successful = len([srv for srv in result.entries if srv.success])
-        failed = len([srv for srv in result.entries if not srv.success])
-        w.row("Services", f"[ ∑ {len(result.entries)} | ✔ {successful} | ✘ {failed} ]")
+        w.row(
+            "Services",
+            f"[ ∑ {len(result.entries)} | ✔ {len(result.successful)} | ✘ {len(result.failed)} ]",
+        )
 
     def summary_backup(self, w: Writer, base: str, result: BackupActionResult) -> None:
         if created := sorted(
@@ -118,4 +120,34 @@ class ReportWriter(Reporter):
         pass
 
     def summary_deploy(self, w: Writer, result: DeploymentActionResult) -> None:
-        pass
+        if processed := sorted((d.service, d.kind, fmt.duration(d.elapsed)) for d in result.successful):
+            title = None
+            match result.operation:
+                case "Up":
+                    title = "Successfully deployed"
+                case "Down":
+                    title = "Successfully stopped"
+
+            elapsed = reduce(lambda a, b: a + b.elapsed, result.successful, timedelta())
+            d = w.section(f"-- {title} [ ⌚ {fmt.duration(elapsed)} ] -- (ﾉ◕ヮ◕)ﾉ")
+            d.list(
+                [
+                    f"{service} [ {fmt.srv_ch(kind)} {kind} | ⌚ {duration} ]"
+                    for service, kind, duration in fmt.align(processed, "lrr")
+                ],
+                style="number",
+            )
+
+        if failed := sorted((d.service, d.kind) for d in result.failed):
+            title = None
+            match result.operation:
+                case "Up":
+                    title = "Failed to deploy"
+                case "Down":
+                    title = "Failed to stop"
+
+            d = w.section(f"-- {title} -- ¯\\_(ツ)_/¯")
+            d.list(
+                [f"{service} [ {fmt.srv_ch(kind)} {kind} ]" for service, kind in fmt.align(failed, "lr")],
+                style="number",
+            )
