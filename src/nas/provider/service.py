@@ -23,31 +23,37 @@ class ServiceProvider(Provider[ServiceResource]):
     the identification and interaction with services,
     """
 
-    def __init__(self, root_directories: list[str]):
-        self._root_dirs: list[str] = root_directories
+    def __init__(self, directories: list[str]):
+        self._directories: list[str] = directories
 
     def _resources(self) -> Iterator[ServiceResource]:
-        for root_dir in self._root_dirs:
-            yield from self._discover_services(root_dir)
+        for directory in self._directories:
+            yield from self._discover(Path(directory).expanduser())
 
-    def _discover_services(self, root_path: str) -> Iterator[ServiceResource]:
-        path = Path(root_path).expanduser()
-        service_kind = self._get_service_kind(path.as_posix())
+    def _discover(self, path: Path) -> Iterator[ServiceResource]:
+        if not path.is_dir():
+            return
 
-        if service_kind != "unknown":
-            yield ServiceResource(path.name, service_kind, path.as_posix())
-        else:
-            for obj in path.iterdir():
-                if obj.is_dir():
-                    yield from self._discover_services(obj.as_posix())
+        match kind := self._get_kind(path.as_posix()):
+            case "docker-compose":
+                yield ServiceResource(
+                    f"{path.parent.name}/{path.name}",
+                    kind,
+                    path.as_posix(),
+                )
 
-    def _get_service_kind(self, directory: str) -> str:
-        compose_file_names = [
-            "compose.yaml",
+            case None:
+                for obj in path.iterdir():
+                    yield from self._discover(obj)
+
+    def _get_kind(self, directory: str) -> str:
+        compose_files = [
             "compose.yml",
-            "docker-compose.yaml",
+            "compose.yaml",
             "docker-compose.yml",
+            "docker-compose.yaml",
         ]
-        if any(exists(join(directory, file)) for file in compose_file_names):
+        if any(exists(join(directory, file)) for file in compose_files):
             return "docker-compose"
-        return "unknown"
+
+        return None
