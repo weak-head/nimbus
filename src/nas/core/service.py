@@ -14,7 +14,14 @@ class Service(ABC):
     """
 
     def __init__(self, name: str):
-        self.name: str = name
+        self._name: str = name
+
+    @property
+    def name(self) -> str:
+        """
+        Service name.
+        """
+        return self._name
 
     @abstractmethod
     def start(self) -> OperationStatus:

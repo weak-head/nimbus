@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from os.path import exists, join
 from pathlib import Path
 from typing import Iterator
 
@@ -25,6 +24,12 @@ class ServiceProvider(Provider[ServiceResource]):
 
     def __init__(self, directories: list[str]):
         self._directories: list[str] = directories
+        self._compose_files = [
+            "compose.yml",
+            "compose.yaml",
+            "docker-compose.yml",
+            "docker-compose.yaml",
+        ]
 
     def _resources(self) -> Iterator[ServiceResource]:
         for directory in self._directories:
@@ -34,10 +39,10 @@ class ServiceProvider(Provider[ServiceResource]):
         if not path.is_dir():
             return
 
-        match kind := self._get_kind(path.as_posix()):
+        match kind := self._get_kind(path):
             case "docker-compose":
                 yield ServiceResource(
-                    f"{path.parent.name}/{path.name}",
+                    path.name,
                     kind,
                     path.as_posix(),
                 )
@@ -46,14 +51,7 @@ class ServiceProvider(Provider[ServiceResource]):
                 for obj in path.iterdir():
                     yield from self._discover(obj)
 
-    def _get_kind(self, directory: str) -> str:
-        compose_files = [
-            "compose.yml",
-            "compose.yaml",
-            "docker-compose.yml",
-            "docker-compose.yaml",
-        ]
-        if any(exists(join(directory, file)) for file in compose_files):
+    def _get_kind(self, path: Path) -> str:
+        if any(path.joinpath(file).exists() for file in self._compose_files):
             return "docker-compose"
-
         return None
