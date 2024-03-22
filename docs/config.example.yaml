@@ -29,10 +29,27 @@ services:
       - ~/services
       - /mnt/ssd/services
 
-  # Overwrite and customize environment configuration
-  # on a per-service basis.
+  # Customize environment configuration.
+  # - Use the __all__ section to specify settings 
+  #   that apply to all services.
+  # - Customize settings for individual services 
+  #   by using the exact service name as a selector.
   environment:
+    # Applies to all services
+    __all__:
+      UID: 1001
+      GID: 1001
+      TZ: "America/New_York"
+      SMTP_SERVER: "smtp.server.com"
+      SMTP_PORT: "587"
+      SMTP_USERNAME: "username"
+      SMTP_PASSWORD: "password"
+      SMTP_DOMAIN: "domain.com"
+
+    # Exact service name
     gitlab:
+      UID: 1002 # A service and overwrite the value
+      GID: 1002
       GITLAB_HTTP_PORT: 8080
       GITLAB_SSH_PORT: 8022
 
