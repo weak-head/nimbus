@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from typing import Iterator
+from pathlib import Path
 
 from nas.provider.abstract import Provider, Resource
 
@@ -19,4 +20,7 @@ class BackupProvider(Provider[BackupResource]):
 
     def _resources(self) -> Iterator[BackupResource]:
         for group_name, directories in self._groups.items():
-            yield BackupResource(group_name, directories)
+            yield BackupResource(
+                group_name,
+                [Path(d).expanduser().as_posix() for d in directories],
+            )

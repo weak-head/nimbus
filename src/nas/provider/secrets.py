@@ -27,7 +27,7 @@ class SecretsProvider:
             yield Secret(
                 Secret.ENVIRONMENT,
                 secret["service"],
-                secret["environment"],
+                {str(key): str(value) for key, value in secret["environment"].items()},
             )
 
     def environment(self, service: str) -> Iterator[Secret]:
