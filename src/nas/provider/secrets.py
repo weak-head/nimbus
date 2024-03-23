@@ -1,25 +1,39 @@
 from __future__ import annotations
 
+import fnmatch
 from typing import Iterator
 
-from nas.provider.abstract import Provider, Resource
+
+class Secret:
+
+    ENVIRONMENT = "service-env"
+
+    def __init__(self, kind: str, selector: str, values: dict[str, str]):
+        self.kind: str = kind
+        self.selector: str = selector
+        self.values: dict[str, str] = values
+
+    def match(self, name: str) -> bool:
+        return fnmatch.filter([name], self.selector)
 
 
-class SecretResource(Resource):
+class SecretsProvider:
 
-    def __init__(self, name: str, secrets: dict[str, str]):
-        super().__init__(name)
-        self.secrets: dict[str, str] = secrets
+    def __init__(self, secrets: list[dict[str, str]]):
+        self._secrets = secrets
 
+    def all(self) -> Iterator[Secret]:
+        for secret in self._secrets:
+            yield Secret(
+                Secret.ENVIRONMENT,
+                secret["service"],
+                secret["environment"],
+            )
 
-class SecretsProvider(Provider[SecretResource]):
-
-    def __init__(self, service_secrets: dict[str, dict[str, str]]):
-        self._service_secrets = service_secrets
-
-    def _resources(self) -> Iterator[SecretResource]:
-        for service_name, secrets in self._service_secrets.items():
-            yield SecretResource(service_name, secrets)
+    def environment(self, service: str) -> Iterator[Secret]:
+        for secret in self.all():
+            if secret.kind == Secret.ENVIRONMENT and secret.match(service):
+                yield secret
 
 
 class Secrets:
@@ -31,15 +45,15 @@ class Secrets:
     within your application.
     """
 
-    def __init__(self, service_secrets: SecretsProvider):
-        self._service_secrets = service_secrets
+    def __init__(self, provider: SecretsProvider):
+        self._provider = provider
 
-    def service(self, selector: str) -> dict[str, str]:
+    def environment(self, service: str) -> dict[str, str]:
         """
-        Retrieve a consolidated collection of secrets for a
-        specified set of services chosen by the selector.
+        Retrieve a consolidated collection of environment
+        variables for a specified service chosen by the name.
         """
         secrets = {}
-        for service in self._service_secrets.resolve([selector]):
-            secrets = secrets | service.secrets
+        for secret in self._provider.environment(service):
+            secrets = secrets | secret.values
         return secrets
