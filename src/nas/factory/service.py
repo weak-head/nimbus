@@ -22,7 +22,7 @@ class ServiceFactory:
                 return DockerService(
                     resource.name,
                     resource.directory,
-                    self._secrets.service(resource.name),
+                    self._secrets.env(resource.name),
                     self._runner,
                 )
 

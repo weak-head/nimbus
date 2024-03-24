@@ -1,25 +1,29 @@
 from __future__ import annotations
 
+import fnmatch
 from typing import Iterator
 
-from nas.provider.abstract import Provider, Resource
+
+class Secret:
+
+    def __init__(self, selector: str, values: dict[str, str]):
+        self.selector: str = selector
+        self.values: dict[str, str] = values
 
 
-class SecretResource(Resource):
+class SecretsProvider:
 
-    def __init__(self, name: str, secrets: dict[str, str]):
-        super().__init__(name)
-        self.secrets: dict[str, str] = secrets
+    def __init__(self, secrets: list[dict[str, str]]):
+        self._secrets = secrets if secrets else []
 
+    def env(self, service: str) -> Iterator[Secret]:
+        for entry in self._secrets:
+            yield from self._to_env(entry, service)
 
-class SecretsProvider(Provider[SecretResource]):
-
-    def __init__(self, service_secrets: dict[str, dict[str, str]]):
-        self._service_secrets = service_secrets
-
-    def _resources(self) -> Iterator[SecretResource]:
-        for service_name, secrets in self._service_secrets.items():
-            yield SecretResource(service_name, secrets)
+    def _to_env(self, entry: dict[str, str], service: str) -> Iterator[Secret]:
+        if (sel := entry.get("service")) and (env := entry.get("environment")):
+            if fnmatch.filter([service], sel):
+                yield Secret(sel, {k: str(v) for k, v in env.items()})
 
 
 class Secrets:
@@ -31,15 +35,15 @@ class Secrets:
     within your application.
     """
 
-    def __init__(self, service_secrets: SecretsProvider):
-        self._service_secrets = service_secrets
+    def __init__(self, provider: SecretsProvider):
+        self._provider = provider
 
-    def service(self, selector: str) -> dict[str, str]:
+    def env(self, service: str) -> dict[str, str]:
         """
-        Retrieve a consolidated collection of secrets for a
-        specified set of services chosen by the selector.
+        Retrieve a consolidated collection of environment
+        variables for a specified service chosen by the name.
         """
         secrets = {}
-        for service in self._service_secrets.resolve([selector]):
-            secrets = secrets | service.secrets
+        for secret in self._provider.env(service):
+            secrets = secrets | secret.values
         return secrets

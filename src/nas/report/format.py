@@ -67,8 +67,8 @@ def time(t: dt.datetime, fmt: str = None) -> str:
     return t.strftime(fmt if fmt else "%H:%M:%S")
 
 
-def ceil(integral: int, fractional: int) -> str:
-    return f"{integral}.{math.ceil(int(fractional % 1024) / 100):1d}"
+def ceil(major: int, minor: int) -> str:
+    return f"{major}.{math.floor(((minor % 1024) / 1024) * 100) // 10}"
 
 
 def align(entries: list[list[str]], alignment: str = "l") -> Iterator[list[str]]:

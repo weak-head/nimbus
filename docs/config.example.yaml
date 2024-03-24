@@ -22,17 +22,40 @@ uploaders:
 # Service configuration with emphasis on 
 # service discovery and environment setup.
 services:
-  discovery:
-    # Each directory is recursively traversed 
-    # in search of a supported services.
-    directories:
-      - ~/services
-      - /mnt/ssd/services
+  # Each directory is recursively traversed 
+  # in search of a supported services.
+  directories:
+    - ~/services
+    - /mnt/ssd/services
 
-  # Overwrite and customize environment configuration
-  # on a per-service basis.
-  environment:
-    gitlab:
+# Secrets Configuration Mapping for Services
+# In this section, we define how secrets are mapped to services. 
+# Each service is evaluated against a sequence of glob patterns. 
+# When multiple patterns match, the values are combined into a single set. 
+# The approach used is “last-match-overwrites” 
+# meaning that the last matching value takes precedence.
+secrets:
+  # Match any service
+  - service: "*"
+    environment:
+      UID: 1001
+      GID: 1001
+      TZ: "America/New_York"
+      SMTP_SERVER: "smtp.server.com"
+      SMTP_PORT: "587"
+      SMTP_USERNAME: "username"
+      SMTP_PASSWORD: "password"
+      SMTP_DOMAIN: "domain.com"
+
+  # Match a service that starts with 'git'
+  - service: "git*"
+    environment:
+      UID: 1002 # Overwrite the value
+      GID: 1002
+
+  # Match exact 'gitlab' service name
+  - service: "gitlab"
+    environment:
       GITLAB_HTTP_PORT: 8080
       GITLAB_SSH_PORT: 8022
 

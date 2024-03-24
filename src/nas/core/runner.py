@@ -53,7 +53,7 @@ class SubprocessRunner(Runner):
             if process.stderr is not None:
                 result.stderr = process.stderr.strip()
 
-        except (FileNotFoundError, subprocess.SubprocessError) as e:
+        except Exception as e:  # pylint: disable=broad-exception-caught
             result.exception = e
 
         result.completed = datetime.now()
