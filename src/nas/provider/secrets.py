@@ -14,7 +14,7 @@ class Secret:
 class SecretsProvider:
 
     def __init__(self, secrets: list[dict[str, str]]):
-        self._secrets = secrets
+        self._secrets = secrets if secrets else []
 
     def env(self, service: str) -> Iterator[Secret]:
         for entry in self._secrets:
