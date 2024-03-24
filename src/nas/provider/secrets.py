@@ -6,15 +6,9 @@ from typing import Iterator
 
 class Secret:
 
-    ENVIRONMENT = "service-env"
-
-    def __init__(self, kind: str, selector: str, values: dict[str, str]):
-        self.kind: str = kind
+    def __init__(self, selector: str, values: dict[str, str]):
         self.selector: str = selector
         self.values: dict[str, str] = values
-
-    def match(self, name: str) -> bool:
-        return fnmatch.filter([name], self.selector)
 
 
 class SecretsProvider:
@@ -22,18 +16,14 @@ class SecretsProvider:
     def __init__(self, secrets: list[dict[str, str]]):
         self._secrets = secrets
 
-    def all(self) -> Iterator[Secret]:
-        for secret in self._secrets:
-            yield Secret(
-                Secret.ENVIRONMENT,
-                secret["service"],
-                {str(key): str(value) for key, value in secret["environment"].items()},
-            )
+    def env(self, service: str) -> Iterator[Secret]:
+        for entry in self._secrets:
+            yield from self._to_env(entry, service)
 
-    def environment(self, service: str) -> Iterator[Secret]:
-        for secret in self.all():
-            if secret.kind == Secret.ENVIRONMENT and secret.match(service):
-                yield secret
+    def _to_env(self, entry: dict[str, str], service: str) -> Iterator[Secret]:
+        if (sel := entry.get("service")) and (env := entry.get("environment")):
+            if fnmatch.filter([service], sel):
+                yield Secret(sel, {k: str(v) for k, v in env.items()})
 
 
 class Secrets:
@@ -48,12 +38,12 @@ class Secrets:
     def __init__(self, provider: SecretsProvider):
         self._provider = provider
 
-    def environment(self, service: str) -> dict[str, str]:
+    def env(self, service: str) -> dict[str, str]:
         """
         Retrieve a consolidated collection of environment
         variables for a specified service chosen by the name.
         """
         secrets = {}
-        for secret in self._provider.environment(service):
+        for secret in self._provider.env(service):
             secrets = secrets | secret.values
         return secrets
