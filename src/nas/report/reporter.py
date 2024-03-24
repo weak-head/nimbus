@@ -3,7 +3,6 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from datetime import datetime, timedelta
 from functools import reduce
-from pathlib import Path
 
 import nas.report.format as fmt
 from nas.cmd.abstract import ExecutionResult
@@ -72,7 +71,7 @@ class ReportWriter(Reporter):
         for action in result.actions:
             match action:
                 case BackupActionResult():
-                    self.summary_backup(s, Path(result.config["Destination"]).expanduser().as_posix(), action)
+                    self.summary_backup(s, result.config["Destination"], action)
                 case UploadActionResult():
                     self.summary_upload(s, action)
                 case DeploymentActionResult():
