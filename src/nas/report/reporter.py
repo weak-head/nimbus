@@ -22,6 +22,16 @@ class Reporter(ABC):
         pass
 
 
+class CompositeReporter(Reporter):
+
+    def __init__(self, reporters: list[Reporter]) -> None:
+        self._reporters = reporters if reporters else []
+
+    def write(self, result: ExecutionResult) -> None:
+        for reporter in self._reporters:
+            reporter.write(result)
+
+
 class ReportWriter(Reporter):
     """
     Knows an internal structure of the core objects and outputs them to `Writer`.
