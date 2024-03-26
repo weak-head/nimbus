@@ -1,10 +1,11 @@
 import os.path
+import sys
 from abc import ABC, abstractmethod
 from datetime import datetime
 from pathlib import Path
 
 from nas.config import Config
-from nas.report.reporter import Reporter, ReportWriter
+from nas.report.reporter import CompositeReporter, Reporter, ReportWriter
 from nas.report.writer import TextWriter, Writer
 
 
@@ -55,4 +56,17 @@ class CfgReporterFactory(ReporterFactory):
         if not writer:
             return None
 
-        return ReportWriter(writer)
+        return CompositeReporter(
+            [
+                ReportWriter(writer),
+                ReportWriter(
+                    TextWriter(
+                        sys.stdout,
+                        indent_char=" ",
+                        section_indent=4,
+                        column_width=30,
+                    ),
+                    details=False,
+                ),
+            ]
+        )

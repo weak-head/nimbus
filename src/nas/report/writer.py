@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
+from io import TextIOWrapper
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -62,24 +63,24 @@ class Writer(ABC):
 
 class TextWriter(Writer):
     """
-    Writer that outputs a plain text file.
+    Writer that outputs a plain text to file or to StdOut.
     """
 
     def __init__(
         self,
-        file: FileDescriptorOrPath,
+        file: FileDescriptorOrPath | TextIOWrapper,
         indent_char: str,
         section_indent: int,
         column_width: int,
         indent: int = 0,
         parent: TextWriter = None,
     ):
-        self._file: FileDescriptorOrPath = file
-        self._indent: int = indent
-        self._section_indent: int = section_indent
-        self._indent_char: str = indent_char
-        self._column_width: int = column_width
-        self._parent: TextWriter = parent
+        self._file = file
+        self._indent = indent
+        self._section_indent = section_indent
+        self._indent_char = indent_char
+        self._column_width = column_width
+        self._parent = parent
 
     def section(self, title: str) -> TextWriter:
         self.line("")
@@ -129,5 +130,12 @@ class TextWriter(Writer):
 
             offset = 0
 
-        with open(self._file, mode="a", encoding="utf-8") as file:
-            file.write("".join(message).rstrip() + "\n")
+        self._write("".join(message).rstrip() + "\n")
+
+    def _write(self, message: str) -> None:
+        match self._file:
+            case TextIOWrapper():
+                self._file.write(message)
+            case _:
+                with open(self._file, mode="a", encoding="utf-8") as file:
+                    file.write(message)
