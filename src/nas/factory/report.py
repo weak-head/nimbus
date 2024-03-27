@@ -12,7 +12,7 @@ from nas.report.writer import TextWriter, Writer
 class ReporterFactory(ABC):
 
     @abstractmethod
-    def create_writer(self) -> Writer:
+    def create_writer(self, kind: str) -> Writer:
         pass
 
     @abstractmethod
@@ -26,47 +26,39 @@ class CfgReporterFactory(ReporterFactory):
         self._config = config
 
     def report_file(self, extension: str) -> str:
-        cfg = self._config.report
+        path = self._config.reports.location
+        path = path if path else "~/.nas/reports"
 
-        directory = Path(cfg.location).expanduser().as_posix()
+        directory = Path(path).expanduser().as_posix()
         os.makedirs(directory, exist_ok=True)
 
         now = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
         return os.path.join(directory, f"{now}.{extension}")
 
-    def create_writer(self) -> Writer:
-        cfg = self._config.report
+    def text_writer(self, file) -> Writer:
+        return TextWriter(
+            file,
+            indent_char=" ",
+            section_indent=4,
+            column_width=30,
+        )
 
-        if not cfg:
-            return None
-
-        if cfg.format == "txt":
-            return TextWriter(
-                self.report_file("txt"),
-                indent_char=" ",
-                section_indent=4,
-                column_width=30,
-            )
-
-        return None
+    def create_writer(self, kind: str) -> Writer:
+        match kind:
+            case "stdout":
+                return self.text_writer(sys.stdout)
+            case "txt":
+                return self.text_writer(self.report_file("txt"))
+            case _:
+                return None
 
     def create_reporter(self) -> Reporter:
-        writer = self.create_writer()
+        reporters = []
 
-        if not writer:
-            return None
+        if writer := self.create_writer("stdout"):
+            reporters.append(ReportWriter(writer, details=False))
 
-        return CompositeReporter(
-            [
-                ReportWriter(writer),
-                ReportWriter(
-                    TextWriter(
-                        sys.stdout,
-                        indent_char=" ",
-                        section_indent=4,
-                        column_width=30,
-                    ),
-                    details=False,
-                ),
-            ]
-        )
+        if (kind := self._config.reports.format) and (writer := self.create_writer(kind)):
+            reporters.append(ReportWriter(writer))
+
+        return CompositeReporter(reporters)
