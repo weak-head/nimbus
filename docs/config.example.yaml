@@ -1,4 +1,4 @@
-report:
+reports:
   format: txt
   location: ~/reports
 

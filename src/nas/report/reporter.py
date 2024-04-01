@@ -22,18 +22,32 @@ class Reporter(ABC):
         pass
 
 
+class CompositeReporter(Reporter):
+
+    def __init__(self, reporters: list[Reporter]) -> None:
+        self._reporters = reporters if reporters else []
+
+    def write(self, result: ExecutionResult) -> None:
+        for reporter in self._reporters:
+            reporter.write(result)
+
+
 class ReportWriter(Reporter):
     """
     Knows an internal structure of the core objects and outputs them to `Writer`.
     """
 
-    def __init__(self, writer: Writer) -> None:
+    def __init__(self, writer: Writer, details: bool = True) -> None:
         self._writer = writer
+        self._write_details = details
 
     def write(self, result: ExecutionResult) -> None:
         self.header()
         self.summary(result)
-        self.details(result)
+
+        if self._write_details:
+            self.details(result)
+
         self.footer()
 
     def header(self) -> None:
