@@ -10,6 +10,17 @@ from boto3 import Session
 from boto3.exceptions import S3UploadFailedError
 
 
+class UploadProgress:
+    """
+    Defines a file upload progress.
+    """
+
+    def __init__(self, progress: int, elapsed: timedelta, speed: int):
+        self.progress = progress
+        self.elapsed = elapsed
+        self.speed = speed
+
+
 class Uploader(ABC):
     """
     Defines an abstract file uploader.
@@ -17,21 +28,18 @@ class Uploader(ABC):
     """
 
     @abstractmethod
-    def upload(self, filepath: str, key: str, on_progress: Callable = None) -> UploadStatus:
+    def upload(
+        self,
+        filepath: str,
+        key: str,
+        on_progress: Callable[[UploadProgress], None] = None,
+    ) -> UploadStatus:
         """
         Upload a file to the pre-configured destination.
 
         :param filepath: Full path to the file that should be uploaded.
-
         :param key: The name of the key to upload to.
-
         :param on_progress: An optional callback that is invoked on progress update.
-            The callback accepts four positional arguments:
-                - uploaded bytes (`int`)
-                - uploaded percentage (`int`)
-                - elapsed time (`timedelta`)
-                - average upload speed, bytes per second (`int`)
-
         :return: Status of the file upload.
         """
 
@@ -46,7 +54,7 @@ class AwsUploader(Uploader):
         Converts boto3 callback to common callback.
         """
 
-        def __init__(self, filepath: str, on_progress: Callable):
+        def __init__(self, filepath: str, on_progress: Callable[[UploadProgress], None]):
             self._filepath = filepath
             self._filesize = os.stat(filepath).st_size
             self._on_progress = on_progress
@@ -71,7 +79,7 @@ class AwsUploader(Uploader):
                     elapsed = max(timedelta(seconds=1), datetime.now() - self._started)
                     speed = int(self._uploaded // elapsed.total_seconds())
 
-                    self._on_progress(self._uploaded, progress, elapsed, speed)
+                    self._on_progress(UploadProgress(progress, elapsed, speed))
 
     def __init__(self, access_key: str, secret_key: str, bucket: str, storage_class: str):
         self._session = Session(
@@ -86,7 +94,12 @@ class AwsUploader(Uploader):
         #  - https://docs.aws.amazon.com/AmazonS3/latest/userguide/storage-class-intro.html
         self._storage_class = storage_class
 
-    def upload(self, filepath: str, key: str, on_progress: Callable = None) -> UploadStatus:
+    def upload(
+        self,
+        filepath: str,
+        key: str,
+        on_progress: Callable[[UploadProgress], None] = None,
+    ) -> UploadStatus:
         status = UploadStatus(filepath, key)
         status.started = datetime.now()
         status.size = os.stat(filepath).st_size
