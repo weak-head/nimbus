@@ -7,7 +7,6 @@ from datetime import datetime, timedelta
 from typing import Callable
 
 from boto3 import Session
-from boto3.exceptions import S3UploadFailedError
 
 
 class UploadProgress:
@@ -114,7 +113,7 @@ class AwsUploader(Uploader):
                 Callback=AwsUploader.CallbackAdapter(filepath, on_progress) if on_progress else None,
             )
 
-        except S3UploadFailedError as e:
+        except Exception as e:  # pylint: disable=broad-exception-caught
             status.exception = e
 
         status.completed = datetime.now()
