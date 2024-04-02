@@ -7,7 +7,7 @@ from typing import Any
 
 from nas.cmd.abstract import Action, ActionResult, Command
 from nas.core.archiver import ArchivalStatus, Archiver
-from nas.core.uploader import Uploader
+from nas.core.uploader import Uploader, UploadProgress, UploadStatus
 from nas.provider.backup import BackupProvider, BackupResource
 
 
@@ -24,10 +24,15 @@ class Backup(Command):
         self._uploader = uploader
 
     def _config(self) -> dict[str, Any]:
-        return {
+        cfg = {
             "Destination": self._destination,
             "Upload": bool(self._uploader),
         }
+
+        if self._uploader:
+            cfg |= self._uploader.config()
+
+        return cfg
 
     def _pipeline(self) -> list[Action]:
         upload = [Action(self._upload)] if self._uploader else []
@@ -66,9 +71,24 @@ class Backup(Command):
         return result
 
     def _upload(self, backups: BackupActionResult) -> UploadActionResult:
-        result = UploadActionResult()
+        result = UploadActionResult([])
 
-        # implement me
+        for backup in filter(lambda e: e.success, backups.entries):
+            entry = UploadEntry(backup)
+
+            upload_key = self._compose_upload_key(
+                backup.group,
+                backup.folder,
+                backup.archive.archive,
+            )
+
+            entry.upload = self._uploader.upload(
+                backup.archive.archive,
+                upload_key,
+                ProgressTracker(entry),
+            )
+
+            result.entries.append(entry)
 
         return result
 
@@ -87,6 +107,20 @@ class Backup(Command):
             else:
                 return archive_path
 
+    def _compose_upload_key(self, group: str, directory: str, archive: str) -> str:
+        directory_name = Path(directory).name
+        archive_name = Path(archive).name
+        return os.path.join(group, directory_name, archive_name)
+
+
+class ProgressTracker:
+
+    def __init__(self, upload: UploadEntry):
+        self._upload = upload
+
+    def __call__(self, progress: UploadProgress):
+        self._upload.progress.append(progress)
+
 
 class BackupEntry:
 
@@ -102,8 +136,14 @@ class BackupEntry:
 
 class UploadEntry:
 
-    def __init__(self):
-        self.backup: BackupEntry = None
+    def __init__(self, backup: BackupEntry = None):
+        self.backup: BackupEntry = backup
+        self.upload: UploadStatus = None
+        self.progress: list[UploadProgress] = []
+
+    @property
+    def success(self) -> bool:
+        return self.backup and self.backup.success and self.upload and self.upload.success
 
 
 class DirectoryMappingActionResult(ActionResult[list[BackupResource]]):
@@ -122,4 +162,11 @@ class BackupActionResult(ActionResult[list[BackupEntry]]):
 
 
 class UploadActionResult(ActionResult[list[UploadEntry]]):
-    pass
+
+    @property
+    def success(self) -> bool:
+        return any(e.success for e in self.entries)
+
+    @property
+    def total_size(self) -> int:
+        return sum(entry.upload.size for entry in self.entries if entry.success)

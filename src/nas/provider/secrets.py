@@ -45,5 +45,5 @@ class Secrets:
         """
         secrets = {}
         for secret in self._provider.env(service):
-            secrets = secrets | secret.values
+            secrets |= secret.values
         return secrets
