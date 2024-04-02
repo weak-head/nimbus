@@ -24,10 +24,15 @@ class Backup(Command):
         self._uploader = uploader
 
     def _config(self) -> dict[str, Any]:
-        return {
+        cfg = {
             "Destination": self._destination,
             "Upload": bool(self._uploader),
         }
+
+        if self._uploader:
+            cfg |= self._uploader.config()
+
+        return cfg
 
     def _pipeline(self) -> list[Action]:
         upload = [Action(self._upload)] if self._uploader else []

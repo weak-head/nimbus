@@ -28,6 +28,12 @@ class Uploader(ABC):
     """
 
     @abstractmethod
+    def config(self) -> dict[str, str]:
+        """
+        Returns a configuration used by this uploader.
+        """
+
+    @abstractmethod
     def upload(
         self,
         filepath: str,
@@ -93,6 +99,12 @@ class AwsUploader(Uploader):
         #  - https://aws.amazon.com/s3/storage-classes/
         #  - https://docs.aws.amazon.com/AmazonS3/latest/userguide/storage-class-intro.html
         self._storage_class = storage_class
+
+    def config(self) -> dict[str, str]:
+        return {
+            "S3 Bucket": self._bucket,
+            "S3 Storage": self._storage_class,
+        }
 
     def upload(
         self,
