@@ -73,6 +73,7 @@ class Backup(Command):
 
             upload_key = self._compose_upload_key(
                 backup.group,
+                backup.folder,
                 backup.archive.archive,
             )
 
@@ -101,9 +102,10 @@ class Backup(Command):
             else:
                 return archive_path
 
-    def _compose_upload_key(self, group: str, filepath: str) -> str:
-        archive_name = Path(filepath).name
-        return os.path.join(group, archive_name)
+    def _compose_upload_key(self, group: str, directory: str, archive: str) -> str:
+        directory_name = Path(directory).name
+        archive_name = Path(archive).name
+        return os.path.join(group, directory_name, archive_name)
 
 
 class ProgressTracker:
@@ -136,7 +138,7 @@ class UploadEntry:
 
     @property
     def success(self) -> bool:
-        return self.backup.success and self.upload.success
+        return self.backup and self.backup.success and self.upload and self.upload.success
 
 
 class DirectoryMappingActionResult(ActionResult[list[BackupResource]]):

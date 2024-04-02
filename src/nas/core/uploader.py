@@ -18,6 +18,7 @@ class UploadProgress:
         self.progress = progress
         self.elapsed = elapsed
         self.speed = speed
+        self.timestamp = datetime.now()
 
 
 class Uploader(ABC):
