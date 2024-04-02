@@ -21,5 +21,6 @@ dist/
 coverage/
 htmlcov
 .coverage
-coverage.xml
 .pytest_cache
+coverage.xml
+junitreport.xml
