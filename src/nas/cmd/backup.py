@@ -161,3 +161,7 @@ class UploadActionResult(ActionResult[list[UploadEntry]]):
     @property
     def success(self) -> bool:
         return any(e.success for e in self.entries)
+
+    @property
+    def total_size(self) -> int:
+        return sum(entry.upload.size for entry in self.entries if entry.success)

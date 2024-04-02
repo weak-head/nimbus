@@ -131,7 +131,28 @@ class ReportWriter(Reporter):
             b.list(failed, style="number")
 
     def summary_upload(self, w: Writer, result: UploadActionResult) -> None:
-        pass
+        if uploaded := sorted(
+            (
+                e.upload.key,
+                fmt.size(e.upload.size),
+                fmt.duration(e.upload.elapsed),
+                fmt.speed(e.upload.speed),
+            )
+            for e in result.entries
+            if e.success
+        ):
+            b = w.section(f"-- Successful uploads [ 📁 {fmt.size(result.total_size)} ] -- (ﾉ◕ヮ◕)ﾉ")
+            b.list(
+                [
+                    f"{name} [ 📁 {size} | ⌚ {duration} | ⚡ {speed} ]"
+                    for name, size, duration, speed in fmt.align(uploaded, "lrrr")
+                ],
+                style="number",
+            )
+
+        if failed := sorted(e.backup.archive.archive for e in result.entries if not e.success):
+            b = w.section("-- Failed uploads -- ¯\\_(ツ)_/¯")
+            b.list(failed, style="number")
 
     def summary_deploy(self, w: Writer, result: DeploymentActionResult) -> None:
         if processed := sorted((d.service, d.kind, fmt.duration(d.elapsed)) for d in result.successful):
