@@ -46,12 +46,16 @@ isort:
     - merge_requests
     - main
 
-unit-tests:
+tests:
   stage: test
   script:
     - pip install poetry
     - poetry install
-    - poetry run pytest
+    - poetry run pytest --junitxml=junitreport.xml
+  artifacts:
+    when: always
+    reports:
+      junit: junitreport.xml
   only:
     - merge_requests
     - main
@@ -59,7 +63,7 @@ unit-tests:
 coverage:
   stage: test
   dependencies:
-    - unit-tests
+    - tests
   script:
     - pip install poetry
     - poetry install
@@ -69,11 +73,10 @@ coverage:
       --cov-report=term
       --cov-report=html:coverage
       --cov-report=xml:coverage.xml
-      --junitxml=junitreport.xml
   coverage: '/(?i)total.*? (100(?:\.0+)?\%|[1-9]?\d(?:\.\d+)?\%)$/'
   artifacts:
+    when: always
     reports:
-      junit: junitreport.xml
       coverage_report:
         coverage_format: cobertura
         path: coverage.xml
@@ -82,6 +85,20 @@ coverage:
   only:
     - merge_requests
     - main
+
+publish-package-tag:
+  stage: publish
+  dependencies:
+    - tests
+  rules:
+    - if: '$CI_COMMIT_REF_NAME =~ "/^v((?P<major>0|[1-9]\d*)(\.(?P<minor>0|[1-9]\d*)(\.(?P<patch>0|[1-9]\d*))?)?)$/"'
+      when: always
+  script:
+    - pip install poetry
+    - poetry build
+    - poetry config repositories.gitlab "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/pypi"
+    - poetry config http-basic.gitlab gitlab-ci-token "$CI_JOB_TOKEN"
+    - poetry publish --repository gitlab
 
 pages:
   stage: publish
