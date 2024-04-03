@@ -6,6 +6,7 @@ build-backend = "poetry.core.masonry.api"
 name = "nas"
 version = "0.1.0"
 description = "Powerful tool designed to streamline server operations and ensure data resilience."
+keywords = ["backup", "deploy", "administration"]
 authors = ["Oleksandr Zinchenko <zinchenko@live.com>"]
 readme = "readme.md"
 license = "MIT"
