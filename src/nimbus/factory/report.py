@@ -27,7 +27,7 @@ class CfgReporterFactory(ReporterFactory):
 
     def report_file(self, extension: str) -> str:
         path = self._config.reports.location
-        path = path if path else "~/.nas/reports"
+        path = path if path else "~/.nimbus/reports"
 
         directory = Path(path).expanduser().as_posix()
         os.makedirs(directory, exist_ok=True)

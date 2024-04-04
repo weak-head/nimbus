@@ -9,7 +9,7 @@ def configure(config: Config) -> None:
 
     # --
     # Log directory
-    log_dir = "~/.nas/log"
+    log_dir = "~/.nimbus/log"
     log_dir = os.path.abspath(os.path.expanduser(log_dir))
     os.makedirs(log_dir, exist_ok=True)
 

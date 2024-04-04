@@ -7,8 +7,8 @@ import yaml
 # Default search paths for the configuration location.
 # The order in the list defines the search and load priority.
 SEARCH_PATHS = (
-    "~/.nas/config.yml",
-    "~/.nas/config.yaml",
+    "~/.nimbus/config.yml",
+    "~/.nimbus/config.yaml",
 )
 
 
