@@ -7,7 +7,7 @@
   <br/><br/>
 
   [![pipeline](https://git.lothric.net/lothric/infrastructure/nimbus/badges/main/pipeline.svg)](https://git.lothric.net/lothric/infrastructure/nimbus/-/pipelines)
-  [![coverage](https://git.lothric.net/lothric/infrastructure/nimbus/badges/main/coverage.svg)](https://lothric.pages.lothric.net/infrastructure/nas)
+  [![coverage](https://git.lothric.net/lothric/infrastructure/nimbus/badges/main/coverage.svg)](https://lothric.pages.lothric.net/infrastructure/nimbus)
   [![release](https://git.lothric.net/lothric/infrastructure/nimbus/-/badges/release.svg)](https://git.lothric.net/lothric/infrastructure/nimbus/-/releases)
   [![py3.12](https://img.shields.io/badge/python-3.12-4584b6.svg)](https://www.python.org/downloads/release/python-3120/)
   [![MIT License](https://img.shields.io/badge/license-MIT-blue)](https://opensource.org/license/mit)
@@ -17,10 +17,23 @@
 
 ## Table of Content <!-- omit from toc -->
 
-- [Environment setup](#environment-setup)
-- [Available commands](#available-commands)
+- [Overview](#overview)
+- [Quick Start](#quick-start)
+  - [Building and Testing](#building-and-testing)
+  - [Installation](#installation)
+- [CLI Usage](#cli-usage)
+  - [Backups](#backups)
+  - [Deployments](#deployments)
 
-## Environment setup
+## Overview
+
+tbd
+
+## Quick Start
+
+tbd
+
+### Building and Testing
 
 ```bash
 # --
@@ -43,7 +56,21 @@ pyenv local nas_env
 poetry install
 ```
 
-## Available commands
+### Installation
+
+From GitLab Package Registry
+
+## CLI Usage
+
+tbd configuration
+
+### Backups
+
+tbd selectors
+
+### Deployments
+
+tbd selectors
 
 ```bash
 nas up [services ...]
