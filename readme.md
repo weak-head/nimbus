@@ -1,4 +1,19 @@
-# NAS management utility <!-- omit from toc --> 
+<div align="center">
+  <img src="./docs/logo.png" width="450" />
+  
+  # nimbus <!-- omit from toc --> 
+  
+  Nimbus is engineered to optimize data backup processes and efficiently orchestrate service deployments.
+  <br/><br/>
+
+  [![pipeline](https://git.lothric.net/lothric/infrastructure/nimbus/badges/main/pipeline.svg)](https://git.lothric.net/lothric/infrastructure/nimbus/-/pipelines)
+  [![coverage](https://git.lothric.net/lothric/infrastructure/nimbus/badges/main/coverage.svg)](https://lothric.pages.lothric.net/infrastructure/nas)
+  [![release](https://git.lothric.net/lothric/infrastructure/nimbus/-/badges/release.svg)](https://git.lothric.net/lothric/infrastructure/nimbus/-/releases)
+  [![py3.12](https://img.shields.io/badge/python-3.12-4584b6.svg)](https://www.python.org/downloads/release/python-3120/)
+  [![MIT License](https://img.shields.io/badge/license-MIT-blue)](https://opensource.org/license/mit)
+
+</div>
+
 
 ## Table of Content <!-- omit from toc -->
 
