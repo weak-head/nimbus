@@ -3,10 +3,10 @@ from __future__ import annotations
 from abc import abstractmethod
 from typing import Any
 
-from nas.cmd.abstract import Action, ActionResult, Command
-from nas.core.service import OperationStatus, Service
-from nas.factory.service import ServiceFactory
-from nas.provider.service import ServiceProvider, ServiceResource
+from nimbus.cmd.abstract import Action, ActionResult, Command
+from nimbus.core.service import OperationStatus, Service
+from nimbus.factory.service import ServiceFactory
+from nimbus.provider.service import ServiceProvider, ServiceResource
 
 
 class Deployment(Command):

@@ -2,11 +2,11 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 
-from nas.cmd import Backup, Down, Up
-from nas.cmd.abstract import Command
-from nas.config import Config
-from nas.factory.component import ComponentFactory
-from nas.provider.backup import BackupProvider
+from nimbus.cmd import Backup, Down, Up
+from nimbus.cmd.abstract import Command
+from nimbus.config import Config
+from nimbus.factory.component import ComponentFactory
+from nimbus.provider.backup import BackupProvider
 
 
 class CommandFactory(ABC):

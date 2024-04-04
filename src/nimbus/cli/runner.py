@@ -3,9 +3,9 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from argparse import Namespace
 
-from nas.cmd.abstract import Command
-from nas.factory.command import CommandFactory
-from nas.report.reporter import Reporter
+from nimbus.cmd.abstract import Command
+from nimbus.factory.command import CommandFactory
+from nimbus.report.reporter import Reporter
 
 
 class Runner(ABC):

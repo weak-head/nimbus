@@ -1,12 +1,12 @@
 import sys
 
-from nas.cli.parser import parse_args
-from nas.cli.runner import CommandRunner
-from nas.config import SEARCH_PATHS, Config, resolve_config, safe_load
-from nas.factory.command import CfgCommandFactory, CommandFactory
-from nas.factory.component import CfgComponentFactory
-from nas.factory.report import CfgReporterFactory
-from nas.report.reporter import Reporter
+from nimbus.cli.parser import parse_args
+from nimbus.cli.runner import CommandRunner
+from nimbus.config import SEARCH_PATHS, Config, resolve_config, safe_load
+from nimbus.factory.command import CfgCommandFactory, CommandFactory
+from nimbus.factory.component import CfgComponentFactory
+from nimbus.factory.report import CfgReporterFactory
+from nimbus.report.reporter import Reporter
 
 
 class ExitCode:

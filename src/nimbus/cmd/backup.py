@@ -5,10 +5,10 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any
 
-from nas.cmd.abstract import Action, ActionResult, Command
-from nas.core.archiver import ArchivalStatus, Archiver
-from nas.core.uploader import Uploader, UploadProgress, UploadStatus
-from nas.provider.backup import BackupProvider, BackupResource
+from nimbus.cmd.abstract import Action, ActionResult, Command
+from nimbus.core.archiver import ArchivalStatus, Archiver
+from nimbus.core.uploader import Uploader, UploadProgress, UploadStatus
+from nimbus.provider.backup import BackupProvider, BackupResource
 
 
 class Backup(Command):

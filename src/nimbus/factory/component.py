@@ -2,13 +2,13 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 
-from nas.config import Config
-from nas.core.archiver import Archiver, RarArchiver
-from nas.core.runner import Runner, SubprocessRunner
-from nas.core.uploader import AwsUploader, Uploader
-from nas.factory.service import ServiceFactory
-from nas.provider.secrets import Secrets, SecretsProvider
-from nas.provider.service import ServiceProvider
+from nimbus.config import Config
+from nimbus.core.archiver import Archiver, RarArchiver
+from nimbus.core.runner import Runner, SubprocessRunner
+from nimbus.core.uploader import AwsUploader, Uploader
+from nimbus.factory.service import ServiceFactory
+from nimbus.provider.secrets import Secrets, SecretsProvider
+from nimbus.provider.service import ServiceProvider
 
 
 class ComponentFactory(ABC):

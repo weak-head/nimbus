@@ -2,14 +2,14 @@ import logging
 import os
 from datetime import datetime
 
-from nas.config import Config
+from nimbus.config import Config
 
 
 def configure(config: Config) -> None:
 
     # --
     # Log directory
-    log_dir = "~/.nas/log"
+    log_dir = "~/.nimbus/log"
     log_dir = os.path.abspath(os.path.expanduser(log_dir))
     os.makedirs(log_dir, exist_ok=True)
 

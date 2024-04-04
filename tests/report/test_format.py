@@ -2,7 +2,7 @@ from datetime import datetime, timedelta
 
 import pytest
 
-import nas.report.format as fmt
+import nimbus.report.format as fmt
 
 
 @pytest.mark.parametrize(

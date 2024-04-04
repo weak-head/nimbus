@@ -1,6 +1,6 @@
 from argparse import ArgumentParser, Namespace
 
-from nas.cli.runner import Runner
+from nimbus.cli.runner import Runner
 
 
 def parse_args(args: list[str], runner: Runner) -> Namespace | None:
@@ -21,7 +21,7 @@ def parse_args(args: list[str], runner: Runner) -> Namespace | None:
 
 def create_parser(runner: Runner) -> ArgumentParser:
 
-    parser = ArgumentParser("nas")
+    parser = ArgumentParser("ni")
     parser.add_argument("--config", dest="config_path", default=None)
     commands = parser.add_subparsers()
 
