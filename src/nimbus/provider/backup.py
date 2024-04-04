@@ -3,7 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Iterator
 
-from nas.provider.abstract import Provider, Resource
+from nimbus.provider.abstract import Provider, Resource
 
 
 class BackupResource(Resource):

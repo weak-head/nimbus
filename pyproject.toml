@@ -3,7 +3,7 @@ requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-name = "nas"
+name = "nimbus"
 version = "0.1.0"
 description = "Powerful tool designed to streamline server operations and ensure data resilience."
 keywords = ["backup", "deploy", "administration"]
@@ -29,7 +29,7 @@ pytest-cov = "^4.1.0"
 pytest-timeout = "^2.2.0"
 
 [tool.poetry.scripts]
-nas = "nas.main:main"
+ni = "nimbus.main:main"
 
 [tool.coverage.run]
 branch = true

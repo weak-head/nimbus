@@ -1,7 +1,7 @@
-from nas.core.runner import Runner
-from nas.core.service import DockerService, Service
-from nas.provider.secrets import Secrets
-from nas.provider.service import ServiceResource
+from nimbus.core.runner import Runner
+from nimbus.core.service import DockerService, Service
+from nimbus.provider.secrets import Secrets
+from nimbus.provider.service import ServiceResource
 
 
 class ServiceFactory:

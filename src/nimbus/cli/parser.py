@@ -1,6 +1,6 @@
 from argparse import ArgumentParser, Namespace
 
-from nas.cli.runner import Runner
+from nimbus.cli.runner import Runner
 
 
 def parse_args(args: list[str], runner: Runner) -> Namespace | None:

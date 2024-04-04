@@ -4,15 +4,15 @@ from abc import ABC, abstractmethod
 from datetime import datetime, timedelta
 from functools import reduce
 
-import nas.report.format as fmt
-from nas.cmd.abstract import ExecutionResult
-from nas.cmd.backup import (
+import nimbus.report.format as fmt
+from nimbus.cmd.abstract import ExecutionResult
+from nimbus.cmd.backup import (
     BackupActionResult,
     DirectoryMappingActionResult,
     UploadActionResult,
 )
-from nas.cmd.deploy import DeploymentActionResult
-from nas.report.writer import Writer
+from nimbus.cmd.deploy import DeploymentActionResult
+from nimbus.report.writer import Writer
 
 
 class Reporter(ABC):

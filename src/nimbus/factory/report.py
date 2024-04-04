@@ -4,9 +4,9 @@ from abc import ABC, abstractmethod
 from datetime import datetime
 from pathlib import Path
 
-from nas.config import Config
-from nas.report.reporter import CompositeReporter, Reporter, ReportWriter
-from nas.report.writer import TextWriter, Writer
+from nimbus.config import Config
+from nimbus.report.reporter import CompositeReporter, Reporter, ReportWriter
+from nimbus.report.writer import TextWriter, Writer
 
 
 class ReporterFactory(ABC):

@@ -2,7 +2,7 @@ import logging
 import os
 from datetime import datetime
 
-from nas.config import Config
+from nimbus.config import Config
 
 
 def configure(config: Config) -> None:
