@@ -8,7 +8,7 @@ version = "0.1.0"
 description = "Nimbus is engineered to optimize data backup processes and efficiently orchestrate service deployments."
 keywords = ["backup", "deploy", "administration"]
 authors = ["Oleksandr Zinchenko <zinchenko@live.com>"]
-readme = "readme.md"
+readme = "README.md"
 license = "MIT"
 
 [tool.poetry.dependencies]

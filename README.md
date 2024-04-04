@@ -3,7 +3,7 @@
   
   # nimbus <!-- omit from toc --> 
   
-  Nimbus is engineered to optimize data backup processes and efficiently orchestrate service deployments.
+  Nimbus is engineered to optimize data backup processes and efficiently orchestrate service deployments for homelabs and dev environments.
   <br/><br/>
 
   [![pipeline](https://git.lothric.net/lothric/infrastructure/nimbus/badges/main/pipeline.svg)](https://git.lothric.net/lothric/infrastructure/nimbus/-/pipelines)
@@ -15,21 +15,22 @@
 </div>
 
 
-## Table of Content <!-- omit from toc -->
+## Table of Contents <!-- omit from toc -->
 
 - [Overview](#overview)
-- [Quick Start](#quick-start)
+- [Getting Started](#getting-started)
   - [Building and Testing](#building-and-testing)
   - [Installation](#installation)
-- [CLI Usage](#cli-usage)
+- [Usage](#usage)
   - [Backups](#backups)
   - [Deployments](#deployments)
+- [Configuration](#configuration)
 
 ## Overview
 
-tbd
+Nimbus stands as a comprehensive data backup manager and service deployment orchestrator tailored for homelabs, media centers, and local development environments. It offers a seamless, turnkey solution to streamline your data management and service orchestration needs. While Nimbus is robust for personal or developmental use, it is not intended to supplant production-level or mission-critical tools designed for commercial-scale backups and deployments.
 
-## Quick Start
+## Getting Started
 
 tbd
 
@@ -60,7 +61,7 @@ poetry install
 
 From GitLab Package Registry
 
-## CLI Usage
+## Usage
 
 tbd configuration
 
@@ -77,3 +78,7 @@ nas up [services ...]
 nas down [services ...]
 nas backup [groups ...]
 ```
+
+## Configuration
+
+tbd
