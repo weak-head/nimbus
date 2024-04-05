@@ -73,7 +73,7 @@ By default, Nimbus searches for its configuration file at the `~/.nimbus/config.
 It is anticipated that all configurations for the application will be centralized within this file.  
 For guidance and examples on setting up your configuration, please refer to the [config example](./docs/config.example.yaml).  
 
-> Important Note on Glob Patterns in Bash/SH.
+> **Important Note on Glob Patterns in Bash/SH.**  
 > When using the `ni` command, it’s essential to use `\*` in place of `*`.  
 > This is because `bash` or `sh` interprets `*` as a glob pattern and attempts to expand it before passing it to `ni`.  
 > By escaping the asterisk (`\*`), you ensure that `ni` receives the character literally, allowing it to process the glob pattern as intended.
@@ -87,7 +87,7 @@ The command accepts optional selectors, that filter the configured backup groups
 ni backup [selectors]
 ```
 
-Lets assume we have the following nimbus configuration:
+Lets assume we have the following Nimbus configuration:
 
 ```yaml
 backup:
@@ -103,7 +103,7 @@ backup:
       - ~/Documents
 ```
 
-The following `backup` commands would result in:
+With this configuration, the following `backup` commands would result in:
 
 | Command | Selected Backup groups |
 | --- | --- |
@@ -115,14 +115,43 @@ The following `backup` commands would result in:
 
 ### Deployments
 
-Managing deployments of docker compose stacks.
+The `up` and `down` commands manage deployments of services. Nimbus supports handling services structured as [Docker Compose](https://docs.docker.com/compose/) stacks.  
+The command accepts optional selectors, that filter the discovered services using specified [glob patterns](https://en.wikipedia.org/wiki/Glob_(programming)).
 
 ```bash
 ni up [selectors]
 ni down [selectors]
 ```
 
-Examples:
-- `ni up`
-- `ni up m* *cloud*`
-- `ni down media git`
+Lets assume we have the following Nimbus configuration:
+
+```yaml
+services:
+  directories:
+    - ~/.nimbus/services
+```
+
+And under the `~/.nimbus/services` we have the following directory structure:
+
+```
+|- services
+    |- media
+        |- .env
+        |- compose.yaml
+    |- cloud
+        |- .env
+        |- compose.yaml
+    |- git
+        |- some_file.txt 
+        |- start.sh
+```
+
+With this configuration and directory structure, the following deployment commands would result in:
+
+| Command | Selected Services |
+| --- | --- |
+| `ni up` | media cloud |
+| `ni up media` | media |
+| `ni down g\*` | |
+| `ni down git` | |
+| `ni down cl\*` | cloud |
