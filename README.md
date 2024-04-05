@@ -19,8 +19,8 @@
 
 - [Overview](#overview)
 - [Getting Started](#getting-started)
-  - [Building and Testing](#building-and-testing)
-  - [Installation](#installation)
+  - [Build from Source](#build-from-source)
+  - [Package Installation](#package-installation)
 - [Usage](#usage)
   - [Backups](#backups)
   - [Deployments](#deployments)
@@ -32,52 +32,65 @@ Nimbus stands as a comprehensive data backup manager and service deployment orch
 
 ## Getting Started
 
-tbd
+To begin using Nimbus, you have two primary options:
+- Build from Source: Compile and run Nimbus directly from the source code.  
+  This method is ideal for those who wish to customize or contribute to the project.
+- Package Installation: Conveniently install Nimbus via a package registry.  
+  This option is best for users looking for a quick and straightforward setup.
 
-### Building and Testing
+### Build from Source
 
 ```bash
-# --
-# Install poetry ( https://python-poetry.org/docs/ )
-pipx install poetry
 pipx ensurepath
+pipx install poetry
 
-# --
-# Install pyenv
+# Setup venv
 curl https://pyenv.run | bash
-
-# --
-# Setup virtual environment
 pyenv install 3.12
-pyenv virtualenv 3.12 nas_env
-pyenv local nas_env
+pyenv virtualenv 3.12 ni_env
+pyenv local ni_env
 
-# --
-# Install project dependencies
+# Install nimbus and it's dependencies
 poetry install
 ```
 
-### Installation
+### Package Installation
 
-From GitLab Package Registry
+TODO: Steps to install from GitLab Package Registry
 
 ## Usage
 
-tbd configuration
+By default, Nimbus searches for its configuration file at the `~/.nimbus/config.yaml` path.  
+It is anticipated that all configurations for the application will be centralized within this file.  
+For guidance and examples on setting up your configuration, please refer to the [documentation section](#configuration).  
 
 ### Backups
 
-tbd selectors
+Creating backups and uploading them to AWS S3 bucket.
+
+```sh
+ni backup [selectors ...]
+```
+
+Examples:
+- `ni backup`
+- `ni backup photos`
+- `ni backup ph* *cloud*`
 
 ### Deployments
 
-tbd selectors
+Managing deployments of docker compose stacks.
 
-```bash
-nas up [services ...]
-nas down [services ...]
-nas backup [groups ...]
+```sh
+ni up [selectors ...]
+ni down [selectors ...]
 ```
+
+Examples:
+- `ni up`
+- `ni up m* *cloud*`
+- `ni down media git`
+
 
 ## Configuration
 
