@@ -40,17 +40,27 @@ To begin using Nimbus, you have two primary options:
 
 ### Build from Source
 
+Nimbus uses [poetry](https://python-poetry.org/) for dependency management and packaging.  
+Poetry could be installed using `pipx`. For any other installation options consult the documentation.
+
 ```bash
 pipx ensurepath
 pipx install poetry
+```
 
-# Setup venv
+Python versions and environments are managed using `pyenv`.
+
+```bash
 curl https://pyenv.run | bash
+
 pyenv install 3.12
 pyenv virtualenv 3.12 ni_env
 pyenv local ni_env
+```
 
-# Install nimbus and it's dependencies
+Once you have set up `poetry` and `pyenv` you can install Nimbus and access it using `ni` shortcut.
+
+```bash
 poetry install
 ```
 
