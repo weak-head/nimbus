@@ -24,7 +24,6 @@
 - [Usage](#usage)
   - [Backups](#backups)
   - [Deployments](#deployments)
-- [Configuration](#configuration)
 
 ## Overview
 
@@ -72,36 +71,58 @@ TODO: Steps to install from GitLab Package Registry
 
 By default, Nimbus searches for its configuration file at the `~/.nimbus/config.yaml` path.  
 It is anticipated that all configurations for the application will be centralized within this file.  
-For guidance and examples on setting up your configuration, please refer to the [documentation section](#configuration).  
+For guidance and examples on setting up your configuration, please refer to the [config example](./docs/config.example.yaml).  
+
+> Important Note on Glob Patterns in Bash/SH.
+> When using the `ni` command, it’s essential to use `\*` in place of `*`.  
+> This is because `bash` or `sh` interprets `*` as a glob pattern and attempts to expand it before passing it to `ni`.  
+> By escaping the asterisk (`\*`), you ensure that `ni` receives the character literally, allowing it to process the glob pattern as intended.
 
 ### Backups
 
-Creating backups and uploading them to AWS S3 bucket.
+The `backup` command facilitates the creation of backups and enables their optional upload to a remote destination, such as an AWS S3 bucket.  
+The command accepts optional selectors, that filter the configured backup groups using specified [glob patterns](https://en.wikipedia.org/wiki/Glob_(programming)).
 
-```sh
-ni backup [selectors ...]
+```bash
+ni backup [selectors]
 ```
 
-Examples:
-- `ni backup`
-- `ni backup photos`
-- `ni backup ph* *cloud*`
+Lets assume we have the following nimbus configuration:
+
+```yaml
+backup:
+  destination: ~/.nimbus/backups
+  archiver: rar
+  directories: 
+    photos:
+      - ~/Pictures
+      - /mnt/photos
+    cloud:
+      - /mnt/nextcloud
+    docs:
+      - ~/Documents
+```
+
+The following `backup` commands would result in:
+
+| Command | Selected Backup groups |
+| --- | --- |
+| `ni backup` | photos cloud docs |
+| `ni backup nx\*` | |
+| `ni backup photos` | photos |
+| `ni backup ph\* \*cloud\*` | photos cloud |
+| `ni backup \*o\?\?` | cloud docs |
 
 ### Deployments
 
 Managing deployments of docker compose stacks.
 
-```sh
-ni up [selectors ...]
-ni down [selectors ...]
+```bash
+ni up [selectors]
+ni down [selectors]
 ```
 
 Examples:
 - `ni up`
 - `ni up m* *cloud*`
 - `ni down media git`
-
-
-## Configuration
-
-tbd
