@@ -73,7 +73,7 @@ By default, Nimbus searches for its configuration file at the `~/.nimbus/config.
 It is anticipated that all configurations for the application will be centralized within this file.  
 For guidance and examples on setting up your configuration, please refer to the [config example](./docs/config.example.yaml).  
 
-> **Important Note on Glob Patterns in Bash/SH.**  
+> **Important Note on Glob Patterns in bash/sh**  
 > When using the `ni` command, it’s essential to use `\*` in place of `*`.  
 > This is because `bash` or `sh` interprets `*` as a glob pattern and attempts to expand it before passing it to `ni`.  
 > By escaping the asterisk (`\*`), you ensure that `ni` receives the character literally, allowing it to process the glob pattern as intended.
@@ -90,9 +90,14 @@ ni backup [selectors]
 Lets assume we have the following Nimbus configuration:
 
 ```yaml
+archivers:
+  rar-protected:
+    provider: rar
+    password: SecretPassword
+
 backup:
   destination: ~/.nimbus/backups
-  archiver: rar
+  archiver: rar-protected
   directories: 
     photos:
       - ~/Pictures
@@ -115,7 +120,7 @@ With this configuration, the following `backup` commands would result in:
 
 ### Deployments
 
-The `up` and `down` commands manage deployments of services. Nimbus supports handling services structured as [Docker Compose](https://docs.docker.com/compose/) stacks.  
+The `up` and `down` commands manage deployments of services. Nimbus supports services structured as [Docker Compose](https://docs.docker.com/compose/) stacks and performs recursive service discovery for the configured directories.  
 The command accepts optional selectors, that filter the discovered services using specified [glob patterns](https://en.wikipedia.org/wiki/Glob_(programming)).
 
 ```bash
