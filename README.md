@@ -65,13 +65,30 @@ poetry install
 
 ### Package Installation
 
-Create a [Personal Access Token](https://docs.gitlab.com/ee/user/profile/personal_access_tokens.html) with `read_api` scope.
+Create a [Personal Access Token](https://docs.gitlab.com/ee/user/profile/personal_access_tokens.html) with `read_api` scope and, optionally, configure pip (`~/.pip/pip.conf`) to use GitLab Package Registry:
+
+```conf
+[global]
+index-url=https://__token__:PERSONAL_ACCESS_TOKEN@git.lothric.net/api/v4/projects/112/packages/pypi/simple
+extra-index-url=https://pypi.org/simple
+```
+
+Ensure [Python 3.12](https://www.python.org/downloads/release/python-3120/) is installed and used globally:
 
 ```bash
 pyenv install 3.12
 pyenv global 3.12
+```
+
+Install Nimbus from the GitLab Package Registry:
+
+```bash
+# If pip is configured
+pip install nimbus
+
+# If pip is not configured, explicitly specify the index-url
 pip install nimbus \
-  --index-url https://__token__:{PERSONAL_ACCESS_TOKEN}@git.lothric.net/api/v4/projects/112/packages/pypi/simple
+  --index-url https://__token__:PERSONAL_ACCESS_TOKEN@git.lothric.net/api/v4/projects/112/packages/pypi/simple
 ```
 
 ## Usage
