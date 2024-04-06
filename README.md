@@ -102,9 +102,18 @@ archivers:
     provider: rar
     password: SecretPassword
 
+uploaders:
+  aws-archive:
+    provider: aws
+    access_key: XXXXXXXXXXXXX
+    secret_key: XXXXXXXXXXXXXXXXXXXXXXXXX
+    bucket: backups.bucket.aws
+    storage_class: STANDARD
+
 backup:
   destination: ~/.nimbus/backups
   archiver: rar-protected
+  uploader: aws-archive
   directories: 
     photos:
       - ~/Pictures
