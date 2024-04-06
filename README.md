@@ -65,7 +65,14 @@ poetry install
 
 ### Package Installation
 
-TODO: Steps to install from GitLab Package Registry
+Create a [Personal Access Token](https://docs.gitlab.com/ee/user/profile/personal_access_tokens.html) with `read_api` scope.
+
+```bash
+pyenv install 3.12
+pyenv global 3.12
+pip install nimbus \
+  --index-url https://__token__:{PERSONAL_ACCESS_TOKEN}@git.lothric.net/api/v4/projects/112/packages/pypi/simple
+```
 
 ## Usage
 
