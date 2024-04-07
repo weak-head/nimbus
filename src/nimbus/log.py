@@ -9,7 +9,7 @@ from nimbus.config import Config
 def setup_logger(config: Config) -> bool:
     try:
         log_formatter = logging.Formatter(
-            fmt="%(asctime)s [%(levelname)-5.5s] %(filename)s:%(funcName)s:%(lineno)d - %(message)s",
+            fmt="%(asctime)s [%(levelname)-5.5s] - %(message)s",
         )
 
         root_logger = logging.getLogger()

@@ -266,6 +266,17 @@ files = [
 ]
 
 [[package]]
+name = "logdecorator"
+version = "2.4"
+description = "Move logging code out of your business logic with decorators"
+optional = false
+python-versions = "*"
+files = [
+    {file = "logdecorator-2.4-py3-none-any.whl", hash = "sha256:34bf769dafaf8b53a94484036b401b651f50fca830e03a93837a68d7180afd55"},
+    {file = "logdecorator-2.4.tar.gz", hash = "sha256:7735260e579c50af5f3aee4ee75dab886ae427b1960eb805d8eafe84b75c41b6"},
+]
+
+[[package]]
 name = "mccabe"
 version = "0.7.0"
 description = "McCabe checker, plugin for flake8"
@@ -570,4 +581,4 @@ zstd = ["zstandard (>=0.18.0)"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.12"
-content-hash = "53342b043f94b1c0816fa8c8bc18cfa44c73742ec68c33ff4eff3f5ed0d5826a"
+content-hash = "43f29ecfc621350a4e773a606667565d79fdd924a39bc4da6f78624b4efa7fcb"

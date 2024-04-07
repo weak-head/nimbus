@@ -1,4 +1,7 @@
+import logging
 import sys
+
+from logdecorator import log_on_error, log_on_start
 
 from nimbus.cli.parser import parse_args
 from nimbus.cli.runner import CommandRunner
@@ -73,9 +76,10 @@ def execute(runner: CommandRunner, args: list[str]) -> int:
             "The execution will continue, but the logging capabilities would be disabled.\n"
         )
 
-    factory = build_factory(config)
-    reporter = build_reporter(config)
-    if not factory or not reporter:
+    try:
+        runner.set_factory(build_factory(config))
+        runner.set_reporter(build_reporter(config))
+    except Exception:  # pylint: disable=broad-exception-caught
         print(
             "The application encountered an issue during startup due to an invalid configuration.\n"
             "Please follow these steps to troubleshoot:\n"
@@ -87,26 +91,20 @@ def execute(runner: CommandRunner, args: list[str]) -> int:
         )
         return ExitCode.UNABLE_TO_EXECUTE
 
-    runner.set_factory(factory)
-    runner.set_reporter(reporter)
-
     runner.run_default(ns)
-
     return ExitCode.SUCCESS
 
 
+@log_on_start(logging.DEBUG, "Building command factory")
+@log_on_error(logging.ERROR, "Failed to create factory: {e!r}", on_exceptions=Exception)
 def build_factory(config: Config) -> CommandFactory:
-    try:
-        return CfgCommandFactory(
-            config,
-            CfgComponentFactory(config),
-        )
-    except AttributeError:
-        return None
+    return CfgCommandFactory(
+        config,
+        CfgComponentFactory(config),
+    )
 
 
+@log_on_start(logging.DEBUG, "Building reporter")
+@log_on_error(logging.ERROR, "Failed to create reporter: {e!r}", on_exceptions=Exception)
 def build_reporter(config: Config) -> Reporter:
-    try:
-        return CfgReporterFactory(config).create_reporter()
-    except AttributeError:
-        return None
+    return CfgReporterFactory(config).create_reporter()
