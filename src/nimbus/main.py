@@ -6,6 +6,7 @@ from nimbus.config import SEARCH_PATHS, Config, resolve_config, safe_load
 from nimbus.factory.command import CfgCommandFactory, CommandFactory
 from nimbus.factory.component import CfgComponentFactory
 from nimbus.factory.report import CfgReporterFactory
+from nimbus.log import setup_logger
 from nimbus.report.reporter import Reporter
 
 
@@ -61,6 +62,16 @@ def execute(runner: CommandRunner, args: list[str]) -> int:
             file=sys.stderr,
         )
         return ExitCode.UNABLE_TO_EXECUTE
+
+    if not setup_logger(config):
+        print(
+            "The application encountered an issue while attempting to configure logger.\n"
+            "Please follow these steps to resolve the problem:\n"
+            "  1. Ensure that the configuration file adheres to the expected format.\n"
+            "  2. Confirm that the application has write access to the log directory.\n"
+            "If the issue persists, consult the documentation.\n"
+            "The execution will continue, but the logging capabilities would be disabled.\n"
+        )
 
     factory = build_factory(config)
     reporter = build_reporter(config)
