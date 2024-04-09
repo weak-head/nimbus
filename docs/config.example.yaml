@@ -1,7 +1,7 @@
 # If this section is omitted,
 # logging capabilities would be disabled.
 logs:
-  level: DEBUG # DEBUG | INFO | WARNING | ERROR | CRITICAL
+  level: WARNING # DEBUG | INFO | WARNING | ERROR | CRITICAL
   stdout: true
   location: ~/.nimbus/logs
 

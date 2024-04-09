@@ -66,15 +66,26 @@ def execute(runner: CommandRunner, args: list[str]) -> int:
         )
         return ExitCode.UNABLE_TO_EXECUTE
 
-    if not setup_logger(config):
-        print(
-            "The application encountered an issue while attempting to configure logger.\n"
-            "Please follow these steps to resolve the problem:\n"
-            "  1. Ensure that the configuration file adheres to the expected format.\n"
-            "  2. Confirm that the application has write access to the log directory.\n"
-            "If the issue persists, consult the documentation.\n"
-            "The execution will continue, but the logging capabilities would be disabled.\n"
-        )
+    if cfg := setup_logger(config):
+        if cfg is None:
+            print(
+                "The application encountered an issue while attempting to configure logger.\n"
+                "Please follow these steps to resolve the problem:\n"
+                "  1. Ensure that the configuration file adheres to the expected format.\n"
+                "  2. Confirm that the application has write access to the log directory.\n"
+                "If the issue persists, consult the documentation.\n"
+                "The execution will continue, but the logging capabilities would be disabled.\n"
+            )
+        elif logging.root.level <= logging.DEBUG:
+            print(
+                "-------------  Security Alert: Debug Mode Active  -----------------------\n",
+                "  Caution: The application is currently running in debug mode.\n",
+                "  This setting may result in the logging of sensitive information,\n",
+                "  including passwords, cloud keys, certificates, and access tokens.\n",
+                "  Please ensure that this mode is enabled only in secure environments\n",
+                "  and review the logs to prevent any data exposure.\n",
+                "-------------------------------------------------------------------------",
+            )
 
     try:
         runner.set_factory(build_factory(config))
