@@ -38,7 +38,7 @@ class RarArchiver(Archiver):
         self._password = password
 
     @log_on_start(logging.INFO, "Archiving {folder!s} -> {archive!s}")
-    @log_on_end(logging.DEBUG, "{archive!s} created: {result.success!s}")
+    @log_on_end(logging.INFO, "Archived [{result.success!s}]: {archive!s}")
     def archive(self, folder: str, archive: str) -> ArchivalStatus:
 
         # Ensure destination folder exists

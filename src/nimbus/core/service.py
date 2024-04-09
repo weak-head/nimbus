@@ -1,8 +1,11 @@
 from __future__ import annotations
 
+import logging
 from abc import ABC, abstractmethod
 from datetime import timedelta
 from functools import reduce
+
+from logdecorator import log_on_end, log_on_start
 
 from nimbus.core.runner import CompletedProcess, Runner
 
@@ -56,6 +59,8 @@ class DockerService(Service):
                 break
         return status
 
+    @log_on_start(logging.INFO, "Starting {self._directory!s} service")
+    @log_on_end(logging.INFO, "Started [{result.success!s}]: {self._directory!s}")
     def start(self) -> OperationStatus:
         return self._execute(
             "Start",
@@ -67,6 +72,8 @@ class DockerService(Service):
             ],
         )
 
+    @log_on_start(logging.INFO, "Stopping {self._directory!s} service")
+    @log_on_end(logging.INFO, "Stopped [{result.success!s}]: {self._directory!s}")
     def stop(self):
         return self._execute(
             "Stop",
