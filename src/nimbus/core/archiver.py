@@ -1,7 +1,10 @@
 from __future__ import annotations
 
+import logging
 import os
 from abc import ABC, abstractmethod
+
+from logdecorator import log_on_end, log_on_start
 
 from nimbus.core.runner import CompletedProcess, Runner
 
@@ -34,6 +37,8 @@ class RarArchiver(Archiver):
         self._runner = runner
         self._password = password
 
+    @log_on_start(logging.INFO, "Archiving {folder!s} -> {archive!s}")
+    @log_on_end(logging.INFO, "Archived [{result.success!s}]: {archive!s}")
     def archive(self, folder: str, archive: str) -> ArchivalStatus:
 
         # Ensure destination folder exists

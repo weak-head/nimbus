@@ -1,6 +1,13 @@
+# If this section is omitted,
+# logging capabilities would be disabled.
+logs:
+  level: WARNING # DEBUG | INFO | WARNING | ERROR | CRITICAL
+  stdout: true
+  location: ~/.nimbus/logs
+
 reports:
   format: txt
-  location: ~/reports
+  location: ~/.nimbus/reports
 
 # Collections of individual profiles, 
 # each tailored to configure a specific archiver.

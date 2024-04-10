@@ -1,9 +1,12 @@
 from __future__ import annotations
 
+import logging
 import os
 from datetime import datetime
 from pathlib import Path
 from typing import Any
+
+from logdecorator import log_on_end
 
 from nimbus.cmd.abstract import Action, ActionResult, Command
 from nimbus.core.archiver import ArchivalStatus, Archiver
@@ -34,6 +37,7 @@ class Backup(Command):
 
         return cfg
 
+    @log_on_end(logging.DEBUG, "Pipeline: {result!r}")
     def _pipeline(self) -> list[Action]:
         upload = [Action(self._upload)] if self._uploader else []
         return [
@@ -42,6 +46,7 @@ class Backup(Command):
             *upload,
         ]
 
+    @log_on_end(logging.DEBUG, "Mapped {arguments!r} to {result!s}")
     def _map_directories(self, arguments: list[str]) -> DirectoryMappingActionResult:
         return DirectoryMappingActionResult(
             self._provider.resolve(arguments),

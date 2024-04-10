@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 import os
 import threading
 from abc import ABC, abstractmethod
@@ -7,6 +8,7 @@ from datetime import datetime, timedelta
 from typing import Callable
 
 from boto3 import Session
+from logdecorator import log_on_end, log_on_error, log_on_start
 
 
 class UploadProgress:
@@ -69,6 +71,7 @@ class AwsUploader(Uploader):
             self._started = datetime.now()
             self._lock = threading.Lock()
 
+        @log_on_end(logging.DEBUG, "Uploaded {self._filepath!s} [{self._uploaded!s}/{self._filesize!s}]")
         def __call__(self, bytes_amount: int):
             with self._lock:
 
@@ -118,12 +121,12 @@ class AwsUploader(Uploader):
 
         try:
 
-            self._s3.upload_file(
+            self._upload(
                 filepath,
                 self._bucket,
                 key,
-                ExtraArgs={"StorageClass": self._storage_class},
-                Callback=AwsUploader.CallbackAdapter(filepath, on_progress) if on_progress else None,
+                self._storage_class,
+                AwsUploader.CallbackAdapter(filepath, on_progress) if on_progress else None,
             )
 
         except Exception as e:  # pylint: disable=broad-exception-caught
@@ -131,6 +134,25 @@ class AwsUploader(Uploader):
 
         status.completed = datetime.now()
         return status
+
+    @log_on_start(logging.INFO, "Uploading to s3 {bucket!s}/{key!s} [{storage_class!s}]")
+    @log_on_end(logging.INFO, "Uploaded {bucket!s}/{key!s}")
+    @log_on_error(logging.ERROR, "Failed to upload {filepath!s}: {e!r}", on_exceptions=Exception)
+    def _upload(
+        self,
+        filepath: str,
+        bucket: str,
+        key: str,
+        storage_class: str,
+        on_progress: AwsUploader.CallbackAdapter,
+    ):
+        self._s3.upload_file(
+            filepath,
+            bucket,
+            key,
+            ExtraArgs={"StorageClass": storage_class},
+            Callback=on_progress,
+        )
 
 
 class UploadStatus:

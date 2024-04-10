@@ -1,4 +1,8 @@
+import logging
+import os.path
 import sys
+
+from logdecorator import log_on_error, log_on_start
 
 from nimbus.cli.parser import parse_args
 from nimbus.cli.runner import CommandRunner
@@ -6,6 +10,7 @@ from nimbus.config import SEARCH_PATHS, Config, resolve_config, safe_load
 from nimbus.factory.command import CfgCommandFactory, CommandFactory
 from nimbus.factory.component import CfgComponentFactory
 from nimbus.factory.report import CfgReporterFactory
+from nimbus.log import setup_logger
 from nimbus.report.reporter import Reporter
 
 
@@ -44,7 +49,7 @@ def execute(runner: CommandRunner, args: list[str]) -> int:
             file=sys.stderr,
         )
         for path in [ns.config_path] if ns.config_path else SEARCH_PATHS:
-            print(f"- {path}", file=sys.stderr)
+            print(f"- {os.path.expanduser(path)}", file=sys.stderr)
         return ExitCode.CMD_NOT_FOUND
 
     config = safe_load(config_path)
@@ -62,9 +67,31 @@ def execute(runner: CommandRunner, args: list[str]) -> int:
         )
         return ExitCode.UNABLE_TO_EXECUTE
 
-    factory = build_factory(config)
-    reporter = build_reporter(config)
-    if not factory or not reporter:
+    if cfg := setup_logger(config):
+        if cfg is None:
+            print(
+                "The application encountered an issue while attempting to configure logger.\n"
+                "Please follow these steps to resolve the problem:\n"
+                "  1. Ensure that the configuration file adheres to the expected format.\n"
+                "  2. Confirm that the application has write access to the log directory.\n"
+                "If the issue persists, consult the documentation.\n"
+                "The execution will continue, but the logging capabilities would be disabled.\n"
+            )
+        elif logging.root.level <= logging.DEBUG:
+            print(
+                "-------------  Security Alert: Debug Mode Active  -----------------------\n",
+                "  Caution: The application is currently running in debug mode.\n",
+                "  This setting may result in the logging of sensitive information,\n",
+                "  including passwords, cloud keys, certificates, and access tokens.\n",
+                "  Please ensure that this mode is enabled only in secure environments\n",
+                "  and review the logs to prevent any data exposure.\n",
+                "-------------------------------------------------------------------------",
+            )
+
+    try:
+        runner.set_factory(build_factory(config))
+        runner.set_reporter(build_reporter(config))
+    except Exception:  # pylint: disable=broad-exception-caught
         print(
             "The application encountered an issue during startup due to an invalid configuration.\n"
             "Please follow these steps to troubleshoot:\n"
@@ -76,26 +103,20 @@ def execute(runner: CommandRunner, args: list[str]) -> int:
         )
         return ExitCode.UNABLE_TO_EXECUTE
 
-    runner.set_factory(factory)
-    runner.set_reporter(reporter)
-
     runner.run_default(ns)
-
     return ExitCode.SUCCESS
 
 
+@log_on_start(logging.DEBUG, "Building command factory")
+@log_on_error(logging.ERROR, "Failed to create factory: {e!r}", on_exceptions=Exception)
 def build_factory(config: Config) -> CommandFactory:
-    try:
-        return CfgCommandFactory(
-            config,
-            CfgComponentFactory(config),
-        )
-    except AttributeError:
-        return None
+    return CfgCommandFactory(
+        config,
+        CfgComponentFactory(config),
+    )
 
 
+@log_on_start(logging.DEBUG, "Building reporter")
+@log_on_error(logging.ERROR, "Failed to create reporter: {e!r}", on_exceptions=Exception)
 def build_reporter(config: Config) -> Reporter:
-    try:
-        return CfgReporterFactory(config).create_reporter()
-    except AttributeError:
-        return None
+    return CfgReporterFactory(config).create_reporter()

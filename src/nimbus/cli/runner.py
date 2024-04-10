@@ -1,7 +1,10 @@
 from __future__ import annotations
 
+import logging
 from abc import ABC, abstractmethod
 from argparse import Namespace
+
+from logdecorator import log_on_start
 
 from nimbus.cmd.abstract import Command
 from nimbus.factory.command import CommandFactory
@@ -38,12 +41,15 @@ class CommandRunner(Runner):
     def set_reporter(self, reporter: Reporter) -> None:
         self._reporter = reporter
 
+    @log_on_start(logging.DEBUG, "Start deployment up")
     def up(self, args: Namespace):
         self._execute(self._factory.create_up(), args.selectors)
 
+    @log_on_start(logging.DEBUG, "Start deployment down")
     def down(self, args: Namespace):
         self._execute(self._factory.create_down(), args.selectors)
 
+    @log_on_start(logging.DEBUG, "Start backup and upload")
     def backup(self, args: Namespace):
         self._execute(self._factory.create_backup(), args.selectors)
 

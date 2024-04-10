@@ -1,3 +1,7 @@
+import logging
+
+from logdecorator import log_on_end, log_on_error, log_on_start
+
 from nimbus.core.runner import Runner
 from nimbus.core.service import DockerService, Service
 from nimbus.provider.secrets import Secrets
@@ -16,6 +20,9 @@ class ServiceFactory:
         self._runner = runner
         self._secrets = secrets
 
+    @log_on_start(logging.DEBUG, "Creating Service: {resource.name!s} [{resource.kind!s}]")
+    @log_on_end(logging.DEBUG, "Created Service: {result.name!s} [{result.__class__.__name__!s}]")
+    @log_on_error(logging.ERROR, "Failed to create Service: {e!r}", on_exceptions=Exception)
     def create_service(self, resource: ServiceResource) -> Service:
         match resource.kind:
             case "docker-compose":

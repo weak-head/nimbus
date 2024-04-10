@@ -1,8 +1,11 @@
+import logging
 import os.path
 import sys
 from abc import ABC, abstractmethod
 from datetime import datetime
 from pathlib import Path
+
+from logdecorator import log_on_end, log_on_error, log_on_start
 
 from nimbus.config import Config
 from nimbus.report.reporter import CompositeReporter, Reporter, ReportWriter
@@ -10,6 +13,9 @@ from nimbus.report.writer import TextWriter, Writer
 
 
 class ReporterFactory(ABC):
+    """
+    Abstract reporter factory.
+    """
 
     @abstractmethod
     def create_writer(self, kind: str) -> Writer:
@@ -21,10 +27,17 @@ class ReporterFactory(ABC):
 
 
 class CfgReporterFactory(ReporterFactory):
+    """
+    Reporter factory that uses the provided configuration
+    for construction of a Reporter.
+    """
 
     def __init__(self, config: Config) -> None:
         self._config = config
 
+    @log_on_start(logging.DEBUG, "Selecting report file path: [{extension!s}]")
+    @log_on_end(logging.DEBUG, "Selected report file path: {result!s}")
+    @log_on_error(logging.ERROR, "Failed to select report file: {e!r}", on_exceptions=Exception)
     def report_file(self, extension: str) -> str:
         path = self._config.reports.location
         path = path if path else "~/.nimbus/reports"
@@ -43,6 +56,9 @@ class CfgReporterFactory(ReporterFactory):
             column_width=30,
         )
 
+    @log_on_start(logging.DEBUG, "Creating Writer: [{kind!s}]")
+    @log_on_end(logging.DEBUG, "Created Writer: {result.__class__.__name__!s}")
+    @log_on_error(logging.ERROR, "Failed to create Writer: {e!r}", on_exceptions=Exception)
     def create_writer(self, kind: str) -> Writer:
         match kind:
             case "stdout":
@@ -52,6 +68,9 @@ class CfgReporterFactory(ReporterFactory):
             case _:
                 return None
 
+    @log_on_start(logging.DEBUG, "Creating Reporter")
+    @log_on_end(logging.DEBUG, "Created Reporter: {result.__class__.__name__!s}")
+    @log_on_error(logging.ERROR, "Failed to create Reporter: {e!r}", on_exceptions=Exception)
     def create_reporter(self) -> Reporter:
         reporters = []
 

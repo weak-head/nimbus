@@ -16,6 +16,9 @@ class Resource:
     def __init__(self, name: str):
         self.name: str = name
 
+    def __str__(self) -> str:
+        return self.name
+
     def match(self, selector: str) -> bool:
         return fnmatch.filter([self.name], selector)
 

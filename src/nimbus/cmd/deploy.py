@@ -1,7 +1,10 @@
 from __future__ import annotations
 
+import logging
 from abc import abstractmethod
 from typing import Any
+
+from logdecorator import log_on_end
 
 from nimbus.cmd.abstract import Action, ActionResult, Command
 from nimbus.core.service import OperationStatus, Service
@@ -22,6 +25,7 @@ class Deployment(Command):
     def _config(self) -> dict[str, Any]:
         return {}
 
+    @log_on_end(logging.DEBUG, "Pipeline: {result!r}")
     def _pipeline(self) -> list[Action]:
         return [
             Action(self._map_services),
@@ -29,11 +33,13 @@ class Deployment(Command):
             Action(self._deploy),
         ]
 
+    @log_on_end(logging.DEBUG, "Mapped {arguments!r} to {result!s}")
     def _map_services(self, arguments: list[str]) -> ServiceMappingActionResult:
         return ServiceMappingActionResult(
             self._provider.resolve(arguments),
         )
 
+    @log_on_end(logging.DEBUG, "Services: {result!s}")
     def _create_services(self, mapping: ServiceMappingActionResult) -> CreateServicesActionResult:
         return CreateServicesActionResult(
             [self._factory.create_service(srv) for srv in mapping.entries],

@@ -85,6 +85,9 @@ class Action:
         ar.completed = datetime.now()
         return ar
 
+    def __repr__(self) -> str:
+        return self._func.__name__
+
 
 class ActionResult(Generic[T]):
     """
@@ -95,6 +98,9 @@ class ActionResult(Generic[T]):
         self.entries: T = entries
         self.started: datetime = None
         self.completed: datetime = None
+
+    def __str__(self) -> str:
+        return "[" + ", ".join(str(entry) for entry in self.entries) + "]"
 
     @property
     def elapsed(self) -> timedelta:
