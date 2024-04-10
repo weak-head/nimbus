@@ -103,7 +103,7 @@ class ReportWriter(Reporter):
     def summary_service_deployment(self, w: Writer, result: DeploymentActionResult) -> None:
         w.row(
             "Services",
-            f"[ ∑ {len(result.entries)} | ✔ {len(result.successful)} | ✘ {len(result.failed)} ]",
+            f"[ ∑ {len(result.entries)} | ✓ {len(result.successful)} | ✗ {len(result.failed)} ]",
         )
 
     def summary_backup(self, w: Writer, base: str, result: BackupActionResult) -> None:

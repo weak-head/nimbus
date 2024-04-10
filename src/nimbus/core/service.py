@@ -19,6 +19,9 @@ class Service(ABC):
     def __init__(self, name: str):
         self._name: str = name
 
+    def __str__(self) -> str:
+        return self.name
+
     @property
     def name(self) -> str:
         """
