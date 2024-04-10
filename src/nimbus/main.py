@@ -1,4 +1,5 @@
 import logging
+import os.path
 import sys
 
 from logdecorator import log_on_error, log_on_start
@@ -48,7 +49,7 @@ def execute(runner: CommandRunner, args: list[str]) -> int:
             file=sys.stderr,
         )
         for path in [ns.config_path] if ns.config_path else SEARCH_PATHS:
-            print(f"- {path}", file=sys.stderr)
+            print(f"- {os.path.expanduser(path)}", file=sys.stderr)
         return ExitCode.CMD_NOT_FOUND
 
     config = safe_load(config_path)
