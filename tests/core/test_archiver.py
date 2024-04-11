@@ -1,7 +1,7 @@
 import pytest
-from mock import call, patch, Mock, PropertyMock
+from mock import Mock, PropertyMock, call, patch
 
-from nimbus.core.archiver import RarArchiver, ArchivalStatus
+from nimbus.core.archiver import ArchivalStatus, RarArchiver
 
 
 class TestRarArchiver:
