@@ -22,6 +22,9 @@ class UploadProgress:
         self.speed = speed
         self.timestamp = datetime.now()
 
+    def __repr__(self):
+        return f"<{self.progress} | {self.timestamp} | {self.elapsed} | {self.speed}>"
+
 
 class Uploader(ABC):
     """
@@ -81,11 +84,11 @@ class AwsUploader(Uploader):
                 # Accumulate the uploaded bytes,
                 # and calculate the upload progress.
                 self._uploaded += bytes_amount
-                progress = int((self._uploaded / self._filesize) * 100)
+                progress = min(int((self._uploaded / self._filesize) * 100), 100)
 
                 # Throttle the reported progress.
                 # Report when uploaded (at least) another 10% of the file.
-                if progress >= self._reported + 10:
+                if progress >= self._reported + 10 or (progress == 100 and self._reported != 100):
                     self._reported = progress
 
                     elapsed = max(timedelta(seconds=1), datetime.now() - self._started)

@@ -1,6 +1,7 @@
 from datetime import datetime as dt
 from datetime import timedelta as td
 
+import pytest
 from mock import Mock, PropertyMock, patch
 
 from nimbus.core.uploader import AwsUploader, UploadProgress, UploadStatus
@@ -8,12 +9,76 @@ from tests.helpers import MockDateTime
 
 
 class MockOnProgress:
+
+    def __init__(self):
+        self.reported: list[UploadProgress] = []
+
     def __call__(self, progress: UploadProgress):
-        pass
+        self.reported.append(progress)
 
 
 class TestAwsUploaderCallbackAdapter:
-    pass
+
+    @pytest.mark.parametrize(
+        ["filesize", "upbytes", "reported"],
+        [
+            [
+                100,
+                [1, 2, 3, 3, 5, 16, 15, 1, 54],
+                [14, 30, 45, 100],
+            ],
+            [
+                100,
+                [25, 1, 4, 1, 1, 1, 1, 1, 65],
+                [25, 35, 100],
+            ],
+            [
+                100,
+                [1] * 100,
+                [10, 20, 30, 40, 50, 60, 70, 80, 90, 100],
+            ],
+            [
+                100,
+                [1] * 300,
+                [10, 20, 30, 40, 50, 60, 70, 80, 90, 100],
+            ],
+            [
+                100,
+                [17] + ([1] * 83),
+                [17, 27, 37, 47, 57, 67, 77, 87, 97, 100],
+            ],
+            [
+                100,
+                [17, 9, 9, 25],
+                [17, 35, 60],
+            ],
+        ],
+    )
+    @patch("os.stat")
+    @patch("nimbus.core.uploader.datetime", MockDateTime)
+    def test_onprogress(self, mock_osstat, filesize, upbytes, reported):
+        type(mock_osstat.return_value).st_size = PropertyMock(return_value=filesize)
+
+        now_time = dt(2024, 1, 1, 10, 00, 00)
+        call_time = [now_time]
+        for _ in range(len(reported) * 2):
+            call_time.append(now_time + td(seconds=5))
+            now_time = now_time + td(seconds=5)
+        MockDateTime.now_returns(*call_time)
+
+        mock_onprogress = MockOnProgress()
+        callback = AwsUploader.CallbackAdapter("filepath", mock_onprogress)
+
+        assert callback._filesize == filesize
+
+        for value in upbytes:
+            callback(value)
+
+        assert len(mock_onprogress.reported) == len(reported)
+
+        for ix, value in enumerate(reported):
+            progress = mock_onprogress.reported[ix]
+            assert progress.progress == value
 
 
 class TestAwsUploader:
