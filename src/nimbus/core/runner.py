@@ -115,8 +115,19 @@ class CompletedProcess:
 
     @property
     def success(self) -> bool:
-        return self.status == CompletedProcess.SUCCESS and self.cmd and self.started and self.completed
+        return all(
+            [
+                self.status == CompletedProcess.SUCCESS,
+                self.cmd,
+                self.started,
+                self.completed,
+            ]
+        )
 
     @property
     def elapsed(self) -> timedelta:
+        if self.started is None or self.completed is None:
+            return None
+        if self.started > self.completed:
+            return None
         return self.completed - self.started

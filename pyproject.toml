@@ -28,6 +28,7 @@ pylint = "^3.0.3"
 pytest = "^8.0.1"
 pytest-cov = "^4.1.0"
 pytest-timeout = "^2.2.0"
+mock = "^5.1.0"
 
 [tool.poetry.scripts]
 ni = "nimbus.main:main"
@@ -65,6 +66,9 @@ profile = "black"
 
 [tool.pylint.message_control]
 max-line-length = 119
+ignore-patterns = """
+    test_.*?py
+"""
 disable = """
     too-few-public-methods,
     too-many-arguments,

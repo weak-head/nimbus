@@ -22,6 +22,9 @@ class UploadProgress:
         self.speed = speed
         self.timestamp = datetime.now()
 
+    def __repr__(self):
+        return f"<{self.progress} | {self.timestamp} | {self.elapsed} | {self.speed}>"
+
 
 class Uploader(ABC):
     """
@@ -71,6 +74,9 @@ class AwsUploader(Uploader):
             self._started = datetime.now()
             self._lock = threading.Lock()
 
+        def __eq__(self, other):
+            return (self._filepath, self._on_progress) == (other._filepath, other._on_progress)
+
         @log_on_end(logging.DEBUG, "Uploaded {self._filepath!s} [{self._uploaded!s}/{self._filesize!s}]")
         def __call__(self, bytes_amount: int):
             with self._lock:
@@ -78,11 +84,11 @@ class AwsUploader(Uploader):
                 # Accumulate the uploaded bytes,
                 # and calculate the upload progress.
                 self._uploaded += bytes_amount
-                progress = int((self._uploaded / self._filesize) * 100)
+                progress = min(int((self._uploaded / self._filesize) * 100), 100)
 
                 # Throttle the reported progress.
                 # Report when uploaded (at least) another 10% of the file.
-                if progress >= self._reported + 10:
+                if progress >= self._reported + 10 or (progress == 100 and self._reported != 100):
                     self._reported = progress
 
                     elapsed = max(timedelta(seconds=1), datetime.now() - self._started)
@@ -174,13 +180,15 @@ class UploadStatus:
 
     @property
     def success(self) -> bool:
-        return (
-            self.status == UploadStatus.SUCCESS
-            and self.filepath
-            and self.key
-            and self.size
-            and self.started
-            and self.completed
+        return all(
+            [
+                self.status == UploadStatus.SUCCESS,
+                self.filepath,
+                self.key,
+                self.size,
+                self.started,
+                self.completed,
+            ]
         )
 
     @property

@@ -34,6 +34,9 @@ class RarArchiver(Archiver):
     """
 
     def __init__(self, runner: Runner, password: str):
+        if runner is None:
+            raise ValueError("The runner cannot be None")
+
         self._runner = runner
         self._password = password
 
@@ -80,7 +83,14 @@ class ArchivalStatus:
 
     @property
     def success(self) -> bool:
-        return self.proc.success and self.folder and self.archive and os.path.exists(self.archive)
+        return all(
+            [
+                self.proc.success,
+                self.folder,
+                self.archive,
+                os.path.exists(self.archive),
+            ]
+        )
 
     @property
     def size(self) -> int:
