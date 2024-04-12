@@ -71,6 +71,9 @@ class AwsUploader(Uploader):
             self._started = datetime.now()
             self._lock = threading.Lock()
 
+        def __eq__(self, other):
+            return (self._filepath, self._on_progress) == (other._filepath, other._on_progress)
+
         @log_on_end(logging.DEBUG, "Uploaded {self._filepath!s} [{self._uploaded!s}/{self._filesize!s}]")
         def __call__(self, bytes_amount: int):
             with self._lock:
