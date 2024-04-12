@@ -28,12 +28,7 @@ class TestRarArchiver:
     @patch("os.path.dirname")
     @patch("os.path.exists")
     @patch("os.makedirs")
-    def test_archive(
-        self,
-        mock_makedirs,
-        mock_exists,
-        mock_dirname,
-    ):
+    def test_archive(self, mock_makedirs, mock_exists, mock_dirname):
         mock_dirname.return_value = "DIRNAME"
         mock_exists.side_effect = [
             False,  # DIRNAME
@@ -58,10 +53,8 @@ class TestRarArchiver:
         mock_dirname.assert_called_with(archive)
         mock_exists.assert_has_calls(
             [
-                # called by directory check condition
-                call("DIRNAME"),
-                # called by @log_on_end(logging.INFO, "Archived [{result.success!s}]: {archive!s}")
-                call(archive),
+                call("DIRNAME"),  # called by directory check
+                call(archive),  # called by @log_on_end
             ]
         )
         mock_makedirs.assert_called_with("DIRNAME", exist_ok=True)
