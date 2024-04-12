@@ -174,13 +174,15 @@ class UploadStatus:
 
     @property
     def success(self) -> bool:
-        return (
-            self.status == UploadStatus.SUCCESS
-            and self.filepath
-            and self.key
-            and self.size
-            and self.started
-            and self.completed
+        return all(
+            [
+                self.status == UploadStatus.SUCCESS,
+                self.filepath,
+                self.key,
+                self.size,
+                self.started,
+                self.completed,
+            ]
         )
 
     @property
