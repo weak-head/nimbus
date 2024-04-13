@@ -14,7 +14,9 @@ reports:
 archivers:
   rar-protected:
     provider: rar
-    password: SuperSecretPassword
+    password: SecretPwd # Password, to protect the archive with
+    recovery: 3         # Add 3% recovery data
+    compression: 0      # Compression level [0-5]
 
 # Collections of individual profiles, 
 # each tailored to configure a specific uploader.
