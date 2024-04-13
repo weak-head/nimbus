@@ -6,7 +6,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any
 
-from logdecorator import log_on_end
+from logdecorator import log_on_end, log_on_start
 
 from nimbus.cmd.abstract import Action, ActionResult, Command
 from nimbus.core.archiver import ArchivalStatus, Archiver
@@ -123,6 +123,7 @@ class ProgressTracker:
     def __init__(self, upload: UploadEntry):
         self._upload = upload
 
+    @log_on_start(logging.INFO, "Uploaded progress {progress.progress!s}%")
     def __call__(self, progress: UploadProgress):
         self._upload.progress.append(progress)
 

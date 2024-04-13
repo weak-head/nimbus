@@ -36,8 +36,8 @@ class RarArchiver(Archiver):
         self,
         runner: Runner,
         password: str | None = None,
-        compression: int | None = 3,
-        recovery: int | None = 3,
+        compression: int | None = None,
+        recovery: int | None = None,
     ):
         """
         Creates a new instance of the RarArchiver.
@@ -66,6 +66,15 @@ class RarArchiver(Archiver):
         self._password = password
         self._compression = compression
         self._recovery = recovery
+
+    def __repr__(self) -> str:
+        params = [
+            f"'{self._runner.__class__.__name__}'",
+            f"pwd='{self._password}'",
+            f"cmp='{self._compression}'",
+            f"rec='{self._recovery}'",
+        ]
+        return "RarArchiver(" + ", ".join(params) + ")"
 
     @log_on_start(logging.INFO, "Archiving {folder!s} -> {archive!s}")
     @log_on_end(logging.INFO, "Archived [{result.success!s}]: {archive!s}")

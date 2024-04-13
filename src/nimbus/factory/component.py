@@ -54,13 +54,13 @@ class CfgComponentFactory(ComponentFactory):
         self._config = config
 
     @log_on_start(logging.DEBUG, "Creating Runner")
-    @log_on_end(logging.DEBUG, "Created Runner: {result.__class__.__name__!s}")
+    @log_on_end(logging.DEBUG, "Created Runner: {result!r}")
     @log_on_error(logging.ERROR, "Failed to create Runner: {e!r}", on_exceptions=Exception)
     def create_runner(self) -> Runner:
         return SubprocessRunner()
 
     @log_on_start(logging.DEBUG, "Creating Archiver: [{profile!s}]")
-    @log_on_end(logging.DEBUG, "Created Archiver: {result.__class__.__name__!s}")
+    @log_on_end(logging.DEBUG, "Created Archiver: {result!r}")
     @log_on_error(logging.ERROR, "Failed to create Archiver: {e!r}", on_exceptions=Exception)
     def create_archiver(self, profile: str) -> Archiver:
         cfg = self._config.archivers[profile]
@@ -72,12 +72,14 @@ class CfgComponentFactory(ComponentFactory):
             return RarArchiver(
                 self.create_runner(),
                 cfg.password,
+                cfg.compression,
+                cfg.recovery,
             )
 
         return None
 
     @log_on_start(logging.DEBUG, "Creating Uploader: [{profile!s}]")
-    @log_on_end(logging.DEBUG, "Created Uploader: {result.__class__.__name__!s}")
+    @log_on_end(logging.DEBUG, "Created Uploader: {result!r}")
     @log_on_error(logging.ERROR, "Failed to create Uploader: {e!r}", on_exceptions=Exception)
     def create_uploader(self, profile: str) -> Uploader:
         cfg = self._config.uploaders[profile]
@@ -96,19 +98,19 @@ class CfgComponentFactory(ComponentFactory):
         return None
 
     @log_on_start(logging.DEBUG, "Creating Secrets")
-    @log_on_end(logging.DEBUG, "Created Secrets: {result.__class__.__name__!s}")
+    @log_on_end(logging.DEBUG, "Created Secrets: {result!r}")
     @log_on_error(logging.ERROR, "Failed to create Secrets: {e!r}", on_exceptions=Exception)
     def create_secrets(self) -> Secrets:
         return Secrets(SecretsProvider(self._config.secrets))
 
     @log_on_start(logging.DEBUG, "Creating Service Provider")
-    @log_on_end(logging.DEBUG, "Created Service Provider: {result.__class__.__name__!s}")
+    @log_on_end(logging.DEBUG, "Created Service Provider: {result!r}")
     @log_on_error(logging.ERROR, "Failed to create Service Provider: {e!r}", on_exceptions=Exception)
     def create_service_provider(self) -> ServiceProvider:
         return ServiceProvider(self._config.services.directories)
 
     @log_on_start(logging.DEBUG, "Creating Service Factory")
-    @log_on_end(logging.DEBUG, "Created Service Factory: {result.__class__.__name__!s}")
+    @log_on_end(logging.DEBUG, "Created Service Factory: {result!r}")
     @log_on_error(logging.ERROR, "Failed to create Service Factory: {e!r}", on_exceptions=Exception)
     def create_service_factory(self) -> ServiceFactory:
         return ServiceFactory(

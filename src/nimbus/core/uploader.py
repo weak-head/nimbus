@@ -23,7 +23,13 @@ class UploadProgress:
         self.timestamp = datetime.now()
 
     def __repr__(self):
-        return f"<{self.progress} | {self.timestamp} | {self.elapsed} | {self.speed}>"
+        params = [
+            f"timestamp='{self.timestamp}'",
+            f"progress='{self.progress}'",
+            f"speed='{self.speed}'",
+            f"elapsed='{self.elapsed}'",
+        ]
+        return "UploadProgress(" + ", ".join(params) + ")"
 
 
 class Uploader(ABC):
@@ -101,6 +107,8 @@ class AwsUploader(Uploader):
             aws_access_key_id=access_key,
             aws_secret_access_key=secret_key,
         )
+        self._access_key = access_key
+        self._secret_key = secret_key
         self._s3 = self._session.client("s3")
         self._bucket = bucket
 
@@ -108,6 +116,15 @@ class AwsUploader(Uploader):
         #  - https://aws.amazon.com/s3/storage-classes/
         #  - https://docs.aws.amazon.com/AmazonS3/latest/userguide/storage-class-intro.html
         self._storage_class = storage_class
+
+    def __repr__(self) -> str:
+        params = [
+            f"access='{self._access_key}'",
+            f"secret='{self._secret_key}'",
+            f"bucket='{self._bucket}'",
+            f"storage='{self._storage_class}'",
+        ]
+        return "AwsUploader(" + ", ".join(params) + ")"
 
     def config(self) -> dict[str, str]:
         return {
@@ -152,6 +169,7 @@ class AwsUploader(Uploader):
         storage_class: str,
         on_progress: AwsUploader.CallbackAdapter,
     ):
+        # https://boto3.amazonaws.com/v1/documentation/api/latest/guide/s3-uploading-files.html
         self._s3.upload_file(
             filepath,
             bucket,

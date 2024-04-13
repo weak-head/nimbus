@@ -20,6 +20,13 @@ class ServiceFactory:
         self._runner = runner
         self._secrets = secrets
 
+    def __repr__(self) -> str:
+        params = [
+            f"runner='{self._runner.__class__.__name__}'",
+            f"secrets='{self._secrets.__class__.__name__}'",
+        ]
+        return "ServiceFactory(" + ", ".join(params) + ")"
+
     @log_on_start(logging.DEBUG, "Creating Service: {resource.name!s} [{resource.kind!s}]")
     @log_on_end(logging.DEBUG, "Created Service: {result.name!s} [{result.__class__.__name__!s}]")
     @log_on_error(logging.ERROR, "Failed to create Service: {e!r}", on_exceptions=Exception)
