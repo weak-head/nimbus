@@ -6,24 +6,36 @@ from nimbus.core.archiver import ArchivalStatus, RarArchiver
 
 class TestRarArchiver:
 
-    def test_init(self):
+    @pytest.mark.parametrize("password", [None, "abc"])
+    @pytest.mark.parametrize("compression", [None, 0, 1, 2, 3, 4, 5])
+    @pytest.mark.parametrize("recovery", [None, 1, 3, 5, 100, 300])
+    def test_init(self, password, compression, recovery):
         mock_runner = Mock()
-        password = "pwd"
 
-        archiver = RarArchiver(
-            mock_runner,
-            password,
-        )
+        archiver = RarArchiver(mock_runner, password, compression, recovery)
 
         assert archiver._runner == mock_runner
         assert archiver._password == password
+        assert archiver._recovery == recovery
+        assert archiver._compression == compression
 
-    def test_init_failed(self):
+    def test_init_failed_runner(self):
         with pytest.raises(ValueError):
-            RarArchiver(
-                None,
-                "abc",
-            )
+            RarArchiver(None, "abc", 3, 3)
+
+    @pytest.mark.parametrize(
+        ["password", "compression", "recovery"],
+        [
+            ["", 3, 3],
+            [None, -1, 3],
+            [None, 6, 3],
+            [None, 3, -1],
+            [None, 3, 1001],
+        ],
+    )
+    def test_init_failed_params(self, password, compression, recovery):
+        with pytest.raises(ValueError):
+            RarArchiver(Mock(), password, compression, recovery)
 
     @patch("os.path.dirname")
     @patch("os.path.exists")
