@@ -35,9 +35,9 @@ class RarArchiver(Archiver):
     def __init__(
         self,
         runner: Runner,
-        password: str = None,
-        compression: int = 3,
-        recovery: int = 3,
+        password: str | None = None,
+        compression: int | None = 3,
+        recovery: int | None = 3,
     ):
         """
         Creates a new instance of the RarArchiver.
@@ -55,11 +55,11 @@ class RarArchiver(Archiver):
                 raise ValueError("If password is specified, it cannot be empty string")
 
         if compression is not None:
-            if not (0 <= compression <= 5):
+            if not 0 <= compression <= 5:
                 raise ValueError("Compression should be in range [0-5]")
 
         if recovery is not None:
-            if not (0 <= recovery <= 1000):
+            if not 0 <= recovery <= 1000:
                 raise ValueError("Recovery should be in range [0-1000]")
 
         self._runner = runner
@@ -81,18 +81,20 @@ class RarArchiver(Archiver):
         return ArchivalStatus(proc, folder, archive)
 
     def _build_cmd(self, folder: str, archive: str) -> list[str]:
+        # fmt: off
         cmd = [
             "rar",
-            "a",  # archive
-            "-r",  # recursive
-            "-htb",  # use BLAKE2 hash
-            "-md128m",  # 128 MB dictionary size
-            "-qo+",  # add quick open information
-            "-idq",  # silent mode
-            "-ep1",  # exclude prefix from file names
-            "-k",  # lock archive
-            "-y",  # yes to all questions
+            "a",        # Archive
+            "-r",       # Recursive
+            "-htb",     # Use BLAKE2 hash
+            "-md128m",  # Dictionary size: 128 MB
+            "-qo+",     # Add quick open information
+            "-idq",     # Silent mode
+            "-ep1",     # Exclude prefix from file names
+            "-k",       # Lock archive
+            "-y",       # Yes to all questions
         ]
+        # fmt: on
 
         # Add recovery data [0-1000]
         if self._recovery is not None:

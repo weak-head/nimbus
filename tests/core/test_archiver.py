@@ -12,7 +12,12 @@ class TestRarArchiver:
     def test_init(self, password, compression, recovery):
         mock_runner = Mock()
 
-        archiver = RarArchiver(mock_runner, password, compression, recovery)
+        archiver = RarArchiver(
+            mock_runner,
+            password,
+            compression,
+            recovery,
+        )
 
         assert archiver._runner == mock_runner
         assert archiver._password == password
@@ -35,7 +40,12 @@ class TestRarArchiver:
     )
     def test_init_failed_params(self, password, compression, recovery):
         with pytest.raises(ValueError):
-            RarArchiver(Mock(), password, compression, recovery)
+            RarArchiver(
+                Mock(),
+                password,
+                compression,
+                recovery,
+            )
 
     @patch("os.path.dirname")
     @patch("os.path.exists")
@@ -76,6 +86,36 @@ class TestRarArchiver:
         assert result.archive == archive
         assert result.proc == mock_proc
         assert result.success
+
+    @pytest.mark.parametrize("password", [None, "abc", "bbc3"])
+    @pytest.mark.parametrize("compression", [None, 0, 1, 3, 5])
+    @pytest.mark.parametrize("recovery", [None, 0, 1, 3, 33])
+    def test_build_cmd(self, password, compression, recovery):
+        archiver = RarArchiver(
+            Mock(),
+            password,
+            compression,
+            recovery,
+        )
+        cmd = archiver._build_cmd("folder123", "archive123.rar")
+
+        assert "archive123.rar" == cmd[-2]
+        assert "folder123" == cmd[-1]
+
+        if password is None:
+            assert f"-hp{password}" not in cmd
+        else:
+            assert f"-hp{password}" in cmd
+
+        if compression is None:
+            assert f"-m{compression}" not in cmd
+        else:
+            assert f"-m{compression}" in cmd
+
+        if recovery is None:
+            assert f"-rr{recovery}" not in cmd
+        else:
+            assert f"-rr{recovery}" in cmd
 
 
 class TestArchivalStatus:
