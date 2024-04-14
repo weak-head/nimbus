@@ -31,6 +31,12 @@ class ServiceProvider(Provider[ServiceResource]):
             "docker-compose.yaml",
         ]
 
+    def __repr__(self) -> str:
+        params = [
+            f"dirs={self._directories!r}",
+        ]
+        return "ServiceProvider(" + ", ".join(params) + ")"
+
     def _resources(self) -> Iterator[ServiceResource]:
         for directory in self._directories:
             yield from self._discover(Path(directory).expanduser())

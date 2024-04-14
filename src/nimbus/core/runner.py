@@ -74,6 +74,9 @@ class SubprocessRunner(ProcessRunner):
     Executes a command as a subprocess.
     """
 
+    def __repr__(self) -> str:
+        return "SubprocessRunner()"
+
     @log_on_start(logging.DEBUG, "Execute {cmd!s}; cwd: {cwd!s}")
     @log_on_end(logging.DEBUG, "Exit code: {result.returncode!s}")
     @log_on_error(logging.ERROR, "Failed to execute: {e!r}", on_exceptions=Exception)

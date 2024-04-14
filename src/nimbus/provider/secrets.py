@@ -16,6 +16,12 @@ class SecretsProvider:
     def __init__(self, secrets: list[dict[str, str]]):
         self._secrets = secrets if secrets else []
 
+    def __repr__(self) -> str:
+        params = [
+            f"map={self._secrets!r}",
+        ]
+        return "SecretsProvider(" + ", ".join(params) + ")"
+
     def env(self, service: str) -> Iterator[Secret]:
         for entry in self._secrets:
             yield from self._to_env(entry, service)
@@ -37,6 +43,12 @@ class Secrets:
 
     def __init__(self, provider: SecretsProvider):
         self._provider = provider
+
+    def __repr__(self) -> str:
+        params = [
+            f"provider={self._provider!r}",
+        ]
+        return "Secrets(" + ", ".join(params) + ")"
 
     def env(self, service: str) -> dict[str, str]:
         """
