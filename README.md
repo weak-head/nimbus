@@ -67,7 +67,7 @@ poetry install
 
 Create a [Personal Access Token](https://docs.gitlab.com/ee/user/profile/personal_access_tokens.html) with `read_api` scope and, optionally, configure pip (`~/.pip/pip.conf`) to use GitLab Package Registry:
 
-```conf
+```ini
 [global]
 index-url=https://__token__:PERSONAL_ACCESS_TOKEN@git.lothric.net/api/v4/projects/112/packages/pypi/simple
 extra-index-url=https://pypi.org/simple
@@ -118,6 +118,8 @@ archivers:
   rar-protected:
     provider: rar
     password: SecretPassword
+    recovery: 3
+    compression: 0
 
 uploaders:
   aws-archive:
