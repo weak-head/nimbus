@@ -94,7 +94,18 @@ class ReportWriter(Reporter):
                     pass
 
     def details(self, result: ExecutionResult) -> None:
-        pass
+        s = self._writer.section("Details")
+
+        for action in result.actions:
+            match action:
+                case DirectoryMappingActionResult():
+                    self.details_directory_mapping(s, action)
+                case BackupActionResult():
+                    self.details_backup(s, action)
+                case UploadActionResult():
+                    self.details_upload(s, action)
+                case _:
+                    pass
 
     def summary_directory_mapping(self, w: Writer, result: DirectoryMappingActionResult) -> None:
         groups = sorted({backup.name for backup in result.entries})
@@ -186,3 +197,12 @@ class ReportWriter(Reporter):
                 [f"{service} [ {fmt.srv_ch(kind)} {kind} ]" for service, kind in fmt.align(failed, "lr")],
                 style="number",
             )
+
+    def details_directory_mapping(self, w: Writer, result: DirectoryMappingActionResult):
+        pass
+
+    def details_backup(self, w: Writer, result: BackupActionResult):
+        pass
+
+    def details_upload(self, w: Writer, result: UploadActionResult):
+        pass
