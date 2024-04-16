@@ -78,9 +78,9 @@ class ReportWriter(Reporter):
             for key, value in result.config.items():
                 s.row(key, value)
 
-        s.row("Started", fmt.datetime(result.started))
-        s.row("Completed", fmt.datetime(result.completed))
-        s.row("Elapsed", fmt.duration(result.elapsed))
+        s.row("Started", f"⌚ {fmt.datetime(result.started)}")
+        s.row("Completed", f"⌚ {fmt.datetime(result.completed)}")
+        s.row("Elapsed", f"⌛ {fmt.duration(result.elapsed)}")
 
         for action in result.actions:
             match action:
@@ -155,7 +155,7 @@ class ReportWriter(Reporter):
             b = w.section(f"-- Successful uploads [ 📁 {fmt.size(result.total_size)} ] -- (ﾉ◕ヮ◕)ﾉ")
             b.list(
                 [
-                    f"{name} [ 📁 {size} | ⌚ {duration} | ⚡ {speed} ]"
+                    f"{name} [ 📁 {size} | ⌛ {duration} | ⚡ {speed} ]"
                     for name, size, duration, speed in fmt.align(uploaded, "lrrr")
                 ],
                 style="number",
@@ -175,7 +175,7 @@ class ReportWriter(Reporter):
                     title = "Successfully stopped"
 
             elapsed = reduce(lambda a, b: a + b.elapsed, result.successful, timedelta())
-            d = w.section(f"-- {title} [ ⌚ {fmt.duration(elapsed)} ] -- (ﾉ◕ヮ◕)ﾉ")
+            d = w.section(f"-- {title} [ ⌛ {fmt.duration(elapsed)} ] -- (ﾉ◕ヮ◕)ﾉ")
             d.list(
                 [
                     f"{service} [ {fmt.srv_ch(kind)} {kind} | ⌚ {duration} ]"
@@ -199,10 +199,50 @@ class ReportWriter(Reporter):
             )
 
     def details_directory_mapping(self, w: Writer, result: DirectoryMappingActionResult):
-        pass
+        d = w.section("Mapped Directories")
+        d.row("Success", ("✅ " if result.success else "❌ ") + str(result.success))
+        d.row("Started", f"⌚ {fmt.datetime(result.started)}")
+        d.row("Completed", f"⌚ {fmt.datetime(result.completed)}")
+        d.row("Elapsed", f"⌛ {fmt.duration(result.elapsed)}")
+
+        for group in result.entries:
+            g = d.section(f"Group [{group.name}]:")
+            g.list(group.directories, style="bullet")
 
     def details_backup(self, w: Writer, result: BackupActionResult):
-        pass
+        d = w.section("Backup")
+        d.row("Success", ("✅ " if result.success else "❌ ") + str(result.success))
+        d.row("Total Size", f"📁 {fmt.size(result.total_size)}")
+        d.row("Started", f"⌚ {fmt.datetime(result.started)}")
+        d.row("Completed", f"⌚ {fmt.datetime(result.completed)}")
+        d.row("Elapsed", f"⌛ {fmt.duration(result.elapsed)}")
+
+        total_backups = len(result.entries)
+        for ix, entry in enumerate(result.entries):
+            b = d.section(f"[{ix+1}/{total_backups}] [{entry.group}] {entry.folder}")
+            b.row("Success", ("✅ " if result.success else "❌ ") + str(result.success))
+            b.row("Started", "⌚ " + fmt.datetime(entry.archive.proc.started))
+            b.row("Completed", "⌚ " + fmt.datetime(entry.archive.proc.completed))
+            b.row("Elapsed", "⌛ " + fmt.duration(entry.archive.proc.elapsed))
+
+            if entry.archive.proc.success:
+                b.row("Size", f"📁 {fmt.size(entry.archive.size)}")
+                b.row("Speed", f"⚡  {fmt.speed(entry.archive.speed)}")
+                b.row("Archive", f"📦 {entry.archive.archive}")
+            else:
+                if entry.archive.proc.exitcode:
+                    b.row("Exit Code", entry.archive.proc.exitcode)
+
+                if entry.archive.proc.exception:
+                    b.row("Exception", entry.archive.proc.exception)
+
+                if entry.archive.proc.stdout:
+                    s = b.section("Std Out")
+                    s.list(entry.archive.proc.stdout.split("\n"))
+
+                if entry.archive.proc.stdout:
+                    s = b.section("Std Err")
+                    s.list(entry.archive.proc.stderr.split("\n"))
 
     def details_upload(self, w: Writer, result: UploadActionResult):
         pass
