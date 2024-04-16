@@ -51,15 +51,15 @@ class ReportWriter(Reporter):
         self.footer()
 
     def header(self) -> None:
-        self._writer.line("=" * 80)
+        self._writer.line("=" * 100)
         self._writer.line(f"== {fmt.datetime(datetime.now())}")
 
     def footer(self) -> None:
         self._writer.line("")
-        self._writer.line("=" * 80)
+        self._writer.line("=" * 100)
 
     def summary(self, result: ExecutionResult) -> None:
-        s = self._writer.section("Summary")
+        s = self._writer.section(f"{fmt.ch('summary')} Summary")
         s.row("Command", result.command)
 
         if result.arguments:
@@ -78,9 +78,9 @@ class ReportWriter(Reporter):
             for key, value in result.config.items():
                 s.row(key, value)
 
-        s.row("Started", f"⌚ {fmt.datetime(result.started)}")
-        s.row("Completed", f"⌚ {fmt.datetime(result.completed)}")
-        s.row("Elapsed", f"⌛ {fmt.duration(result.elapsed)}")
+        s.row("Started", f"{fmt.ch('time')} {fmt.datetime(result.started)}")
+        s.row("Completed", f"{fmt.ch('time')} {fmt.datetime(result.completed)}")
+        s.row("Elapsed", f"{fmt.ch('duration')} {fmt.duration(result.elapsed)}")
 
         for action in result.actions:
             match action:
@@ -94,7 +94,7 @@ class ReportWriter(Reporter):
                     pass
 
     def details(self, result: ExecutionResult) -> None:
-        s = self._writer.section("Details")
+        s = self._writer.section(f"{fmt.ch('details')} Details")
 
         for action in result.actions:
             match action:
@@ -114,7 +114,9 @@ class ReportWriter(Reporter):
     def summary_service_deployment(self, w: Writer, result: DeploymentActionResult) -> None:
         w.row(
             "Services",
-            f"[ ∑ {len(result.entries)} | ✓ {len(result.successful)} | ✗ {len(result.failed)} ]",
+            f"[ {fmt.ch('total')} {len(result.entries)} "
+            f"| {fmt.ch('ok')} {len(result.successful)} "
+            f"| {fmt.ch('nok')} {len(result.failed)} ]",
         )
 
     def summary_backup(self, w: Writer, base: str, result: BackupActionResult) -> None:
@@ -128,17 +130,22 @@ class ReportWriter(Reporter):
             for b in result.entries
             if b.success
         ):
-            b = w.section(f"-- Successful backups [ 📁 {fmt.size(result.total_size)} ] -- (ﾉ◕ヮ◕)ﾉ")
+            b = w.section(
+                f"-- {fmt.ch('success')} Successful backups "
+                f"[ {fmt.ch('size')} {fmt.size(result.total_size)} ] -- (ﾉ◕ヮ◕)ﾉ",
+            )
             b.list(
                 [
-                    f"{name} [ 📁 {size} | ⌚ {duration} | ⚡ {speed} ]"
+                    f"{name} [ {fmt.ch('size')} {size} "
+                    f"| {fmt.ch('duration')} {duration} "
+                    f"| {fmt.ch('speed')} {speed} ]"
                     for name, size, duration, speed in fmt.align(created, "lrrr")
                 ],
                 style="number",
             )
 
         if failed := sorted(b.folder for b in result.entries if not b.success):
-            b = w.section("-- Failed backups -- ¯\\_(ツ)_/¯")
+            b = w.section(f"-- {fmt.ch('failure')} Failed backups -- ¯\\_(ツ)_/¯")
             b.list(failed, style="number")
 
     def summary_upload(self, w: Writer, result: UploadActionResult) -> None:
@@ -152,17 +159,22 @@ class ReportWriter(Reporter):
             for e in result.entries
             if e.success
         ):
-            b = w.section(f"-- Successful uploads [ 📁 {fmt.size(result.total_size)} ] -- (ﾉ◕ヮ◕)ﾉ")
+            b = w.section(
+                f"-- {fmt.ch('success')} Successful uploads "
+                f"[ {fmt.ch('size')} {fmt.size(result.total_size)} ] -- (ﾉ◕ヮ◕)ﾉ"
+            )
             b.list(
                 [
-                    f"{name} [ 📁 {size} | ⌛ {duration} | ⚡ {speed} ]"
+                    f"{name} [ {fmt.ch('size')} {size} "
+                    f"| {fmt.ch('duration')} {duration} "
+                    f"| {fmt.ch('speed')} {speed} ]"
                     for name, size, duration, speed in fmt.align(uploaded, "lrrr")
                 ],
                 style="number",
             )
 
         if failed := sorted(e.backup.archive.archive for e in result.entries if not e.success):
-            b = w.section("-- Failed uploads -- ¯\\_(ツ)_/¯")
+            b = w.section(f"-- {fmt.ch('failure')} Failed uploads -- ¯\\_(ツ)_/¯")
             b.list(failed, style="number")
 
     def summary_deploy(self, w: Writer, result: DeploymentActionResult) -> None:
@@ -175,10 +187,10 @@ class ReportWriter(Reporter):
                     title = "Successfully stopped"
 
             elapsed = reduce(lambda a, b: a + b.elapsed, result.successful, timedelta())
-            d = w.section(f"-- {title} [ ⌛ {fmt.duration(elapsed)} ] -- (ﾉ◕ヮ◕)ﾉ")
+            d = w.section(f"-- {title} [ {fmt.ch('duration')} {fmt.duration(elapsed)} ] -- (ﾉ◕ヮ◕)ﾉ")
             d.list(
                 [
-                    f"{service} [ {fmt.srv_ch(kind)} {kind} | ⌚ {duration} ]"
+                    f"{service} [ {fmt.ch(kind)} {kind} | {fmt.ch('duration')} {duration} ]"
                     for service, kind, duration in fmt.align(processed, "lrr")
                 ],
                 style="number",
@@ -194,41 +206,41 @@ class ReportWriter(Reporter):
 
             d = w.section(f"-- {title} -- ¯\\_(ツ)_/¯")
             d.list(
-                [f"{service} [ {fmt.srv_ch(kind)} {kind} ]" for service, kind in fmt.align(failed, "lr")],
+                [f"{service} [ {fmt.ch(kind)} {kind} ]" for service, kind in fmt.align(failed, "lr")],
                 style="number",
             )
 
     def details_directory_mapping(self, w: Writer, result: DirectoryMappingActionResult):
-        d = w.section("Mapped Directories")
-        d.row("Success", ("✅ " if result.success else "❌ ") + str(result.success))
-        d.row("Started", f"⌚ {fmt.datetime(result.started)}")
-        d.row("Completed", f"⌚ {fmt.datetime(result.completed)}")
-        d.row("Elapsed", f"⌛ {fmt.duration(result.elapsed)}")
+        d = w.section(f"{fmt.ch('mapping')} Mapped Directories")
+        d.row("Success", f"{fmt.ch('success') if result.success else fmt.ch('failure')} {result.success}")
+        d.row("Started", f"{fmt.ch('time')} {fmt.datetime(result.started)}")
+        d.row("Completed", f"{fmt.ch('time')} {fmt.datetime(result.completed)}")
+        d.row("Elapsed", f"{fmt.ch('duration')} {fmt.duration(result.elapsed)}")
 
-        for group in result.entries:
+        for group in sorted(result.entries, key=lambda e: e.name):
             g = d.section(f"Group [{group.name}]:")
-            g.list(group.directories, style="bullet")
+            g.list(sorted(group.directories), style="bullet")
 
     def details_backup(self, w: Writer, result: BackupActionResult):
-        d = w.section("Backup")
-        d.row("Success", ("✅ " if result.success else "❌ ") + str(result.success))
-        d.row("Total Size", f"📁 {fmt.size(result.total_size)}")
-        d.row("Started", f"⌚ {fmt.datetime(result.started)}")
-        d.row("Completed", f"⌚ {fmt.datetime(result.completed)}")
-        d.row("Elapsed", f"⌛ {fmt.duration(result.elapsed)}")
+        d = w.section(f"{fmt.ch('backup')} Backup")
+        d.row("Success", f"{fmt.ch('success') if result.success else fmt.ch('failure')} {result.success}")
+        d.row("Total Size", f"{fmt.ch('size')} {fmt.size(result.total_size)}")
+        d.row("Started", f"{fmt.ch('time')} {fmt.datetime(result.started)}")
+        d.row("Completed", f"{fmt.ch('time')} {fmt.datetime(result.completed)}")
+        d.row("Elapsed", f"{fmt.ch('duration')} {fmt.duration(result.elapsed)}")
 
         total_backups = len(result.entries)
-        for ix, entry in enumerate(result.entries):
+        for ix, entry in enumerate(sorted(result.entries, key=lambda e: (e.group, e.folder))):
             b = d.section(f"[{ix+1}/{total_backups}] [{entry.group}] {entry.folder}")
-            b.row("Success", ("✅ " if result.success else "❌ ") + str(result.success))
-            b.row("Started", "⌚ " + fmt.datetime(entry.archive.proc.started))
-            b.row("Completed", "⌚ " + fmt.datetime(entry.archive.proc.completed))
-            b.row("Elapsed", "⌛ " + fmt.duration(entry.archive.proc.elapsed))
+            b.row("Success", f"{fmt.ch('success') if result.success else fmt.ch('failure')} {result.success}")
+            b.row("Started", f"{fmt.ch('time')} {fmt.datetime(entry.archive.proc.started)}")
+            b.row("Completed", f"{fmt.ch('time')} {fmt.datetime(entry.archive.proc.completed)}")
+            b.row("Elapsed", f"{fmt.ch('duration')} {fmt.duration(entry.archive.proc.elapsed)}")
 
             if entry.archive.proc.success:
-                b.row("Size", f"📁 {fmt.size(entry.archive.size)}")
-                b.row("Speed", f"⚡  {fmt.speed(entry.archive.speed)}")
-                b.row("Archive", f"📦 {entry.archive.archive}")
+                b.row("Size", f"{fmt.ch('size')} {fmt.size(entry.archive.size)}")
+                b.row("Speed", f"{fmt.ch('speed')} {fmt.speed(entry.archive.speed)}")
+                b.row("Archive", f"{fmt.ch('archive')} {entry.archive.archive}")
             else:
                 if entry.archive.proc.exitcode:
                     b.row("Exit Code", entry.archive.proc.exitcode)

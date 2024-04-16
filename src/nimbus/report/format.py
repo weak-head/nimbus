@@ -123,12 +123,31 @@ def align(entries: list[list[str]], alignment: str = "l") -> Iterator[list[str]]
         yield [handlers[alignment[field]](entry[field], max_field_len[field]) for field in range(len(entry))]
 
 
-def srv_ch(kind: str) -> str:
+def ch(kind: str) -> str:
     """
-    Given a service type, this function maps it to the corresponding Unicode character representation.
+    Given a character kind, this function maps it
+    to the corresponding Unicode character representation.
     """
-    match kind:
-        case "docker":
-            return "🐳"
-        case _:
-            return "📋"
+    m = {
+        # -- Reporting --
+        "summary": "📄️",
+        "details": "🔍",
+        "mapping": "🗺️",
+        "backup": "🗂️",
+        # -- Services --
+        "docker": "🐳",
+        # -- Files --
+        "archive": "📦",
+        # -- Status --
+        "total": "∑",
+        "ok": "✓",
+        "nok": "✗",
+        "success": "✅",
+        "failure": "❌",
+        # -- Metrics --
+        "time": "⌚",
+        "duration": "⌛",
+        "size": "📁",
+        "speed": "⚡",
+    }
+    return m.get(kind, kind)
