@@ -136,7 +136,7 @@ class ReportWriter(Reporter):
             )
             b.list(
                 [
-                    f"{name} [ {fmt.ch('size')} {size} "
+                    f"{fmt.ch('archive')} {name} [ {fmt.ch('size')} {size} "
                     f"| {fmt.ch('duration')} {duration} "
                     f"| {fmt.ch('speed')} {speed} ]"
                     for name, size, duration, speed in fmt.align(created, "lrrr")
@@ -144,7 +144,7 @@ class ReportWriter(Reporter):
                 style="number",
             )
 
-        if failed := sorted(b.folder for b in result.entries if not b.success):
+        if failed := sorted(f"{fmt.ch('folder')} {b.folder}" for b in result.entries if not b.success):
             b = w.section(f"{fmt.ch('failure')} Failed backups -- ¯\\_(ツ)_/¯")
             b.list(failed, style="number")
 
@@ -165,7 +165,7 @@ class ReportWriter(Reporter):
             )
             b.list(
                 [
-                    f"{name} [ {fmt.ch('size')} {size} "
+                    f"{fmt.ch('archive')} {name} [ {fmt.ch('size')} {size} "
                     f"| {fmt.ch('duration')} {duration} "
                     f"| {fmt.ch('speed')} {speed} ]"
                     for name, size, duration, speed in fmt.align(uploaded, "lrrr")
@@ -173,7 +173,9 @@ class ReportWriter(Reporter):
                 style="number",
             )
 
-        if failed := sorted(e.backup.archive.archive for e in result.entries if not e.success):
+        if failed := sorted(
+            f"{fmt.ch('archive')} {e.backup.archive.archive}" for e in result.entries if not e.success
+        ):
             b = w.section(f"{fmt.ch('failure')} Failed uploads -- ¯\\_(ツ)_/¯")
             b.list(failed, style="number")
 
@@ -219,7 +221,7 @@ class ReportWriter(Reporter):
 
         for group in sorted(result.entries, key=lambda e: e.name):
             g = d.section(f"Group [{group.name}]:")
-            g.list(sorted(group.directories), style="bullet")
+            g.list((f"{fmt.ch('folder')} {v}" for v in sorted(group.directories)))
 
     def details_backup(self, w: Writer, result: BackupActionResult):
         d = w.section(f"{fmt.ch('backup')} Backup")
@@ -231,7 +233,7 @@ class ReportWriter(Reporter):
 
         total_backups = len(result.entries)
         for ix, entry in enumerate(sorted(result.entries, key=lambda e: (e.group, e.folder))):
-            b = d.section(f"[{ix+1}/{total_backups}] [{entry.group}] {entry.folder}")
+            b = d.section(f"[{ix+1}/{total_backups}] [{entry.group}] {fmt.ch('folder')} {entry.folder}")
             b.row("Success", f"{fmt.ch('success') if entry.success else fmt.ch('failure')} {entry.success}")
             b.row("Started", f"{fmt.ch('time')} {fmt.datetime(entry.archive.proc.started)}")
             b.row("Completed", f"{fmt.ch('time')} {fmt.datetime(entry.archive.proc.completed)}")
@@ -245,9 +247,6 @@ class ReportWriter(Reporter):
                 if entry.archive.proc.exitcode:
                     b.row("Exit Code", entry.archive.proc.exitcode)
 
-                if entry.archive.proc.exception:
-                    b.row("Exception", entry.archive.proc.exception)
-
                 if entry.archive.proc.stdout:
                     s = b.section("Std Out")
                     s.list(entry.archive.proc.stdout.split("\n"))
@@ -255,6 +254,10 @@ class ReportWriter(Reporter):
                 if entry.archive.proc.stdout:
                     s = b.section("Std Err")
                     s.list(entry.archive.proc.stderr.split("\n"))
+
+                if entry.archive.proc.exception:
+                    ex = b.section(f"{fmt.ch('exception')} Exception")
+                    ex.list(fmt.wrap(str(entry.archive.proc.exception)))
 
     def details_upload(self, w: Writer, result: UploadActionResult):
         d = w.section(f"{fmt.ch('upload')} Upload")
@@ -266,7 +269,7 @@ class ReportWriter(Reporter):
 
         total_uploads = len(result.entries)
         for ix, entry in enumerate(sorted(result.entries, key=lambda e: e.upload.key)):
-            b = d.section(f"[{ix+1}/{total_uploads}] {entry.upload.key}")
+            b = d.section(f"[{ix+1}/{total_uploads}] {fmt.ch('archive')} {entry.upload.key}")
             b.row("Success", f"{fmt.ch('success') if entry.success else fmt.ch('failure')} {entry.success}")
             b.row("Started", f"{fmt.ch('time')} {fmt.datetime(entry.upload.started)}")
             b.row("Completed", f"{fmt.ch('time')} {fmt.datetime(entry.upload.completed)}")
@@ -278,21 +281,23 @@ class ReportWriter(Reporter):
                 b.row("Archive", f"{fmt.ch('archive')} {entry.upload.filepath}")
             else:
                 if entry.upload.exception:
-                    b.row("Exception", entry.upload.exception)
+                    ex = b.section(f"{fmt.ch('exception')} Exception")
+                    ex.list(fmt.wrap(str(entry.upload.exception)))
 
-            progress = sorted(
-                (
-                    fmt.datetime(e.timestamp),
-                    fmt.progress(e.progress),
-                    fmt.speed(e.speed),
-                    fmt.duration(e.elapsed),
+            if entry.progress:
+                progress = sorted(
+                    (
+                        fmt.datetime(e.timestamp),
+                        fmt.progress(e.progress),
+                        fmt.speed(e.speed),
+                        fmt.duration(e.elapsed),
+                    )
+                    for e in entry.progress
                 )
-                for e in entry.progress
-            )
-            p = b.section(f"{fmt.ch('outgoing')} Upload Progress")
-            p.list(
-                [
-                    f"{fmt.ch('time')} {ts} | {prog}% | {fmt.ch('speed')} {speed} | {fmt.ch('duration')} {dur}"
-                    for ts, prog, speed, dur in fmt.align(progress, "rrrr")
-                ]
-            )
+                p = b.section(f"{fmt.ch('outgoing')} Upload Progress")
+                p.list(
+                    [
+                        f"{fmt.ch('time')} {ts} | {prog}% | {fmt.ch('speed')} {speed} | {fmt.ch('duration')} {dur}"
+                        for ts, prog, speed, dur in fmt.align(progress, "rrrr")
+                    ]
+                )

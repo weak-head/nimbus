@@ -1,5 +1,6 @@
 import datetime as dt
 import math
+import textwrap
 from typing import Callable, Iterator
 
 
@@ -127,6 +128,10 @@ def align(entries: list[list[str]], alignment: str = "l") -> Iterator[list[str]]
         yield [handlers[alignment[field]](entry[field], max_field_len[field]) for field in range(len(entry))]
 
 
+def wrap(line: str, width: int = 100):
+    return textwrap.wrap(line, width)
+
+
 def ch(kind: str) -> str:
     """
     Given a character kind, this function maps it
@@ -134,45 +139,41 @@ def ch(kind: str) -> str:
     """
     m = {
         # -- Reporting --
-        "summary": "📄️",
+        "summary": "📄️",  # 📋
         "details": "🔍",
+        "cloud": "☁️",
+        "folder": "📁",
         "mapping": "🗺️",
-        "backup": "🗂️",
-        "upload-cloud": "☁️",
-        "upload-arrow": "⬆️",
-        "download-arrow": "⬇️",
+        "backup": "💼",  # 🗂️ 📀 💿 💾 🗜️ 🗃️ 💼 ⚙️ 🔨 🔧
+        "upload": "⬆️",
+        "download": "⬇️",
+        "exception": "⚠️",  # 🛑 ❗
         "outgoing": "📤",
         "incoming": "📥",
-        "clipboard": "📋",
-        "notepad": "🗒️",
-        "chart-up": "📈",
-        "chart-down": "📉",
+        "chart": "📈",  # 📉
         # -- Services --
         "docker": "🐳",
         # -- Files --
+        "link": "🔗",
         "archive": "📦",
         "save": "💾",
         "attachment": "📎",
-        "compress": "🗜️",
-        "disk": "💿",
-        "briefcase": "💼",
-        "documents": "🗃️",
         # -- Status --
         "total": "∑",
         "ok": "✓",
         "nok": "✗",
-        "success": "👍",  # "✅",
-        "failure": "❌",
+        "success": "👍",  # ✅ 🎉 💪 🌟 👏
+        "failure": "❌",  # 👎
         # -- Security --
         "lock": "🔒",
         "lock-open": "🔓",
         "key": "🔑",
         "key-old": "🗝️",
         # -- Metrics --
-        "date": "🗓️",
-        "time": "⌚",
+        "time": "🗓️",
+        # "time": "⌚",
         "duration": "⌛",
-        "size": "📁",
+        "size": "⚖️",  # 📏
         "speed": "🚀",
     }
     return m.get(kind, kind)
