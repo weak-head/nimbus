@@ -131,7 +131,7 @@ class ReportWriter(Reporter):
             if b.success
         ):
             b = w.section(
-                f"-- {fmt.ch('success')} Successful backups "
+                f"{fmt.ch('success')} Successful backups "
                 f"[ {fmt.ch('size')} {fmt.size(result.total_size)} ] -- (ﾉ◕ヮ◕)ﾉ",
             )
             b.list(
@@ -145,7 +145,7 @@ class ReportWriter(Reporter):
             )
 
         if failed := sorted(b.folder for b in result.entries if not b.success):
-            b = w.section(f"-- {fmt.ch('failure')} Failed backups -- ¯\\_(ツ)_/¯")
+            b = w.section(f"{fmt.ch('failure')} Failed backups -- ¯\\_(ツ)_/¯")
             b.list(failed, style="number")
 
     def summary_upload(self, w: Writer, result: UploadActionResult) -> None:
@@ -160,7 +160,7 @@ class ReportWriter(Reporter):
             if e.success
         ):
             b = w.section(
-                f"-- {fmt.ch('success')} Successful uploads "
+                f"{fmt.ch('success')} Successful uploads "
                 f"[ {fmt.ch('size')} {fmt.size(result.total_size)} ] -- (ﾉ◕ヮ◕)ﾉ"
             )
             b.list(
@@ -174,7 +174,7 @@ class ReportWriter(Reporter):
             )
 
         if failed := sorted(e.backup.archive.archive for e in result.entries if not e.success):
-            b = w.section(f"-- {fmt.ch('failure')} Failed uploads -- ¯\\_(ツ)_/¯")
+            b = w.section(f"{fmt.ch('failure')} Failed uploads -- ¯\\_(ツ)_/¯")
             b.list(failed, style="number")
 
     def summary_deploy(self, w: Writer, result: DeploymentActionResult) -> None:
@@ -187,7 +187,7 @@ class ReportWriter(Reporter):
                     title = "Successfully stopped"
 
             elapsed = reduce(lambda a, b: a + b.elapsed, result.successful, timedelta())
-            d = w.section(f"-- {title} [ {fmt.ch('duration')} {fmt.duration(elapsed)} ] -- (ﾉ◕ヮ◕)ﾉ")
+            d = w.section(f"{title} [ {fmt.ch('duration')} {fmt.duration(elapsed)} ] -- (ﾉ◕ヮ◕)ﾉ")
             d.list(
                 [
                     f"{service} [ {fmt.ch(kind)} {kind} | {fmt.ch('duration')} {duration} ]"
@@ -204,7 +204,7 @@ class ReportWriter(Reporter):
                 case "Down":
                     title = "Failed to stop"
 
-            d = w.section(f"-- {title} -- ¯\\_(ツ)_/¯")
+            d = w.section(f"{title} -- ¯\\_(ツ)_/¯")
             d.list(
                 [f"{service} [ {fmt.ch(kind)} {kind} ]" for service, kind in fmt.align(failed, "lr")],
                 style="number",
@@ -232,7 +232,7 @@ class ReportWriter(Reporter):
         total_backups = len(result.entries)
         for ix, entry in enumerate(sorted(result.entries, key=lambda e: (e.group, e.folder))):
             b = d.section(f"[{ix+1}/{total_backups}] [{entry.group}] {entry.folder}")
-            b.row("Success", f"{fmt.ch('success') if result.success else fmt.ch('failure')} {result.success}")
+            b.row("Success", f"{fmt.ch('success') if entry.success else fmt.ch('failure')} {entry.success}")
             b.row("Started", f"{fmt.ch('time')} {fmt.datetime(entry.archive.proc.started)}")
             b.row("Completed", f"{fmt.ch('time')} {fmt.datetime(entry.archive.proc.completed)}")
             b.row("Elapsed", f"{fmt.ch('duration')} {fmt.duration(entry.archive.proc.elapsed)}")
@@ -257,4 +257,42 @@ class ReportWriter(Reporter):
                     s.list(entry.archive.proc.stderr.split("\n"))
 
     def details_upload(self, w: Writer, result: UploadActionResult):
-        pass
+        d = w.section(f"{fmt.ch('upload')} Upload")
+        d.row("Success", f"{fmt.ch('success') if result.success else fmt.ch('failure')} {result.success}")
+        d.row("Total Size", f"{fmt.ch('size')} {fmt.size(result.total_size)}")
+        d.row("Started", f"{fmt.ch('time')} {fmt.datetime(result.started)}")
+        d.row("Completed", f"{fmt.ch('time')} {fmt.datetime(result.completed)}")
+        d.row("Elapsed", f"{fmt.ch('duration')} {fmt.duration(result.elapsed)}")
+
+        total_uploads = len(result.entries)
+        for ix, entry in enumerate(sorted(result.entries, key=lambda e: e.upload.key)):
+            b = d.section(f"[{ix+1}/{total_uploads}] {entry.upload.key}")
+            b.row("Success", f"{fmt.ch('success') if entry.success else fmt.ch('failure')} {entry.success}")
+            b.row("Started", f"{fmt.ch('time')} {fmt.datetime(entry.upload.started)}")
+            b.row("Completed", f"{fmt.ch('time')} {fmt.datetime(entry.upload.completed)}")
+            b.row("Elapsed", f"{fmt.ch('duration')} {fmt.duration(entry.upload.elapsed)}")
+
+            if entry.success:
+                b.row("Size", f"{fmt.ch('size')} {fmt.size(entry.upload.size)}")
+                b.row("Speed", f"{fmt.ch('speed')} {fmt.speed(entry.upload.speed)}")
+                b.row("Archive", f"{fmt.ch('archive')} {entry.upload.filepath}")
+            else:
+                if entry.upload.exception:
+                    b.row("Exception", entry.upload.exception)
+
+            progress = sorted(
+                (
+                    fmt.datetime(e.timestamp),
+                    fmt.progress(e.progress),
+                    fmt.speed(e.speed),
+                    fmt.duration(e.elapsed),
+                )
+                for e in entry.progress
+            )
+            p = b.section(f"{fmt.ch('outgoing')} Upload Progress")
+            p.list(
+                [
+                    f"{fmt.ch('time')} {ts} | {prog}% | {fmt.ch('speed')} {speed} | {fmt.ch('duration')} {dur}"
+                    for ts, prog, speed, dur in fmt.align(progress, "rrrr")
+                ]
+            )

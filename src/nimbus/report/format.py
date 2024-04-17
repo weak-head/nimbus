@@ -55,6 +55,10 @@ def duration(elapsed: dt.timedelta) -> str:
     return " ".join(time_parts) if time_parts else "< 01s"
 
 
+def progress(percentage: int) -> str:
+    return str(percentage)
+
+
 def datetime(d: dt.datetime, fmt: str = None) -> str:
     return d.strftime(fmt if fmt else "%Y-%m-%d %H:%M:%S")
 
@@ -134,20 +138,41 @@ def ch(kind: str) -> str:
         "details": "🔍",
         "mapping": "🗺️",
         "backup": "🗂️",
+        "upload-cloud": "☁️",
+        "upload-arrow": "⬆️",
+        "download-arrow": "⬇️",
+        "outgoing": "📤",
+        "incoming": "📥",
+        "clipboard": "📋",
+        "notepad": "🗒️",
+        "chart-up": "📈",
+        "chart-down": "📉",
         # -- Services --
         "docker": "🐳",
         # -- Files --
         "archive": "📦",
+        "save": "💾",
+        "attachment": "📎",
+        "compress": "🗜️",
+        "disk": "💿",
+        "briefcase": "💼",
+        "documents": "🗃️",
         # -- Status --
         "total": "∑",
         "ok": "✓",
         "nok": "✗",
-        "success": "✅",
+        "success": "👍",  # "✅",
         "failure": "❌",
+        # -- Security --
+        "lock": "🔒",
+        "lock-open": "🔓",
+        "key": "🔑",
+        "key-old": "🗝️",
         # -- Metrics --
+        "date": "🗓️",
         "time": "⌚",
         "duration": "⌛",
         "size": "📁",
-        "speed": "⚡",
+        "speed": "🚀",
     }
     return m.get(kind, kind)
