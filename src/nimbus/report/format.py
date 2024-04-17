@@ -1,5 +1,6 @@
 import datetime as dt
 import math
+import textwrap
 from typing import Callable, Iterator
 
 
@@ -53,6 +54,10 @@ def duration(elapsed: dt.timedelta) -> str:
 
     time_parts = [f"{v}{k}" if k == "d" else f"{v:02d}{k}" for k, v in data.items()]
     return " ".join(time_parts) if time_parts else "< 01s"
+
+
+def progress(percentage: int) -> str:
+    return str(percentage)
 
 
 def datetime(d: dt.datetime, fmt: str = None) -> str:
@@ -123,12 +128,52 @@ def align(entries: list[list[str]], alignment: str = "l") -> Iterator[list[str]]
         yield [handlers[alignment[field]](entry[field], max_field_len[field]) for field in range(len(entry))]
 
 
-def srv_ch(kind: str) -> str:
+def wrap(line: str, width: int = 100):
+    return textwrap.wrap(line, width)
+
+
+def ch(kind: str) -> str:
     """
-    Given a service type, this function maps it to the corresponding Unicode character representation.
+    Given a character kind, this function maps it
+    to the corresponding Unicode character representation.
     """
-    match kind:
-        case "docker":
-            return "🐳"
-        case _:
-            return "📋"
+    m = {
+        # -- Reporting --
+        "summary": "📄️",  # 📋
+        "details": "🔍",
+        "cloud": "☁️",
+        "folder": "📁",
+        "mapping": "🗺️",
+        "backup": "💼",  # 🗂️ 📀 💿 💾 🗜️ 🗃️ 💼 ⚙️ 🔨 🔧
+        "upload": "⬆️",
+        "download": "⬇️",
+        "exception": "⚠️",  # 🛑 ❗
+        "outgoing": "📤",
+        "incoming": "📥",
+        "chart": "📈",  # 📉
+        # -- Services --
+        "docker": "🐳",
+        # -- Files --
+        "link": "🔗",
+        "archive": "📦",
+        "save": "💾",
+        "attachment": "📎",
+        # -- Status --
+        "total": "∑",
+        "ok": "✓",
+        "nok": "✗",
+        "success": "👍",  # ✅ 🎉 💪 🌟 👏
+        "failure": "❌",  # 👎
+        # -- Security --
+        "lock": "🔒",
+        "lock-open": "🔓",
+        "key": "🔑",
+        "key-old": "🗝️",
+        # -- Metrics --
+        "time": "🗓️",
+        # "time": "⌚",
+        "duration": "⌛",
+        "size": "⚖️",  # 📏
+        "speed": "🚀",
+    }
+    return m.get(kind, kind)

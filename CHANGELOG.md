@@ -10,7 +10,7 @@
 
 ## 0.1.0 (2024-04-06)
 
-# Features
+### Features
 
 - Initial backup and upload functionality using `rar` and AWS S3.
 - Docker-compose service management.
