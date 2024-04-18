@@ -1,8 +1,11 @@
 from __future__ import annotations
 
+import logging
 from abc import ABC, abstractmethod
 from datetime import datetime, timedelta
 from functools import reduce
+
+from logdecorator import log_on_start
 
 import nimbus.report.format as fmt
 from nimbus.cmd.abstract import ExecutionResult
@@ -27,6 +30,10 @@ class CompositeReporter(Reporter):
     def __init__(self, reporters: list[Reporter]) -> None:
         self._reporters = reporters if reporters else []
 
+    def __repr__(self) -> str:
+        params = [repr(r) for r in self._reporters]
+        return "CompositeReporter(" + ", ".join(params) + ")"
+
     def write(self, result: ExecutionResult) -> None:
         for reporter in self._reporters:
             reporter.write(result)
@@ -41,6 +48,14 @@ class ReportWriter(Reporter):
         self._writer = writer
         self._write_details = details
 
+    def __repr__(self) -> str:
+        params = [
+            f"writer='{self._writer!r}'",
+            f"details='{self._write_details}'",
+        ]
+        return "ReportWriter(" + ", ".join(params) + ")"
+
+    @log_on_start(logging.INFO, "Writing report to: [{self._writer!r}]")
     def write(self, result: ExecutionResult) -> None:
         self.header()
         self.summary(result)

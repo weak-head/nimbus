@@ -28,7 +28,7 @@ class ServiceFactory:
         return "ServiceFactory(" + ", ".join(params) + ")"
 
     @log_on_start(logging.DEBUG, "Creating Service: {resource.name!s} [{resource.kind!s}]")
-    @log_on_end(logging.DEBUG, "Created Service: {result.name!s} [{result.__class__.__name__!s}]")
+    @log_on_end(logging.DEBUG, "Created Service: {result!r}")
     @log_on_error(logging.ERROR, "Failed to create Service: {e!r}", on_exceptions=Exception)
     def create_service(self, resource: ServiceResource) -> Service:
         match resource.kind:

@@ -82,6 +82,10 @@ class TextWriter(Writer):
         self._column_width = column_width
         self._parent = parent
 
+    def __repr__(self) -> str:
+        params = [f"file={self._file!r}"]
+        return "TextWriter(" + ", ".join(params) + ")"
+
     def section(self, title: str) -> TextWriter:
         self.line("")
         self.line(title)
