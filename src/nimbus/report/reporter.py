@@ -270,7 +270,7 @@ class ReportWriter(Reporter):
                 b.row("Archive", f"{fmt.ch('archive')} {entry.archive.archive}")
             else:
                 if entry.archive.proc.exitcode:
-                    b.row("Exit Code", entry.archive.proc.exitcode)
+                    b.row("Exit Code", f"{fmt.ch('exitcode')} {entry.archive.proc.exitcode}")
 
                 if entry.archive.proc.stdout:
                     s = b.section("StdOut", indent=False)
@@ -376,7 +376,7 @@ class ReportWriter(Reporter):
                 p.row("Elapsed", f"{fmt.ch('duration')} {fmt.duration(proc.elapsed)}")
 
                 if proc.exitcode:
-                    p.row("Exit Code", proc.exitcode)
+                    p.row("Exit Code", f"{fmt.ch('exitcode')} {proc.exitcode}")
 
                 if proc.stdout:
                     s = p.section("StdOut", indent=False)

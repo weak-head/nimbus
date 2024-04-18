@@ -147,7 +147,8 @@ def ch(kind: str) -> str:
         "backup": "💼",  # 🗂️ 📀 💿 💾 🗜️ 🗃️ 💼 ⚙️ 🔨 🔧
         "upload": "⬆️",
         "download": "⬇️",
-        "exception": "⚠️",  # 🛑 ❗
+        "exception": "⚠️",  # 🛑
+        "exitcode": "❗",
         "outgoing": "📤",
         "incoming": "📥",
         "chart": "📈",  # 📉
