@@ -14,7 +14,11 @@ from nimbus.cmd.backup import (
     DirectoryMappingActionResult,
     UploadActionResult,
 )
-from nimbus.cmd.deploy import DeploymentActionResult
+from nimbus.cmd.deploy import (
+    CreateServicesActionResult,
+    DeploymentActionResult,
+    ServiceMappingActionResult,
+)
 from nimbus.report.writer import Writer
 
 
@@ -119,6 +123,12 @@ class ReportWriter(Reporter):
                     self.details_backup(s, action)
                 case UploadActionResult():
                     self.details_upload(s, action)
+                case ServiceMappingActionResult():
+                    self.details_service_mapping(s, action)
+                case CreateServicesActionResult():
+                    self.details_create_services(s, action)
+                case DeploymentActionResult():
+                    self.details_deployment(s, action)
                 case _:
                     pass
 
@@ -204,10 +214,10 @@ class ReportWriter(Reporter):
                     title = "Successfully stopped"
 
             elapsed = reduce(lambda a, b: a + b.elapsed, result.successful, timedelta())
-            d = w.section(f"{title} [ {fmt.ch('duration')} {fmt.duration(elapsed)} ] -- (ﾉ◕ヮ◕)ﾉ")
+            d = w.section(f"{fmt.ch('success')} {title} [ {fmt.ch('duration')} {fmt.duration(elapsed)} ] -- (ﾉ◕ヮ◕)ﾉ")
             d.list(
                 [
-                    f"{service} [ {fmt.ch(kind)} {kind} | {fmt.ch('duration')} {duration} ]"
+                    f"{fmt.ch(kind)} {service} [ {fmt.ch('duration')} {duration} ]"
                     for service, kind, duration in fmt.align(processed, "lrr")
                 ],
                 style="number",
@@ -221,9 +231,9 @@ class ReportWriter(Reporter):
                 case "Down":
                     title = "Failed to stop"
 
-            d = w.section(f"{title} -- ¯\\_(ツ)_/¯")
+            d = w.section(f"{fmt.ch('failure')} {title} -- ¯\\_(ツ)_/¯")
             d.list(
-                [f"{service} [ {fmt.ch(kind)} {kind} ]" for service, kind in fmt.align(failed, "lr")],
+                [f"{fmt.ch(kind)} {service}" for service, kind in fmt.align(failed, "lr")],
                 style="number",
             )
 
@@ -316,3 +326,25 @@ class ReportWriter(Reporter):
                         for ts, prog, speed, dur in fmt.align(progress, "rrrr")
                     ]
                 )
+
+    def details_service_mapping(self, w: Writer, result: ServiceMappingActionResult):
+        s = w.section(f"{fmt.ch('mapping')} Mapped Services")
+        s.row("Success", f"{fmt.ch('success') if result.success else fmt.ch('failure')} {result.success}")
+        s.row("Started", f"{fmt.ch('time')} {fmt.datetime(result.started)}")
+        s.row("Completed", f"{fmt.ch('time')} {fmt.datetime(result.completed)}")
+        s.row("Elapsed", f"{fmt.ch('duration')} {fmt.duration(result.elapsed)}")
+
+        mapping = sorted((e.name, e.directory, e.kind) for e in result.entries)
+        g = s.section(f"{fmt.ch('service')} Services")
+        g.list(
+            [
+                f"{fmt.ch(kind)} {name} | {fmt.ch('folder')} {directory}"
+                for name, directory, kind in fmt.align(mapping, "llr")
+            ],
+        )
+
+    def details_create_services(self, w: Writer, result: CreateServicesActionResult):
+        pass
+
+    def details_deployment(self, w: Writer, result: DeploymentActionResult):
+        pass

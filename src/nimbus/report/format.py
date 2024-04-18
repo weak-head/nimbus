@@ -151,8 +151,10 @@ def ch(kind: str) -> str:
         "outgoing": "📤",
         "incoming": "📥",
         "chart": "📈",  # 📉
+        "service": "⚙️",
         # -- Services --
         "docker": "🐳",
+        "docker-compose": "🐳",
         # -- Files --
         "link": "🔗",
         "archive": "📦",
