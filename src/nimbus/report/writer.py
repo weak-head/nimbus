@@ -15,7 +15,7 @@ class Writer(ABC):
     """
 
     @abstractmethod
-    def section(self, title: str) -> Writer:
+    def section(self, title: str, indent: bool = True) -> Writer:
         """
         Creates a new `Writer` that represents a nested section and serves
         as a logical grouping for message entries. All message entries written
@@ -23,6 +23,7 @@ class Writer(ABC):
         These sections can be nested within each other for better organization.
 
         :param title: A title of the section.
+        :param indent: True, if vertical indent is required.
         :return: A new instance of `Writer`, that is designated to the created section.
         """
 
@@ -86,8 +87,9 @@ class TextWriter(Writer):
         params = [f"file={self._file!r}"]
         return "TextWriter(" + ", ".join(params) + ")"
 
-    def section(self, title: str) -> TextWriter:
-        self.line("")
+    def section(self, title: str, indent: bool = True) -> TextWriter:
+        if indent:
+            self.line("")
         self.line(title)
 
         return TextWriter(

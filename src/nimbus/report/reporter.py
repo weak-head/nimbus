@@ -273,11 +273,11 @@ class ReportWriter(Reporter):
                     b.row("Exit Code", entry.archive.proc.exitcode)
 
                 if entry.archive.proc.stdout:
-                    s = b.section("Std Out")
+                    s = b.section("StdOut", indent=False)
                     s.list(entry.archive.proc.stdout.split("\n"))
 
-                if entry.archive.proc.stdout:
-                    s = b.section("Std Err")
+                if entry.archive.proc.stderr:
+                    s = b.section("StdErr", indent=False)
                     s.list(entry.archive.proc.stderr.split("\n"))
 
                 if entry.archive.proc.exception:
@@ -347,4 +347,45 @@ class ReportWriter(Reporter):
         pass
 
     def details_deployment(self, w: Writer, result: DeploymentActionResult):
-        pass
+        d = w.section(f"{fmt.ch('deployment')} Deployment {result.operation}")
+        d.row("Success", f"{fmt.ch('success') if result.success else fmt.ch('failure')} {result.success}")
+        d.row("Started", f"{fmt.ch('time')} {fmt.datetime(result.started)}")
+        d.row("Completed", f"{fmt.ch('time')} {fmt.datetime(result.completed)}")
+        d.row("Elapsed", f"{fmt.ch('duration')} {fmt.duration(result.elapsed)}")
+
+        total_services = len(result.entries)
+        for ix, entry in enumerate(sorted(result.entries, key=lambda e: e.service)):
+            b = d.section(f"[{ix+1}/{total_services}] {fmt.ch(entry.kind)} {entry.service}")
+            b.row("Success", f"{fmt.ch('success') if entry.success else fmt.ch('failure')} {entry.success}")
+            b.row(
+                "Started",
+                f"{fmt.ch('time')} {fmt.datetime(min(t.started for e in result.entries for t in e.processes))}",
+            )
+            b.row(
+                "Completed",
+                f"{fmt.ch('time')} {fmt.datetime(max(t.completed for e in result.entries for t in e.processes))}",
+            )
+            b.row("Elapsed", f"{fmt.ch('duration')} {fmt.duration(entry.elapsed)}")
+
+            for proc in entry.processes:
+                p = b.section(f"{fmt.ch('shell')} {' '.join(proc.cmd)}")
+                p.row("Success", f"{fmt.ch('success') if proc.success else fmt.ch('failure')} {proc.success}")
+                p.row("Directory", f"{fmt.ch('folder')} {proc.cwd}")
+                p.row("Started", f"{fmt.ch('time')} {fmt.datetime(proc.started)}")
+                p.row("Completed", f"{fmt.ch('time')} {fmt.datetime(proc.completed)}")
+                p.row("Elapsed", f"{fmt.ch('duration')} {fmt.duration(proc.elapsed)}")
+
+                if proc.exitcode:
+                    p.row("Exit Code", proc.exitcode)
+
+                if proc.stdout:
+                    s = p.section("StdOut", indent=False)
+                    s.list(proc.stdout.split("\n"))
+
+                if proc.stderr:
+                    s = p.section("StdErr", indent=False)
+                    s.list(proc.stderr.split("\n"))
+
+                if proc.exception:
+                    ex = p.section(f"{fmt.ch('exception')} Exception")
+                    ex.list(fmt.wrap(str(proc.exception)))
