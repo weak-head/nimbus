@@ -95,6 +95,7 @@ class RarArchiver(Archiver):
             "rar",
             "a",        # Archive
             "-r",       # Recursive
+            "-ol",      # Process symbolic links as the link
             "-htb",     # Use BLAKE2 hash
             "-md128m",  # Dictionary size: 128 MB
             "-qo+",     # Add quick open information

@@ -5,6 +5,7 @@
 ### Added
 
 - Enhanced `rar` support with adjustable compression and recovery.
+- Do not follow symbolic links for `rar` backups.
 - Configurable application logging.
 - Operation reports now include backup and deployment details.
 
