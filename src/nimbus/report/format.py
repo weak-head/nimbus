@@ -147,12 +147,17 @@ def ch(kind: str) -> str:
         "backup": "💼",  # 🗂️ 📀 💿 💾 🗜️ 🗃️ 💼 ⚙️ 🔨 🔧
         "upload": "⬆️",
         "download": "⬇️",
-        "exception": "⚠️",  # 🛑 ❗
+        "exception": "⚠️",  # 🛑
+        "exitcode": "❗",
         "outgoing": "📤",
         "incoming": "📥",
         "chart": "📈",  # 📉
+        "service": "⚙️",
+        "deployment": "🏗️",  # 🏢 🏭 👷 🧱 🚚 🛻
+        "shell": "➡️",  # ➡️ ⏩ ▶️
         # -- Services --
         "docker": "🐳",
+        "docker-compose": "🐳",
         # -- Files --
         "link": "🔗",
         "archive": "📦",

@@ -1,8 +1,11 @@
 from __future__ import annotations
 
+import logging
 from abc import ABC, abstractmethod
 from datetime import datetime, timedelta
 from functools import reduce
+
+from logdecorator import log_on_start
 
 import nimbus.report.format as fmt
 from nimbus.cmd.abstract import ExecutionResult
@@ -11,7 +14,11 @@ from nimbus.cmd.backup import (
     DirectoryMappingActionResult,
     UploadActionResult,
 )
-from nimbus.cmd.deploy import DeploymentActionResult
+from nimbus.cmd.deploy import (
+    CreateServicesActionResult,
+    DeploymentActionResult,
+    ServiceMappingActionResult,
+)
 from nimbus.report.writer import Writer
 
 
@@ -27,6 +34,10 @@ class CompositeReporter(Reporter):
     def __init__(self, reporters: list[Reporter]) -> None:
         self._reporters = reporters if reporters else []
 
+    def __repr__(self) -> str:
+        params = [repr(r) for r in self._reporters]
+        return "CompositeReporter(" + ", ".join(params) + ")"
+
     def write(self, result: ExecutionResult) -> None:
         for reporter in self._reporters:
             reporter.write(result)
@@ -41,6 +52,14 @@ class ReportWriter(Reporter):
         self._writer = writer
         self._write_details = details
 
+    def __repr__(self) -> str:
+        params = [
+            f"writer='{self._writer!r}'",
+            f"details='{self._write_details}'",
+        ]
+        return "ReportWriter(" + ", ".join(params) + ")"
+
+    @log_on_start(logging.INFO, "Writing report to: [{self._writer!r}]")
     def write(self, result: ExecutionResult) -> None:
         self.header()
         self.summary(result)
@@ -104,6 +123,12 @@ class ReportWriter(Reporter):
                     self.details_backup(s, action)
                 case UploadActionResult():
                     self.details_upload(s, action)
+                case ServiceMappingActionResult():
+                    self.details_service_mapping(s, action)
+                case CreateServicesActionResult():
+                    self.details_create_services(s, action)
+                case DeploymentActionResult():
+                    self.details_deployment(s, action)
                 case _:
                     pass
 
@@ -189,10 +214,10 @@ class ReportWriter(Reporter):
                     title = "Successfully stopped"
 
             elapsed = reduce(lambda a, b: a + b.elapsed, result.successful, timedelta())
-            d = w.section(f"{title} [ {fmt.ch('duration')} {fmt.duration(elapsed)} ] -- (ﾉ◕ヮ◕)ﾉ")
+            d = w.section(f"{fmt.ch('success')} {title} [ {fmt.ch('duration')} {fmt.duration(elapsed)} ] -- (ﾉ◕ヮ◕)ﾉ")
             d.list(
                 [
-                    f"{service} [ {fmt.ch(kind)} {kind} | {fmt.ch('duration')} {duration} ]"
+                    f"{fmt.ch(kind)} {service} [ {fmt.ch('duration')} {duration} ]"
                     for service, kind, duration in fmt.align(processed, "lrr")
                 ],
                 style="number",
@@ -206,9 +231,9 @@ class ReportWriter(Reporter):
                 case "Down":
                     title = "Failed to stop"
 
-            d = w.section(f"{title} -- ¯\\_(ツ)_/¯")
+            d = w.section(f"{fmt.ch('failure')} {title} -- ¯\\_(ツ)_/¯")
             d.list(
-                [f"{service} [ {fmt.ch(kind)} {kind} ]" for service, kind in fmt.align(failed, "lr")],
+                [f"{fmt.ch(kind)} {service}" for service, kind in fmt.align(failed, "lr")],
                 style="number",
             )
 
@@ -245,14 +270,14 @@ class ReportWriter(Reporter):
                 b.row("Archive", f"{fmt.ch('archive')} {entry.archive.archive}")
             else:
                 if entry.archive.proc.exitcode:
-                    b.row("Exit Code", entry.archive.proc.exitcode)
+                    b.row("Exit Code", f"{fmt.ch('exitcode')} {entry.archive.proc.exitcode}")
 
                 if entry.archive.proc.stdout:
-                    s = b.section("Std Out")
+                    s = b.section("StdOut", indent=False)
                     s.list(entry.archive.proc.stdout.split("\n"))
 
-                if entry.archive.proc.stdout:
-                    s = b.section("Std Err")
+                if entry.archive.proc.stderr:
+                    s = b.section("StdErr", indent=False)
                     s.list(entry.archive.proc.stderr.split("\n"))
 
                 if entry.archive.proc.exception:
@@ -301,3 +326,66 @@ class ReportWriter(Reporter):
                         for ts, prog, speed, dur in fmt.align(progress, "rrrr")
                     ]
                 )
+
+    def details_service_mapping(self, w: Writer, result: ServiceMappingActionResult):
+        s = w.section(f"{fmt.ch('mapping')} Mapped Services")
+        s.row("Success", f"{fmt.ch('success') if result.success else fmt.ch('failure')} {result.success}")
+        s.row("Started", f"{fmt.ch('time')} {fmt.datetime(result.started)}")
+        s.row("Completed", f"{fmt.ch('time')} {fmt.datetime(result.completed)}")
+        s.row("Elapsed", f"{fmt.ch('duration')} {fmt.duration(result.elapsed)}")
+
+        mapping = sorted((e.name, e.directory, e.kind) for e in result.entries)
+        g = s.section(f"{fmt.ch('service')} Services")
+        g.list(
+            [
+                f"{fmt.ch(kind)} {name} | {fmt.ch('folder')} {directory}"
+                for name, directory, kind in fmt.align(mapping, "llr")
+            ],
+        )
+
+    def details_create_services(self, w: Writer, result: CreateServicesActionResult):
+        pass
+
+    def details_deployment(self, w: Writer, result: DeploymentActionResult):
+        d = w.section(f"{fmt.ch('deployment')} Deployment {result.operation}")
+        d.row("Success", f"{fmt.ch('success') if result.success else fmt.ch('failure')} {result.success}")
+        d.row("Started", f"{fmt.ch('time')} {fmt.datetime(result.started)}")
+        d.row("Completed", f"{fmt.ch('time')} {fmt.datetime(result.completed)}")
+        d.row("Elapsed", f"{fmt.ch('duration')} {fmt.duration(result.elapsed)}")
+
+        total_services = len(result.entries)
+        for ix, entry in enumerate(sorted(result.entries, key=lambda e: e.service)):
+            b = d.section(f"[{ix+1}/{total_services}] {fmt.ch(entry.kind)} {entry.service}")
+            b.row("Success", f"{fmt.ch('success') if entry.success else fmt.ch('failure')} {entry.success}")
+            b.row(
+                "Started",
+                f"{fmt.ch('time')} {fmt.datetime(min(t.started for e in result.entries for t in e.processes))}",
+            )
+            b.row(
+                "Completed",
+                f"{fmt.ch('time')} {fmt.datetime(max(t.completed for e in result.entries for t in e.processes))}",
+            )
+            b.row("Elapsed", f"{fmt.ch('duration')} {fmt.duration(entry.elapsed)}")
+
+            for proc in entry.processes:
+                p = b.section(f"{fmt.ch('shell')} {' '.join(proc.cmd)}")
+                p.row("Success", f"{fmt.ch('success') if proc.success else fmt.ch('failure')} {proc.success}")
+                p.row("Directory", f"{fmt.ch('folder')} {proc.cwd}")
+                p.row("Started", f"{fmt.ch('time')} {fmt.datetime(proc.started)}")
+                p.row("Completed", f"{fmt.ch('time')} {fmt.datetime(proc.completed)}")
+                p.row("Elapsed", f"{fmt.ch('duration')} {fmt.duration(proc.elapsed)}")
+
+                if proc.exitcode:
+                    p.row("Exit Code", f"{fmt.ch('exitcode')} {proc.exitcode}")
+
+                if proc.stdout:
+                    s = p.section("StdOut", indent=False)
+                    s.list(proc.stdout.split("\n"))
+
+                if proc.stderr:
+                    s = p.section("StdErr", indent=False)
+                    s.list(proc.stderr.split("\n"))
+
+                if proc.exception:
+                    ex = p.section(f"{fmt.ch('exception')} Exception")
+                    ex.list(fmt.wrap(str(proc.exception)))

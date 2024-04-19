@@ -57,7 +57,7 @@ class CfgReporterFactory(ReporterFactory):
         )
 
     @log_on_start(logging.DEBUG, "Creating Writer: [{kind!s}]")
-    @log_on_end(logging.DEBUG, "Created Writer: {result.__class__.__name__!s}")
+    @log_on_end(logging.DEBUG, "Created Writer: {result!r}")
     @log_on_error(logging.ERROR, "Failed to create Writer: {e!r}", on_exceptions=Exception)
     def create_writer(self, kind: str) -> Writer:
         match kind:
@@ -69,15 +69,15 @@ class CfgReporterFactory(ReporterFactory):
                 return None
 
     @log_on_start(logging.DEBUG, "Creating Reporter")
-    @log_on_end(logging.DEBUG, "Created Reporter: {result.__class__.__name__!s}")
+    @log_on_end(logging.DEBUG, "Created Reporter: {result!r}")
     @log_on_error(logging.ERROR, "Failed to create Reporter: {e!r}", on_exceptions=Exception)
     def create_reporter(self) -> Reporter:
         reporters = []
 
-        if writer := self.create_writer("stdout"):
-            reporters.append(ReportWriter(writer, details=False))
-
         if (kind := self._config.reports.format) and (writer := self.create_writer(kind)):
             reporters.append(ReportWriter(writer))
+
+        if writer := self.create_writer("stdout"):
+            reporters.append(ReportWriter(writer, details=False))
 
         return CompositeReporter(reporters)

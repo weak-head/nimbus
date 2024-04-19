@@ -53,6 +53,13 @@ class DockerService(Service):
         self._env = env
         self._runner = runner
 
+    def __repr__(self) -> str:
+        params = [
+            f"name='{self._name}'",
+            f"dir='{self._directory}'",
+        ]
+        return "DockerService(" + ", ".join(params) + ")"
+
     def _execute(self, operation: str, commands: list[str]) -> OperationStatus:
         status = OperationStatus(self.name, operation, "docker")
         for cmd in commands:
