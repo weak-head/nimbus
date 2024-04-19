@@ -1,12 +1,12 @@
 # Changelog
 
-## 0.2.0 (2024-xx-xx)
+## 0.2.0 (2024-04-19)
 
 ### Added
 
 - Enhanced `rar` support with adjustable compression and recovery.
-- Customizable application logging settings.
-- Operation reports now feature backup and deployment specifics.
+- Configurable application logging.
+- Operation reports now include backup and deployment details.
 
 ## 0.1.0 (2024-04-06)
 
