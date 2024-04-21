@@ -20,7 +20,7 @@ class Resource:
         return self.name
 
     def match(self, selector: str) -> bool:
-        return fnmatch.filter([self.name], selector)
+        return bool(fnmatch.filter([self.name], selector))
 
 
 T = TypeVar("T", bound=Resource)
