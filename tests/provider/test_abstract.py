@@ -1,7 +1,8 @@
 from typing import Iterator
+
 import pytest
 
-from nimbus.provider.abstract import Resource, Provider
+from nimbus.provider.abstract import Provider, Resource
 
 
 class TestResource:
