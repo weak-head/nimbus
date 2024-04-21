@@ -1,4 +1,5 @@
 from argparse import ArgumentParser, Namespace
+from importlib import metadata
 
 from nimbus.cli.runner import Runner
 
@@ -22,7 +23,8 @@ def parse_args(args: list[str], runner: Runner) -> Namespace | None:
 def create_parser(runner: Runner) -> ArgumentParser:
 
     parser = ArgumentParser("ni")
-    parser.add_argument("--config", dest="config_path", default=None)
+    parser.add_argument("--version", action="version", version=f"%(prog)s {metadata.version('nimbus')}")
+    parser.add_argument("--config", dest="config_path", default=None, help="overwrite config location")
     commands = parser.add_subparsers()
 
     # -- Up
