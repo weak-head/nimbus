@@ -39,12 +39,12 @@ class CfgCommandFactory(CommandFactory):
     @log_on_start(logging.DEBUG, "Creating Backup command")
     @log_on_error(logging.ERROR, "Failed to create Backup command: {e!r}", on_exceptions=Exception)
     def create_backup(self) -> Command:
-        cfg = self._config.backup
+        cfg = self._config.commands.backup
         return Backup(
             cfg.destination,
             BackupProvider(cfg.directories),
-            self._components.create_archiver(cfg.archiver),
-            self._components.create_uploader(cfg.uploader),
+            self._components.create_archiver(cfg.archive),
+            self._components.create_uploader(cfg.upload),
         )
 
     @log_on_start(logging.DEBUG, "Creating Up command")

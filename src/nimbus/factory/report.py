@@ -39,7 +39,7 @@ class CfgReporterFactory(ReporterFactory):
     @log_on_end(logging.DEBUG, "Selected report file path: {result!s}")
     @log_on_error(logging.ERROR, "Failed to select report file: {e!r}", on_exceptions=Exception)
     def report_file(self, extension: str) -> str:
-        path = self._config.reports.location
+        path = self._config.observability.reports.directory
         path = path if path else "~/.nimbus/reports"
 
         directory = Path(path).expanduser().as_posix()
@@ -74,7 +74,7 @@ class CfgReporterFactory(ReporterFactory):
     def create_reporter(self) -> Reporter:
         reporters = []
 
-        if (kind := self._config.reports.format) and (writer := self.create_writer(kind)):
+        if (kind := self._config.observability.reports.format) and (writer := self.create_writer(kind)):
             reporters.append(ReportWriter(writer))
 
         if writer := self.create_writer("stdout"):

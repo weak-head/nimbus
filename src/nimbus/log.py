@@ -29,7 +29,8 @@ class LogConfig:
 @log_on_end(logging.DEBUG, "Logger has been configured: {result!r}")
 def setup_logger(config: Config) -> LogConfig | None:
     try:
-        cfg = parse_config(config)
+        default = LogConfig(logging.INFO, "~/.nimbus/logs", False)
+        cfg = parse_config(config, default)
 
         log_formatter = logging.Formatter(
             fmt="%(asctime)s [%(levelname)-5.5s] - %(message)s",
@@ -65,17 +66,12 @@ def setup_logger(config: Config) -> LogConfig | None:
     return None
 
 
-def parse_config(config: Config) -> LogConfig:
-    cfg = LogConfig(logging.INFO, "~/.nimbus/logs", False)
-
-    if not config.logs:
-        return cfg
-
-    if config.logs.level:
-        cfg.level = config.logs.level
-    if config.logs.location:
-        cfg.location = config.logs.location
-    if config.logs.stdout:
-        cfg.stdout = config.logs.stdout
-
-    return cfg
+def parse_config(config: Config, default: LogConfig) -> LogConfig:
+    if lc := config.observability.logs:
+        if lc.level:
+            default.level = lc.level
+        if lc.directory:
+            default.location = lc.directory
+        if lc.stdout:
+            default.stdout = lc.stdout
+    return default
