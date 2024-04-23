@@ -14,8 +14,9 @@ observability:
   # Notifications (Optional)
   notifications:
     discord:
-      webhook_id: ""  # Discord webhook ID
-      webhook_token: ""  # Discord webhook token
+      webhook: https://discord.com/api/webhooks/id/token  # Discord webhook
+      username: nimbus # Optional: Override the default username of the webhook
+      avatar_url: http://avatar.picture/url # Optional: Override the default avatar of the webhook
 
 # Profiles Collection
 profiles:
@@ -60,12 +61,12 @@ commands:
         environment:
           UID: 1001
           GID: 1001
-          TZ: "America/New_York"
-          SMTP_SERVER: "smtp.server.com"
-          SMTP_PORT: "587"
-          SMTP_USERNAME: "username"
-          SMTP_PASSWORD: "password"
-          SMTP_DOMAIN: "domain.com"
+          TZ: America/New_York
+          SMTP_SERVER: smtp.server.com
+          SMTP_PORT: 587
+          SMTP_USERNAME: username
+          SMTP_PASSWORD: password
+          SMTP_DOMAIN: domain.com
       - service: "git*"  # Match services starting with 'git'
         environment:
           UID: 1002  # Overwrite UID

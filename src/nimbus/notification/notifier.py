@@ -1,5 +1,7 @@
 from abc import ABC, abstractmethod
 
+import requests
+
 
 class Notifier(ABC):
     """
@@ -35,16 +37,34 @@ class DiscordNotifier(Notifier):
     Sends notifications to a Discord channel.
     """
 
-    def __init__(self, hook_id: str, hook_token: str) -> None:
-        self._hid = hook_id
-        self._htoken = hook_token
+    def __init__(self, webhook: str, username: str = None, avatar_url: str = None) -> None:
+        self._webhook = webhook
+        self._username = username
+        self._avatar_url = avatar_url
 
     def __repr__(self) -> str:
         params = [
-            f"hid='{self._hid}'",
-            f"htoken='{self._htoken}'",
+            f"webhook='{self._webhook}'",
         ]
         return "DiscordNotifier(" + ", ".join(params) + ")"
 
     def notify(self) -> None:
-        pass
+
+        # https://discord.com/developers/docs/resources/webhook
+        data = {
+            "content": "Hello, world!",
+            # "username": "nimbus",
+            # "avatar_url": "https://example.com/avatar.png",
+            "embeds": [
+                {
+                    "title": "New Message",
+                    "description": "There's a new message in the chat room!",
+                    "color": 16711680,  # Colors are in decimal format
+                }
+            ],
+        }
+
+        response = requests.post(self._webhook, json=data, timeout=3000)
+
+        print(response.status_code)
+        print(response.content)

@@ -53,7 +53,7 @@ def setup_logger(config: Config) -> LogConfig | None:
             console_handler.setFormatter(log_formatter)
             root_logger.addHandler(console_handler)
 
-        for name in ["botocore", "boto3", "boto", "s3transfer"]:
+        for name in ["botocore", "boto3", "boto", "s3transfer", "requests", "urllib3"]:
             logging.getLogger(name).setLevel(logging.CRITICAL)
 
         return cfg

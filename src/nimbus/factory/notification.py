@@ -31,8 +31,9 @@ class CfgNotifierFactory(NotifierFactory):
         if discord := self._config.observability.notifications.discord:
             notifiers.append(
                 DiscordNotifier(
-                    discord.webhook_id,
-                    discord.webhook_token,
+                    discord.webhook,
+                    discord.username,
+                    discord.avatar_url,
                 )
             )
 
