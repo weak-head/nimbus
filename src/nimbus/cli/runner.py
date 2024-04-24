@@ -66,4 +66,4 @@ class CommandRunner(Runner):
             reporter.write(result)
 
         if notifier := self._notify_fact.create_notifier():
-            notifier.notify()
+            notifier.completed(result)
