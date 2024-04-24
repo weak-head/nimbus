@@ -1,10 +1,12 @@
 from abc import ABC, abstractmethod
 from datetime import datetime
+from typing import Iterator
 
 import requests
 
 import nimbus.report.format as fmt
 from nimbus.cmd.abstract import ExecutionResult
+from nimbus.cmd.deploy import DeploymentActionResult
 
 
 class Notifier(ABC):
@@ -72,17 +74,47 @@ class DiscordNotifier(Notifier):
             data["avatar_url"] = self._avatar_url
 
         event = {}
-        event["timestamp"] = datetime.now().astimezone().isoformat()
+        event["title"] = f"{fmt.ch('success') if result.success else fmt.ch('failure')} {result.command}"
         event["color"] = DiscordNotifier._SUCCESS if result.success else DiscordNotifier._FAILURE
-        event["title"] = result.command
+        event["timestamp"] = datetime.now().astimezone().isoformat()
         event["fields"] = [
-            {"name": "Started", "value": fmt.datetime(result.started), "inline": False},
-            {"name": "Completed", "value": fmt.datetime(result.completed), "inline": False},
-            {"name": "Elapsed", "value": fmt.duration(result.elapsed), "inline": False},
+            {
+                "name": f"{fmt.ch('duration')} Elapsed",
+                "value": f"{fmt.duration(result.elapsed)}",
+                "inline": True,
+            },
+            {
+                "name": f"{fmt.ch('time')} Started",
+                "value": f"{fmt.datetime(result.started)}",
+                "inline": True,
+            },
+            {
+                "name": f"{fmt.ch('time')} Completed",
+                "value": f"{fmt.datetime(result.completed)}",
+                "inline": True,
+            },
         ]
 
+        event["fields"].extend(self._get_details(result))
         data["embeds"] = [event]
+
         return data
+
+    def _get_details(self, result: ExecutionResult) -> Iterator[dict]:
+        for action in result.actions:
+            match action:
+                case DeploymentActionResult():
+                    entries = []
+                    for ix, entry in enumerate(action.entries):
+                        entries.append(
+                            f"{ix:02d}. {fmt.ch('success') if entry.success else fmt.ch('failure')} "
+                            f"{fmt.ch(entry.kind)} {entry.service}"
+                        )
+                    yield {
+                        "name": f"{fmt.ch('service')} Services",
+                        "value": "\n".join(entries),
+                        "inline": False,
+                    }
 
     def completed(self, result: ExecutionResult) -> None:
         self._send(self._compose_completed(result))
