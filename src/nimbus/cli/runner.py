@@ -62,8 +62,10 @@ class CommandRunner(Runner):
     def _execute(self, cmd: Command, args: list[str]):
         result = cmd.execute(args)
 
+        reports = []
         if reporter := self._report_fact.create_reporter():
             reporter.write(result)
+            reports = reporter.reports
 
         if notifier := self._notify_fact.create_notifier():
-            notifier.completed(result)
+            notifier.completed(result, reports)

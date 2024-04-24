@@ -16,9 +16,12 @@ class Notifier(ABC):
     """
 
     @abstractmethod
-    def completed(self, result: ExecutionResult) -> None:
+    def completed(self, result: ExecutionResult, attachments: list[str] = None) -> None:
         """
-        Send a notification about the completion of a command execution.
+        Send a completion notification, with optional attachments.
+
+        :param result: Command execution result.
+        :param attachments: Notification attachments, such as reports.
         """
 
 
@@ -31,9 +34,9 @@ class CompositeNotifier(Notifier):
         params = [repr(r) for r in self._notifiers]
         return "CompositeNotifier(" + ", ".join(params) + ")"
 
-    def completed(self, result: ExecutionResult) -> None:
+    def completed(self, result: ExecutionResult, attachments: list[str] = None) -> None:
         for notifier in self._notifiers:
-            notifier.completed(result)
+            notifier.completed(result, attachments)
 
 
 class DiscordNotifier(Notifier):
@@ -52,15 +55,25 @@ class DiscordNotifier(Notifier):
     def __repr__(self) -> str:
         params = [
             f"webhook='{self._webhook}'",
+            f"username='{self._username}'",
+            f"avatar_url='{self._avatar_url}'",
         ]
         return "DiscordNotifier(" + ", ".join(params) + ")"
 
-    def _send(self, json: dict) -> None:
+    def _send_message(self, json: dict) -> None:
         requests.post(
             self._webhook,
             json=json,
-            timeout=3000,
+            timeout=3_000,
         )
+
+    def _send_attachment(self, filepath: str) -> None:
+        with open(filepath, "rb") as file:
+            requests.post(
+                self._webhook,
+                files={"file": file},
+                timeout=10_000,
+            )
 
     def _compose_completed(self, result: ExecutionResult) -> dict:
         """
@@ -78,43 +91,35 @@ class DiscordNotifier(Notifier):
         event["color"] = DiscordNotifier._SUCCESS if result.success else DiscordNotifier._FAILURE
         event["timestamp"] = datetime.now().astimezone().isoformat()
         event["fields"] = [
-            {
-                "name": f"{fmt.ch('duration')} Elapsed",
-                "value": f"{fmt.duration(result.elapsed)}",
-                "inline": True,
-            },
-            {
-                "name": f"{fmt.ch('time')} Started",
-                "value": f"{fmt.datetime(result.started)}",
-                "inline": True,
-            },
-            {
-                "name": f"{fmt.ch('time')} Completed",
-                "value": f"{fmt.datetime(result.completed)}",
-                "inline": True,
-            },
+            {"name": f"{fmt.ch('duration')} Elapsed", "value": f"{fmt.duration(result.elapsed)}", "inline": True},
+            {"name": f"{fmt.ch('time')} Started", "value": f"{fmt.datetime(result.started)}", "inline": True},
+            {"name": f"{fmt.ch('time')} Completed", "value": f"{fmt.datetime(result.completed)}", "inline": True},
+            *self._details(result),
         ]
 
-        event["fields"].extend(self._get_details(result))
         data["embeds"] = [event]
-
         return data
 
-    def _get_details(self, result: ExecutionResult) -> Iterator[dict]:
+    def _details(self, result: ExecutionResult) -> Iterator[dict]:
         for action in result.actions:
             match action:
                 case DeploymentActionResult():
-                    entries = []
-                    for ix, entry in enumerate(action.entries):
-                        entries.append(
-                            f"{ix:02d}. {fmt.ch('success') if entry.success else fmt.ch('failure')} "
-                            f"{fmt.ch(entry.kind)} {entry.service}"
-                        )
                     yield {
                         "name": f"{fmt.ch('service')} Services",
-                        "value": "\n".join(entries),
+                        "value": "\n".join(
+                            [
+                                f"{ix:02d}. "
+                                f"{fmt.ch('success') if entry.success else fmt.ch('failure')} "
+                                f"{fmt.ch(entry.kind)} {entry.service}"
+                                for ix, entry in enumerate(action.entries)
+                            ]
+                        ),
                         "inline": False,
                     }
 
-    def completed(self, result: ExecutionResult) -> None:
-        self._send(self._compose_completed(result))
+    def completed(self, result: ExecutionResult, attachments: list[str] = None) -> None:
+        self._send_message(self._compose_completed(result))
+
+        if attachments is not None:
+            for attachment in attachments:
+                self._send_attachment(attachment)
