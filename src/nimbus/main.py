@@ -9,9 +9,9 @@ from nimbus.cli.runner import CommandRunner
 from nimbus.config import SEARCH_PATHS, Config, resolve_config, safe_load
 from nimbus.factory.command import CfgCommandFactory, CommandFactory
 from nimbus.factory.component import CfgComponentFactory
-from nimbus.factory.report import CfgReporterFactory
+from nimbus.factory.notification import CfgNotifierFactory, NotifierFactory
+from nimbus.factory.report import CfgReporterFactory, ReporterFactory
 from nimbus.log import setup_logger
-from nimbus.report.reporter import Reporter
 
 
 class ExitCode:
@@ -89,8 +89,11 @@ def execute(runner: CommandRunner, args: list[str]) -> int:
             )
 
     try:
-        runner.set_factory(build_factory(config))
-        runner.set_reporter(build_reporter(config))
+        runner.configure(
+            build_command_factory(config),
+            build_reporter_factory(config),
+            build_notifier_factory(config),
+        )
     except Exception:  # pylint: disable=broad-exception-caught
         print(
             "The application encountered an issue during startup due to an invalid configuration.\n"
@@ -108,15 +111,21 @@ def execute(runner: CommandRunner, args: list[str]) -> int:
 
 
 @log_on_start(logging.DEBUG, "Building command factory")
-@log_on_error(logging.ERROR, "Failed to create factory: {e!r}", on_exceptions=Exception)
-def build_factory(config: Config) -> CommandFactory:
+@log_on_error(logging.ERROR, "Failed to create command factory: {e!r}", on_exceptions=Exception)
+def build_command_factory(config: Config) -> CommandFactory:
     return CfgCommandFactory(
         config,
         CfgComponentFactory(config),
     )
 
 
-@log_on_start(logging.DEBUG, "Building reporter")
-@log_on_error(logging.ERROR, "Failed to create reporter: {e!r}", on_exceptions=Exception)
-def build_reporter(config: Config) -> Reporter:
-    return CfgReporterFactory(config).create_reporter()
+@log_on_start(logging.DEBUG, "Building reporter factory")
+@log_on_error(logging.ERROR, "Failed to create reporter factory: {e!r}", on_exceptions=Exception)
+def build_reporter_factory(config: Config) -> ReporterFactory:
+    return CfgReporterFactory(config)
+
+
+@log_on_start(logging.DEBUG, "Building notifier factory")
+@log_on_error(logging.ERROR, "Failed to create notifier factory: {e!r}", on_exceptions=Exception)
+def build_notifier_factory(config: Config) -> NotifierFactory:
+    return CfgNotifierFactory(config)

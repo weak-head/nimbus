@@ -63,7 +63,7 @@ class CfgComponentFactory(ComponentFactory):
     @log_on_end(logging.DEBUG, "Created Archiver: {result!r}")
     @log_on_error(logging.ERROR, "Failed to create Archiver: {e!r}", on_exceptions=Exception)
     def create_archiver(self, profile: str) -> Archiver:
-        cfg = self._config.archivers[profile]
+        cfg = self._config.profiles.archive[profile]
 
         if not cfg:
             return None
@@ -82,7 +82,7 @@ class CfgComponentFactory(ComponentFactory):
     @log_on_end(logging.DEBUG, "Created Uploader: {result!r}")
     @log_on_error(logging.ERROR, "Failed to create Uploader: {e!r}", on_exceptions=Exception)
     def create_uploader(self, profile: str) -> Uploader:
-        cfg = self._config.uploaders[profile]
+        cfg = self._config.profiles.upload[profile]
 
         if not cfg:
             return None
@@ -101,13 +101,13 @@ class CfgComponentFactory(ComponentFactory):
     @log_on_end(logging.DEBUG, "Created Secrets: {result!r}")
     @log_on_error(logging.ERROR, "Failed to create Secrets: {e!r}", on_exceptions=Exception)
     def create_secrets(self) -> Secrets:
-        return Secrets(SecretsProvider(self._config.secrets))
+        return Secrets(SecretsProvider(self._config.commands.deploy.secrets))
 
     @log_on_start(logging.DEBUG, "Creating Service Provider")
     @log_on_end(logging.DEBUG, "Created Service Provider: {result!r}")
     @log_on_error(logging.ERROR, "Failed to create Service Provider: {e!r}", on_exceptions=Exception)
     def create_service_provider(self) -> ServiceProvider:
-        return ServiceProvider(self._config.services.directories)
+        return ServiceProvider(self._config.commands.deploy.discovery.directories)
 
     @log_on_start(logging.DEBUG, "Creating Service Factory")
     @log_on_end(logging.DEBUG, "Created Service Factory: {result!r}")

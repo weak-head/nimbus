@@ -89,6 +89,10 @@ class DeploymentActionResult(ActionResult[list[OperationStatus]]):
         self.operation = operation
 
     @property
+    def success(self) -> bool:
+        return all(e.success for e in self.entries)
+
+    @property
     def successful(self) -> list[OperationStatus]:
         return [srv for srv in self.entries if srv.success]
 

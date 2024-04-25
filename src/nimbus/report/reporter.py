@@ -4,6 +4,7 @@ import logging
 from abc import ABC, abstractmethod
 from datetime import datetime, timedelta
 from functools import reduce
+from typing import Iterator
 
 from logdecorator import log_on_start
 
@@ -28,6 +29,11 @@ class Reporter(ABC):
     def write(self, result: ExecutionResult) -> None:
         pass
 
+    @property
+    @abstractmethod
+    def reports(self) -> Iterator[str]:
+        pass
+
 
 class CompositeReporter(Reporter):
 
@@ -41,6 +47,11 @@ class CompositeReporter(Reporter):
     def write(self, result: ExecutionResult) -> None:
         for reporter in self._reporters:
             reporter.write(result)
+
+    @property
+    def reports(self) -> Iterator[str]:
+        for r in self._reporters:
+            yield from r.reports
 
 
 class ReportWriter(Reporter):
@@ -58,6 +69,11 @@ class ReportWriter(Reporter):
             f"details='{self._write_details}'",
         ]
         return "ReportWriter(" + ", ".join(params) + ")"
+
+    @property
+    def reports(self) -> Iterator[str]:
+        if self._writer.filepath:
+            yield self._writer.filepath
 
     @log_on_start(logging.INFO, "Writing report to: [{self._writer!r}]")
     def write(self, result: ExecutionResult) -> None:

@@ -14,6 +14,16 @@ class Writer(ABC):
     All writers should follow the APIs defined by this class.
     """
 
+    @property
+    @abstractmethod
+    def filepath(self) -> str | None:
+        """
+        Returns the absolute path to the report file
+        or 'None', if the report file is ethereal (e.g. stdout).
+
+        :return: Absolute path to the report file.
+        """
+
     @abstractmethod
     def section(self, title: str, indent: bool = True) -> Writer:
         """
@@ -86,6 +96,14 @@ class TextWriter(Writer):
     def __repr__(self) -> str:
         params = [f"file={self._file!r}"]
         return "TextWriter(" + ", ".join(params) + ")"
+
+    @property
+    def filepath(self) -> str | None:
+        match self._file:
+            case TextIOWrapper():
+                return None
+            case _:
+                return self._file
 
     def section(self, title: str, indent: bool = True) -> TextWriter:
         if indent:
