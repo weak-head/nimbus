@@ -17,8 +17,14 @@ class Deployment(Command):
     Manage service deployment.
     """
 
-    def __init__(self, name: str, provider: ServiceProvider, factory: ServiceFactory):
-        super().__init__(name)
+    def __init__(
+        self,
+        name: str,
+        selectors: list[str],
+        provider: ServiceProvider,
+        factory: ServiceFactory,
+    ):
+        super().__init__(name, selectors)
         self._provider = provider
         self._factory = factory
 
@@ -33,10 +39,10 @@ class Deployment(Command):
             Action(self._deploy),
         ]
 
-    @log_on_end(logging.DEBUG, "Mapped {arguments!r} to {result!s}")
-    def _map_services(self, arguments: list[str]) -> ServiceMappingActionResult:
+    @log_on_end(logging.DEBUG, "Mapped {selectors!r} to {result!s}")
+    def _map_services(self, selectors: list[str]) -> ServiceMappingActionResult:
         return ServiceMappingActionResult(
-            self._provider.resolve(arguments),
+            self._provider.resolve(selectors),
         )
 
     @log_on_end(logging.DEBUG, "Services: {result!s}")
@@ -58,8 +64,8 @@ class Deployment(Command):
 
 class Up(Deployment):
 
-    def __init__(self, provider: ServiceProvider, factory: ServiceFactory):
-        super().__init__("Up", provider, factory)
+    def __init__(self, arguments: list[str], provider: ServiceProvider, factory: ServiceFactory):
+        super().__init__("Up", arguments, provider, factory)
 
     def _operation(self, service: Service) -> OperationStatus:
         return service.start()
@@ -67,8 +73,8 @@ class Up(Deployment):
 
 class Down(Deployment):
 
-    def __init__(self, provider: ServiceProvider, factory: ServiceFactory):
-        super().__init__("Down", provider, factory)
+    def __init__(self, arguments: list[str], provider: ServiceProvider, factory: ServiceFactory):
+        super().__init__("Down", arguments, provider, factory)
 
     def _operation(self, service: Service) -> OperationStatus:
         return service.stop()

@@ -37,9 +37,9 @@ class RunnerFactory:
     def _build_command(self, ns: Namespace) -> Command:
         match ns.command:
             case "up":
-                return self._command_fact.create_up()
+                return self._command_fact.create_up(ns.selectors)
             case "down":
-                return self._command_fact.create_down()
+                return self._command_fact.create_down(ns.selectors)
             case "backup":
-                return self._command_fact.create_backup()
+                return self._command_fact.create_backup(ns.selectors)
         raise ValueError("unknown command")

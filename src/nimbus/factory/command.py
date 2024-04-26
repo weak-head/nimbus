@@ -18,15 +18,15 @@ class CommandFactory(ABC):
     """
 
     @abstractmethod
-    def create_backup(self) -> Command:
+    def create_backup(self, selectors: list[str]) -> Command:
         pass
 
     @abstractmethod
-    def create_up(self) -> Command:
+    def create_up(self, selectors: list[str]) -> Command:
         pass
 
     @abstractmethod
-    def create_down(self) -> Command:
+    def create_down(self, selectors: list[str]) -> Command:
         pass
 
 
@@ -38,9 +38,10 @@ class CfgCommandFactory(CommandFactory):
 
     @log_on_start(logging.DEBUG, "Creating Backup command")
     @log_on_error(logging.ERROR, "Failed to create Backup command: {e!r}", on_exceptions=Exception)
-    def create_backup(self) -> Command:
+    def create_backup(self, selectors: list[str]) -> Command:
         cfg = self._config.commands.backup
         return Backup(
+            selectors,
             cfg.destination,
             BackupProvider(cfg.directories),
             self._components.create_archiver(cfg.archive),
@@ -49,16 +50,18 @@ class CfgCommandFactory(CommandFactory):
 
     @log_on_start(logging.DEBUG, "Creating Up command")
     @log_on_error(logging.ERROR, "Failed to create Up command: {e!r}", on_exceptions=Exception)
-    def create_up(self) -> Command:
+    def create_up(self, selectors: list[str]) -> Command:
         return Up(
+            selectors,
             self._components.create_service_provider(),
             self._components.create_service_factory(),
         )
 
     @log_on_start(logging.DEBUG, "Creating Down command")
     @log_on_error(logging.ERROR, "Failed to create Down command: {e!r}", on_exceptions=Exception)
-    def create_down(self) -> Command:
+    def create_down(self, selectors: list[str]) -> Command:
         return Down(
+            selectors,
             self._components.create_service_provider(),
             self._components.create_service_factory(),
         )

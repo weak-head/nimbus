@@ -1,7 +1,7 @@
 import logging
 from abc import ABC, abstractmethod
 
-from logdecorator import log_on_start
+from logdecorator import log_on_error, log_on_start
 
 from nimbus.cmd.abstract import Command
 from nimbus.notification.abstract import Notifier
@@ -31,10 +31,11 @@ class CommandRunner(Runner):
         return "CommandRunner(" + ", ".join(params) + ")"
 
     @log_on_start(logging.DEBUG, "Executing the command")
+    @log_on_error(logging.ERROR, "Failed to execute the command: {e!r}", on_exceptions=Exception)
     def execute(self):
-        result = self._cmd.execute([])
+        result = self._cmd.execute()
 
-        reports = []
+        reports: list[str] = []
         if self._reporter:
             self._reporter.write(result)
             reports = self._reporter.reports

@@ -19,8 +19,15 @@ class Backup(Command):
     Create and upload backups.
     """
 
-    def __init__(self, destination: str, provider: BackupProvider, archiver: Archiver, uploader: Uploader = None):
-        super().__init__("Backup")
+    def __init__(
+        self,
+        selectors: list[str],
+        destination: str,
+        provider: BackupProvider,
+        archiver: Archiver,
+        uploader: Uploader = None,
+    ):
+        super().__init__("Backup", selectors)
         self._destination = Path(destination).expanduser().as_posix()
         self._provider = provider
         self._archiver = archiver
@@ -46,10 +53,10 @@ class Backup(Command):
             *upload,
         ]
 
-    @log_on_end(logging.DEBUG, "Mapped {arguments!r} to {result!s}")
-    def _map_directories(self, arguments: list[str]) -> DirectoryMappingActionResult:
+    @log_on_end(logging.DEBUG, "Mapped {selectors!r} to {result!s}")
+    def _map_directories(self, selectors: list[str]) -> DirectoryMappingActionResult:
         return DirectoryMappingActionResult(
-            self._provider.resolve(arguments),
+            self._provider.resolve(selectors),
         )
 
     def _backup(self, mapping: DirectoryMappingActionResult) -> BackupActionResult:
