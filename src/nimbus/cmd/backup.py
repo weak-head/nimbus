@@ -8,7 +8,7 @@ from typing import Any
 
 from logdecorator import log_on_end, log_on_start
 
-from nimbus.cmd.abstract import Action, ActionResult, Command
+from nimbus.cmd.command import Action, ActionResult, Command
 from nimbus.core.archiver import ArchivalStatus, Archiver
 from nimbus.core.uploader import Uploader, UploadProgress, UploadStatus
 from nimbus.provider.backup import BackupProvider, BackupResource

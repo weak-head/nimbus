@@ -3,8 +3,8 @@ from abc import ABC, abstractmethod
 
 from logdecorator import log_on_error, log_on_start
 
-from nimbus.cmd.abstract import Command
-from nimbus.notification.abstract import Notifier
+from nimbus.cmd import Command
+from nimbus.notification.notifier import Notifier
 from nimbus.report.reporter import Reporter
 
 
