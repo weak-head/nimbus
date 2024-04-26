@@ -4,8 +4,8 @@ import sys
 
 from logdecorator import log_on_error, log_on_start
 
+from nimbus.cli.factory import RunnerFactory
 from nimbus.cli.parser import parse_args
-from nimbus.cli.runner import CommandRunner
 from nimbus.config import SEARCH_PATHS, Config, resolve_config, safe_load
 from nimbus.factory.command import CfgCommandFactory, CommandFactory
 from nimbus.factory.component import CfgComponentFactory
@@ -30,13 +30,11 @@ class ExitCode:
 
 
 def main() -> int:
-    runner = CommandRunner()
-    args = sys.argv[1:]
-    return execute(runner, args)
+    return execute(sys.argv[1:])
 
 
-def execute(runner: CommandRunner, args: list[str]) -> int:
-    ns = parse_args(args, runner)
+def execute(args: list[str]) -> int:
+    ns = parse_args(args)
     if not ns:
         return ExitCode.INCORRECT_USAGE
 
@@ -89,11 +87,14 @@ def execute(runner: CommandRunner, args: list[str]) -> int:
             )
 
     try:
-        runner.configure(
+        factory = RunnerFactory(
             build_command_factory(config),
             build_reporter_factory(config),
             build_notifier_factory(config),
         )
+        runner = factory.create_runner(ns)
+        runner.execute()
+
     except Exception:  # pylint: disable=broad-exception-caught
         print(
             "The application encountered an issue during startup due to an invalid configuration.\n"
@@ -106,17 +107,13 @@ def execute(runner: CommandRunner, args: list[str]) -> int:
         )
         return ExitCode.UNABLE_TO_EXECUTE
 
-    runner.run_default(ns)
     return ExitCode.SUCCESS
 
 
 @log_on_start(logging.DEBUG, "Building command factory")
 @log_on_error(logging.ERROR, "Failed to create command factory: {e!r}", on_exceptions=Exception)
 def build_command_factory(config: Config) -> CommandFactory:
-    return CfgCommandFactory(
-        config,
-        CfgComponentFactory(config),
-    )
+    return CfgCommandFactory(config, CfgComponentFactory(config))
 
 
 @log_on_start(logging.DEBUG, "Building reporter factory")

@@ -1,71 +1,43 @@
-from __future__ import annotations
-
 import logging
 from abc import ABC, abstractmethod
-from argparse import Namespace
 
 from logdecorator import log_on_start
 
 from nimbus.cmd.abstract import Command
-from nimbus.factory.command import CommandFactory
-from nimbus.factory.notification import NotifierFactory
-from nimbus.factory.report import ReporterFactory
+from nimbus.notification.abstract import Notifier
+from nimbus.report.reporter import Reporter
 
 
 class Runner(ABC):
 
     @abstractmethod
-    def up(self, args: Namespace):
-        pass
-
-    @abstractmethod
-    def down(self, args: Namespace):
-        pass
-
-    @abstractmethod
-    def backup(self, args: Namespace):
+    def execute(self):
         pass
 
 
 class CommandRunner(Runner):
 
-    def __init__(self) -> None:
-        self._command_fact: CommandFactory = None
-        self._report_fact: ReporterFactory = None
-        self._notify_fact: NotifierFactory = None
+    def __init__(self, cmd: Command, reporter: Reporter, notifier: Notifier) -> None:
+        self._cmd = cmd
+        self._reporter = reporter
+        self._notifier = notifier
 
-    def configure(
-        self,
-        command_fact: CommandFactory,
-        reporter_fact: ReporterFactory,
-        notifier_fact: NotifierFactory,
-    ) -> None:
-        self._command_fact = command_fact
-        self._report_fact = reporter_fact
-        self._notify_fact = notifier_fact
+    def __repr__(self) -> str:
+        params = [
+            f"cmd='{self._cmd}'",
+            f"reporter='{self._reporter}'",
+            f"notifier='{self._notifier}'",
+        ]
+        return "CommandRunner(" + ", ".join(params) + ")"
 
-    def run_default(self, args: Namespace):
-        args.func(args)
-
-    @log_on_start(logging.DEBUG, "Start deployment up")
-    def up(self, args: Namespace):
-        self._execute(self._command_fact.create_up(), args.selectors)
-
-    @log_on_start(logging.DEBUG, "Start deployment down")
-    def down(self, args: Namespace):
-        self._execute(self._command_fact.create_down(), args.selectors)
-
-    @log_on_start(logging.DEBUG, "Start backup and upload")
-    def backup(self, args: Namespace):
-        self._execute(self._command_fact.create_backup(), args.selectors)
-
-    def _execute(self, cmd: Command, args: list[str]):
-        result = cmd.execute(args)
+    @log_on_start(logging.DEBUG, "Executing the command")
+    def execute(self):
+        result = self._cmd.execute([])
 
         reports = []
-        if reporter := self._report_fact.create_reporter():
-            reporter.write(result)
-            reports = reporter.reports
+        if self._reporter:
+            self._reporter.write(result)
+            reports = self._reporter.reports
 
-        if notifier := self._notify_fact.create_notifier():
-            notifier.completed(result, reports)
+        if self._notifier:
+            self._notifier.completed(result, reports)
