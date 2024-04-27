@@ -5,7 +5,9 @@ from abc import ABC, abstractmethod
 
 from logdecorator import log_on_error, log_on_start
 
-from nimbus.cmd import Backup, Command, Down, Up
+from nimbus.cmd.backup import Backup
+from nimbus.cmd.command import Command
+from nimbus.cmd.deploy import Down, Up
 from nimbus.config import Config
 from nimbus.factory.component import ComponentFactory
 from nimbus.provider.backup import BackupProvider

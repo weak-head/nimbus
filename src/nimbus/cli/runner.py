@@ -4,8 +4,8 @@ from abc import ABC, abstractmethod
 from logdecorator import log_on_error, log_on_start
 
 from nimbus.cmd import Command
-from nimbus.notification.notifier import Notifier
-from nimbus.report.reporter import Reporter
+from nimbus.notify import Notifier
+from nimbus.report import Reporter
 
 
 class Runner(ABC):

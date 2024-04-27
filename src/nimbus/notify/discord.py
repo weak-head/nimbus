@@ -7,7 +7,7 @@ import nimbus.report.format as fmt
 from nimbus.cmd import ExecutionResult
 from nimbus.cmd.backup import BackupActionResult, UploadActionResult
 from nimbus.cmd.deploy import DeploymentActionResult
-from nimbus.notification.notifier import Notifier
+from nimbus.notify.notifier import Notifier
 
 
 class DiscordNotifier(Notifier):

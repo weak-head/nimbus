@@ -6,10 +6,9 @@ from argparse import Namespace
 from logdecorator import log_on_end, log_on_error, log_on_start
 
 from nimbus.cli.runner import CommandRunner, Runner
-from nimbus.cmd import Command
-from nimbus.factory.command import CommandFactory
-from nimbus.factory.notification import NotifierFactory
-from nimbus.factory.report import ReporterFactory
+from nimbus.cmd import Command, CommandFactory
+from nimbus.notify import NotifierFactory
+from nimbus.report import ReporterFactory
 
 
 class RunnerFactory:

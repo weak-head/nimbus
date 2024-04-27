@@ -5,12 +5,12 @@ import sys
 from logdecorator import log_on_error, log_on_start
 
 from nimbus.cli import RunnerFactory, parse_args
+from nimbus.cmd import CfgCommandFactory, CommandFactory
 from nimbus.config import SEARCH_PATHS, Config, resolve_config, safe_load
-from nimbus.factory.command import CfgCommandFactory, CommandFactory
 from nimbus.factory.component import CfgComponentFactory
-from nimbus.factory.notification import CfgNotifierFactory, NotifierFactory
-from nimbus.factory.report import CfgReporterFactory, ReporterFactory
 from nimbus.log import setup_logger
+from nimbus.notify import CfgNotifierFactory, NotifierFactory
+from nimbus.report import CfgReporterFactory, ReporterFactory
 
 
 class ExitCode:

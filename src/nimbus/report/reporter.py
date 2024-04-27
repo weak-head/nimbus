@@ -9,12 +9,12 @@ from typing import Iterator
 from logdecorator import log_on_start
 
 import nimbus.report.format as fmt
+from nimbus.cmd import ExecutionResult
 from nimbus.cmd.backup import (
     BackupActionResult,
     DirectoryMappingActionResult,
     UploadActionResult,
 )
-from nimbus.cmd.command import ExecutionResult
 from nimbus.cmd.deploy import (
     CreateServicesActionResult,
     DeploymentActionResult,
