@@ -2,15 +2,12 @@ import logging
 import os.path
 import sys
 
-from logdecorator import log_on_error, log_on_start
-
 from nimbus.cli import RunnerFactory, parse_args
-from nimbus.cmd import CfgCommandFactory, CommandFactory
-from nimbus.config import SEARCH_PATHS, Config, resolve_config, safe_load
-from nimbus.factory.component import CfgComponentFactory
+from nimbus.cmd import CfgCommandFactory
+from nimbus.config import SEARCH_PATHS, resolve_config, safe_load
 from nimbus.log import setup_logger
-from nimbus.notify import CfgNotifierFactory, NotifierFactory
-from nimbus.report import CfgReporterFactory, ReporterFactory
+from nimbus.notify import CfgNotifierFactory
+from nimbus.report import CfgReporterFactory
 
 
 class ExitCode:
@@ -87,9 +84,9 @@ def execute(args: list[str]) -> int:
 
     try:
         factory = RunnerFactory(
-            build_command_factory(config),
-            build_reporter_factory(config),
-            build_notifier_factory(config),
+            CfgCommandFactory(config),
+            CfgReporterFactory(config),
+            CfgNotifierFactory(config),
         )
         runner = factory.create_runner(ns)
         runner.execute()
@@ -107,21 +104,3 @@ def execute(args: list[str]) -> int:
         return ExitCode.UNABLE_TO_EXECUTE
 
     return ExitCode.SUCCESS
-
-
-@log_on_start(logging.DEBUG, "Building command factory")
-@log_on_error(logging.ERROR, "Failed to create command factory: {e!r}", on_exceptions=Exception)
-def build_command_factory(config: Config) -> CommandFactory:
-    return CfgCommandFactory(config, CfgComponentFactory(config))
-
-
-@log_on_start(logging.DEBUG, "Building reporter factory")
-@log_on_error(logging.ERROR, "Failed to create reporter factory: {e!r}", on_exceptions=Exception)
-def build_reporter_factory(config: Config) -> ReporterFactory:
-    return CfgReporterFactory(config)
-
-
-@log_on_start(logging.DEBUG, "Building notifier factory")
-@log_on_error(logging.ERROR, "Failed to create notifier factory: {e!r}", on_exceptions=Exception)
-def build_notifier_factory(config: Config) -> NotifierFactory:
-    return CfgNotifierFactory(config)

@@ -9,9 +9,8 @@ from typing import Any
 from logdecorator import log_on_end, log_on_start
 
 from nimbus.cmd.command import Action, ActionResult, Command
-from nimbus.core.archiver import ArchivalStatus, Archiver
-from nimbus.core.uploader import Uploader, UploadProgress, UploadStatus
-from nimbus.provider.backup import BackupProvider, BackupResource
+from nimbus.core import ArchivalStatus, Archiver, Uploader, UploadProgress, UploadStatus
+from nimbus.provider import DirectoryProvider, DirectoryResource
 
 
 class Backup(Command):
@@ -23,7 +22,7 @@ class Backup(Command):
         self,
         selectors: list[str],
         destination: str,
-        provider: BackupProvider,
+        provider: DirectoryProvider,
         archiver: Archiver,
         uploader: Uploader = None,
     ):
@@ -159,7 +158,7 @@ class UploadEntry:
         return self.backup and self.backup.success and self.upload and self.upload.success
 
 
-class DirectoryMappingActionResult(ActionResult[list[BackupResource]]):
+class DirectoryMappingActionResult(ActionResult[list[DirectoryResource]]):
     pass
 
 

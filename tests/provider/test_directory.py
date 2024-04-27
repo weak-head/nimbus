@@ -1,9 +1,9 @@
 import pytest
 
-from nimbus.provider.backup import BackupProvider
+from nimbus.provider.directory import DirectoryProvider
 
 
-class TestBackupProvider:
+class TestDirectoryProvider:
 
     @pytest.mark.parametrize(
         "groups",
@@ -26,7 +26,7 @@ class TestBackupProvider:
         ],
     )
     def test_resources(self, groups):
-        p = BackupProvider(groups)
+        p = DirectoryProvider(groups)
 
         d = {}
         for r in p._resources():

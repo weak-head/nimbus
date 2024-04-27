@@ -4,7 +4,7 @@ from datetime import timedelta as td
 import pytest
 from mock import Mock, PropertyMock, patch
 
-from nimbus.core.runner import CompletedProcess, SubprocessRunner
+from nimbus.core import CompletedProcess, SubprocessRunner
 from tests.helpers import MockDateTime
 
 
