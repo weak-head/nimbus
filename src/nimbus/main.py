@@ -4,7 +4,7 @@ import sys
 
 from nimbus.cli import RunnerFactory, parse_args
 from nimbus.cmd import CfgCommandFactory
-from nimbus.config import SEARCH_PATHS, resolve_config, safe_load
+from nimbus.config import resolve_config, safe_load
 from nimbus.log import setup_logger
 from nimbus.notify import CfgNotifierFactory
 from nimbus.report import CfgReporterFactory
@@ -34,7 +34,7 @@ def execute(args: list[str]) -> int:
     if not ns:
         return ExitCode.INCORRECT_USAGE
 
-    config_path = resolve_config(ns.config_path)
+    config_path, search_paths = resolve_config(ns.config_path)
     if not config_path:
         print(
             "The application could not locate the configuration file.\n"
@@ -42,7 +42,7 @@ def execute(args: list[str]) -> int:
             "Locations that were checked:",
             file=sys.stderr,
         )
-        for path in [ns.config_path] if ns.config_path else SEARCH_PATHS:
+        for path in search_paths:
             print(f"- {os.path.expanduser(path)}", file=sys.stderr)
         return ExitCode.CMD_NOT_FOUND
 
