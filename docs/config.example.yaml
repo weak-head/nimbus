@@ -1,6 +1,6 @@
-# Observability Configuration
+# Observability Configuration (Optional)
 observability:
-  # Operation Reports
+  # Operation Reports (Optional)
   reports:
     format: txt  # Report file format
     directory: ~/.nimbus/reports  # Report file directory

@@ -2,9 +2,11 @@ import logging
 import os.path
 import sys
 
+from strictyaml import YAMLError
+
 from nimbus.cli import RunnerFactory, parse_args
 from nimbus.cmd import CfgCommandFactory
-from nimbus.config import resolve_config, safe_load
+from nimbus.config import load_config, resolve_config
 from nimbus.log import setup_logger
 from nimbus.notify import CfgNotifierFactory
 from nimbus.report import CfgReporterFactory
@@ -46,8 +48,10 @@ def execute(args: list[str]) -> int:
             print(f"- {os.path.expanduser(path)}", file=sys.stderr)
         return ExitCode.CMD_NOT_FOUND
 
-    config = safe_load(config_path)
-    if not config:
+    config = None
+    try:
+        config = load_config(config_path)
+    except YAMLError:
         print(
             "The application encountered an issue while attempting to load the configuration file.\n"
             "The provided file format is invalid. Please follow these steps to resolve the problem:\n"
