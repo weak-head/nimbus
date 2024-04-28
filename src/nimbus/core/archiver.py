@@ -26,6 +26,33 @@ class Archiver(ABC):
         """
 
 
+class ArchivalStatus:
+
+    def __init__(self, proc: CompletedProcess, folder: str, archive: str):
+        self.proc = proc
+        self.folder = folder
+        self.archive = archive
+
+    @property
+    def success(self) -> bool:
+        return all(
+            [
+                self.proc.success,
+                self.folder,
+                self.archive,
+                os.path.exists(self.archive),
+            ]
+        )
+
+    @property
+    def size(self) -> int:
+        return os.stat(self.archive).st_size if self.success else None
+
+    @property
+    def speed(self) -> int:
+        return int(self.size // self.proc.elapsed.total_seconds()) if self.success else 0
+
+
 class RarArchiver(Archiver):
     """
     Create a password protected archive using 'WinRar'.
@@ -120,30 +147,3 @@ class RarArchiver(Archiver):
 
         cmd.extend([archive, folder])
         return cmd
-
-
-class ArchivalStatus:
-
-    def __init__(self, proc: CompletedProcess, folder: str, archive: str):
-        self.proc = proc
-        self.folder = folder
-        self.archive = archive
-
-    @property
-    def success(self) -> bool:
-        return all(
-            [
-                self.proc.success,
-                self.folder,
-                self.archive,
-                os.path.exists(self.archive),
-            ]
-        )
-
-    @property
-    def size(self) -> int:
-        return os.stat(self.archive).st_size if self.success else None
-
-    @property
-    def speed(self) -> int:
-        return int(self.size // self.proc.elapsed.total_seconds()) if self.success else 0

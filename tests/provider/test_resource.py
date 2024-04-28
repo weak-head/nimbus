@@ -2,7 +2,7 @@ from typing import Iterator
 
 import pytest
 
-from nimbus.provider.abstract import Provider, Resource
+from nimbus.provider.resource import Provider, Resource
 
 
 class TestResource:

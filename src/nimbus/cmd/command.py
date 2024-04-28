@@ -13,15 +13,20 @@ class Command(ABC):
     All commands should follow the APIs defined by this class.
     """
 
-    def __init__(self, name: str) -> None:
+    def __init__(self, name: str, arguments: list[str] = None) -> None:
+        """
+        Creates a command with a given name. A first action in the pipeline
+        would be executed with the provided arguments.
+        """
         self._name: str = name
+        self._args: list[str] = arguments
 
-    def execute(self, arguments: list[str]) -> ExecutionResult:
+    def execute(self) -> ExecutionResult:
         result = ExecutionResult(self._name)
-        result.arguments = arguments
+        result.arguments = self._args
         result.config = self._config()
 
-        data = arguments
+        data = self._args
         for action in self._pipeline():
             data = action(data)
             result.actions.append(data)

@@ -2,16 +2,12 @@ import logging
 import os.path
 import sys
 
-from logdecorator import log_on_error, log_on_start
-
-from nimbus.cli.parser import parse_args
-from nimbus.cli.runner import CommandRunner
-from nimbus.config import SEARCH_PATHS, Config, resolve_config, safe_load
-from nimbus.factory.command import CfgCommandFactory, CommandFactory
-from nimbus.factory.component import CfgComponentFactory
-from nimbus.factory.notification import CfgNotifierFactory, NotifierFactory
-from nimbus.factory.report import CfgReporterFactory, ReporterFactory
+from nimbus.cli import RunnerFactory, parse_args
+from nimbus.cmd import CfgCommandFactory
+from nimbus.config import resolve_config, safe_load
 from nimbus.log import setup_logger
+from nimbus.notify import CfgNotifierFactory
+from nimbus.report import CfgReporterFactory
 
 
 class ExitCode:
@@ -30,17 +26,15 @@ class ExitCode:
 
 
 def main() -> int:
-    runner = CommandRunner()
-    args = sys.argv[1:]
-    return execute(runner, args)
+    return execute(sys.argv[1:])
 
 
-def execute(runner: CommandRunner, args: list[str]) -> int:
-    ns = parse_args(args, runner)
+def execute(args: list[str]) -> int:
+    ns = parse_args(args)
     if not ns:
         return ExitCode.INCORRECT_USAGE
 
-    config_path = resolve_config(ns.config_path)
+    config_path, search_paths = resolve_config(ns.config_path)
     if not config_path:
         print(
             "The application could not locate the configuration file.\n"
@@ -48,7 +42,7 @@ def execute(runner: CommandRunner, args: list[str]) -> int:
             "Locations that were checked:",
             file=sys.stderr,
         )
-        for path in [ns.config_path] if ns.config_path else SEARCH_PATHS:
+        for path in search_paths:
             print(f"- {os.path.expanduser(path)}", file=sys.stderr)
         return ExitCode.CMD_NOT_FOUND
 
@@ -89,11 +83,14 @@ def execute(runner: CommandRunner, args: list[str]) -> int:
             )
 
     try:
-        runner.configure(
-            build_command_factory(config),
-            build_reporter_factory(config),
-            build_notifier_factory(config),
+        factory = RunnerFactory(
+            CfgCommandFactory(config),
+            CfgReporterFactory(config),
+            CfgNotifierFactory(config),
         )
+        runner = factory.create_runner(ns)
+        runner.execute()
+
     except Exception:  # pylint: disable=broad-exception-caught
         print(
             "The application encountered an issue during startup due to an invalid configuration.\n"
@@ -106,26 +103,4 @@ def execute(runner: CommandRunner, args: list[str]) -> int:
         )
         return ExitCode.UNABLE_TO_EXECUTE
 
-    runner.run_default(ns)
     return ExitCode.SUCCESS
-
-
-@log_on_start(logging.DEBUG, "Building command factory")
-@log_on_error(logging.ERROR, "Failed to create command factory: {e!r}", on_exceptions=Exception)
-def build_command_factory(config: Config) -> CommandFactory:
-    return CfgCommandFactory(
-        config,
-        CfgComponentFactory(config),
-    )
-
-
-@log_on_start(logging.DEBUG, "Building reporter factory")
-@log_on_error(logging.ERROR, "Failed to create reporter factory: {e!r}", on_exceptions=Exception)
-def build_reporter_factory(config: Config) -> ReporterFactory:
-    return CfgReporterFactory(config)
-
-
-@log_on_start(logging.DEBUG, "Building notifier factory")
-@log_on_error(logging.ERROR, "Failed to create notifier factory: {e!r}", on_exceptions=Exception)
-def build_notifier_factory(config: Config) -> NotifierFactory:
-    return CfgNotifierFactory(config)

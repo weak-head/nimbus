@@ -42,6 +42,26 @@ class Service(ABC):
         """
 
 
+class OperationStatus:
+    """
+    The outcome of the service operation.
+    """
+
+    def __init__(self, service: str, operation: str, kind: str):
+        self.service: str = service
+        self.operation: str = operation
+        self.kind: str = kind
+        self.processes: list[CompletedProcess] = []
+
+    @property
+    def success(self) -> bool:
+        return all(proc.success for proc in self.processes)
+
+    @property
+    def elapsed(self) -> timedelta:
+        return reduce(lambda a, b: a + b.elapsed, self.processes, timedelta(seconds=0))
+
+
 class DockerService(Service):
     """
     A Dockerized service orchestrated using a docker-compose file.
@@ -92,23 +112,3 @@ class DockerService(Service):
                 "docker compose down",
             ],
         )
-
-
-class OperationStatus:
-    """
-    The outcome of the service operation.
-    """
-
-    def __init__(self, service: str, operation: str, kind: str):
-        self.service: str = service
-        self.operation: str = operation
-        self.kind: str = kind
-        self.processes: list[CompletedProcess] = []
-
-    @property
-    def success(self) -> bool:
-        return all(proc.success for proc in self.processes)
-
-    @property
-    def elapsed(self) -> timedelta:
-        return reduce(lambda a, b: a + b.elapsed, self.processes, timedelta(seconds=0))

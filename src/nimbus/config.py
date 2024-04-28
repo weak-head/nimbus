@@ -31,13 +31,13 @@ class Config:
         return self._config.items()
 
 
-def resolve_config(file_path: str = None) -> str | None:
+def resolve_config(file_path: str = None) -> tuple[str | None, list[str]]:
     search_paths = [file_path] if file_path else SEARCH_PATHS
     for candidate in search_paths:
         resolved_path = os.path.abspath(os.path.expanduser(candidate))
         if os.path.exists(resolved_path):
-            return resolved_path
-    return None
+            return resolved_path, search_paths
+    return None, search_paths
 
 
 def safe_load(file_path: str) -> Config | None:

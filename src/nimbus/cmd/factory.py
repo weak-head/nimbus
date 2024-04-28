@@ -5,59 +5,72 @@ from abc import ABC, abstractmethod
 
 from logdecorator import log_on_end, log_on_error, log_on_start
 
+from nimbus.cmd.backup import Backup
+from nimbus.cmd.command import Command
+from nimbus.cmd.deploy import Down, Up
 from nimbus.config import Config
-from nimbus.core.archiver import Archiver, RarArchiver
-from nimbus.core.runner import Runner, SubprocessRunner
-from nimbus.core.uploader import AwsUploader, Uploader
-from nimbus.factory.service import ServiceFactory
-from nimbus.provider.secrets import Secrets, SecretsProvider
-from nimbus.provider.service import ServiceProvider
+from nimbus.core import Archiver, AwsUploader, RarArchiver, SubprocessRunner, Uploader
+from nimbus.provider import (
+    DirectoryProvider,
+    Secrets,
+    SecretsProvider,
+    ServiceFactory,
+    ServiceProvider,
+)
 
 
-class ComponentFactory(ABC):
+class CommandFactory(ABC):
     """
-    Abstract component factory.
+    Abstract command factory.
     """
 
     @abstractmethod
-    def create_runner(self) -> Runner:
+    def create_backup(self, selectors: list[str]) -> Command:
         pass
 
     @abstractmethod
-    def create_archiver(self, profile: str) -> Archiver:
+    def create_up(self, selectors: list[str]) -> Command:
         pass
 
     @abstractmethod
-    def create_uploader(self, profile: str) -> Uploader:
-        pass
-
-    @abstractmethod
-    def create_secrets(self) -> Secrets:
-        pass
-
-    @abstractmethod
-    def create_service_provider(self) -> ServiceProvider:
-        pass
-
-    @abstractmethod
-    def create_service_factory(self) -> ServiceFactory:
+    def create_down(self, selectors: list[str]) -> Command:
         pass
 
 
-class CfgComponentFactory(ComponentFactory):
-    """
-    Component factory that uses the provided configuration
-    for components build up.
-    """
+class CfgCommandFactory(CommandFactory):
 
     def __init__(self, config: Config) -> None:
         self._config = config
 
-    @log_on_start(logging.DEBUG, "Creating Runner")
-    @log_on_end(logging.DEBUG, "Created Runner: {result!r}")
-    @log_on_error(logging.ERROR, "Failed to create Runner: {e!r}", on_exceptions=Exception)
-    def create_runner(self) -> Runner:
-        return SubprocessRunner()
+    @log_on_start(logging.DEBUG, "Creating Backup command")
+    @log_on_error(logging.ERROR, "Failed to create Backup command: {e!r}", on_exceptions=Exception)
+    def create_backup(self, selectors: list[str]) -> Command:
+        cfg = self._config.commands.backup
+        return Backup(
+            selectors,
+            cfg.destination,
+            DirectoryProvider(cfg.directories),
+            self.create_archiver(cfg.archive),
+            self.create_uploader(cfg.upload),
+        )
+
+    @log_on_start(logging.DEBUG, "Creating Up command")
+    @log_on_error(logging.ERROR, "Failed to create Up command: {e!r}", on_exceptions=Exception)
+    def create_up(self, selectors: list[str]) -> Command:
+        return Up(
+            selectors,
+            self.create_service_provider(),
+            self.create_service_factory(),
+        )
+
+    @log_on_start(logging.DEBUG, "Creating Down command")
+    @log_on_error(logging.ERROR, "Failed to create Down command: {e!r}", on_exceptions=Exception)
+    def create_down(self, selectors: list[str]) -> Command:
+        return Down(
+            selectors,
+            self.create_service_provider(),
+            self.create_service_factory(),
+        )
 
     @log_on_start(logging.DEBUG, "Creating Archiver: [{profile!s}]")
     @log_on_end(logging.DEBUG, "Created Archiver: {result!r}")
@@ -70,7 +83,7 @@ class CfgComponentFactory(ComponentFactory):
 
         if cfg.provider == "rar":
             return RarArchiver(
-                self.create_runner(),
+                SubprocessRunner(),
                 cfg.password,
                 cfg.compression,
                 cfg.recovery,
@@ -97,12 +110,6 @@ class CfgComponentFactory(ComponentFactory):
 
         return None
 
-    @log_on_start(logging.DEBUG, "Creating Secrets")
-    @log_on_end(logging.DEBUG, "Created Secrets: {result!r}")
-    @log_on_error(logging.ERROR, "Failed to create Secrets: {e!r}", on_exceptions=Exception)
-    def create_secrets(self) -> Secrets:
-        return Secrets(SecretsProvider(self._config.commands.deploy.secrets))
-
     @log_on_start(logging.DEBUG, "Creating Service Provider")
     @log_on_end(logging.DEBUG, "Created Service Provider: {result!r}")
     @log_on_error(logging.ERROR, "Failed to create Service Provider: {e!r}", on_exceptions=Exception)
@@ -114,6 +121,6 @@ class CfgComponentFactory(ComponentFactory):
     @log_on_error(logging.ERROR, "Failed to create Service Factory: {e!r}", on_exceptions=Exception)
     def create_service_factory(self) -> ServiceFactory:
         return ServiceFactory(
-            self.create_runner(),
-            self.create_secrets(),
+            SubprocessRunner(),
+            Secrets(SecretsProvider(self._config.commands.deploy.secrets)),
         )

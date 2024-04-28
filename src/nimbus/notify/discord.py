@@ -4,10 +4,10 @@ from typing import Iterator
 import requests
 
 import nimbus.report.format as fmt
-from nimbus.cmd.abstract import ExecutionResult
+from nimbus.cmd import ExecutionResult
 from nimbus.cmd.backup import BackupActionResult, UploadActionResult
 from nimbus.cmd.deploy import DeploymentActionResult
-from nimbus.notification.abstract import Notifier
+from nimbus.notify.notifier import Notifier
 
 
 class DiscordNotifier(Notifier):
