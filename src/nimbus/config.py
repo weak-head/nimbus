@@ -17,11 +17,18 @@ class Config:
         return self[key]
 
     def __getitem__(self, key):
-        val = self._config.get(key)
-        return Config(val) if isinstance(val, dict) else val
+        return Config._convert(self._config.get(key))
 
     def items(self):
         return self._config.items()
+
+    @staticmethod
+    def _convert(val):
+        if isinstance(val, dict):
+            return Config(val)
+        if isinstance(val, list):
+            return [Config._convert(v) for v in val]
+        return val
 
 
 def resolve_config(file_path: str = None) -> tuple[str | None, list[str]]:
@@ -51,7 +58,7 @@ def schema() -> Map:
     return Map(
         {
             Optional("observability"): schema_observability(),
-            "profiles": Int(),
+            "profiles": schema_profiles(),
             "commands": Seq(Str()),
         }
     )
@@ -91,6 +98,45 @@ def schema_observability() -> Map:
                         }
                     ),
                 }
+            ),
+        }
+    )
+
+
+def schema_profiles() -> Map:
+    return Map(
+        {
+            "archive": Seq(
+                Map(
+                    {
+                        "name": Str(),
+                        "provider": Str(),
+                        Optional("password"): Str(),
+                        Optional("recovery"): Int(),
+                        Optional("compression"): Int(),
+                    }
+                )
+            ),
+            "upload": Seq(
+                Map(
+                    {
+                        "name": Str(),
+                        "provider": Str(),
+                        "access_key": Str(),
+                        "secret_key": Str(),
+                        "bucket": Str(),
+                        "storage_class": Enum(
+                            [
+                                "STANDARD",
+                                "REDUCED_REDUNDANCY",
+                                "STANDARD_IA",
+                                "ONEZONE_IA ",
+                                "INTELLIGENT_TIERING",
+                                "DEEP_ARCHIVE",
+                            ]
+                        ),
+                    }
+                )
             ),
         }
     )

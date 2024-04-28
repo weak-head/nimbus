@@ -76,18 +76,14 @@ class CfgCommandFactory(CommandFactory):
     @log_on_end(logging.DEBUG, "Created Archiver: {result!r}")
     @log_on_error(logging.ERROR, "Failed to create Archiver: {e!r}", on_exceptions=Exception)
     def create_archiver(self, profile: str) -> Archiver:
-        cfg = self._config.profiles.archive[profile]
-
-        if not cfg:
-            return None
-
-        if cfg.provider == "rar":
-            return RarArchiver(
-                SubprocessRunner(),
-                cfg.password,
-                cfg.compression,
-                cfg.recovery,
-            )
+        if cfg := CfgCommandFactory._profile(self._config.profiles.archive, profile):
+            if cfg.provider == "rar":
+                return RarArchiver(
+                    SubprocessRunner(),
+                    cfg.password,
+                    cfg.compression,
+                    cfg.recovery,
+                )
 
         return None
 
@@ -95,18 +91,14 @@ class CfgCommandFactory(CommandFactory):
     @log_on_end(logging.DEBUG, "Created Uploader: {result!r}")
     @log_on_error(logging.ERROR, "Failed to create Uploader: {e!r}", on_exceptions=Exception)
     def create_uploader(self, profile: str) -> Uploader:
-        cfg = self._config.profiles.upload[profile]
-
-        if not cfg:
-            return None
-
-        if cfg.provider == "aws":
-            return AwsUploader(
-                cfg.access_key,
-                cfg.secret_key,
-                cfg.bucket,
-                cfg.storage_class,
-            )
+        if cfg := CfgCommandFactory._profile(self._config.profiles.upload, profile):
+            if cfg.provider == "aws":
+                return AwsUploader(
+                    cfg.access_key,
+                    cfg.secret_key,
+                    cfg.bucket,
+                    cfg.storage_class,
+                )
 
         return None
 
@@ -114,7 +106,7 @@ class CfgCommandFactory(CommandFactory):
     @log_on_end(logging.DEBUG, "Created Service Provider: {result!r}")
     @log_on_error(logging.ERROR, "Failed to create Service Provider: {e!r}", on_exceptions=Exception)
     def create_service_provider(self) -> ServiceProvider:
-        return ServiceProvider(self._config.commands.deploy.discovery.directories)
+        return ServiceProvider(self._config.commands.deploy.services)
 
     @log_on_start(logging.DEBUG, "Creating Service Factory")
     @log_on_end(logging.DEBUG, "Created Service Factory: {result!r}")
@@ -124,3 +116,9 @@ class CfgCommandFactory(CommandFactory):
             SubprocessRunner(),
             Secrets(SecretsProvider(self._config.commands.deploy.secrets)),
         )
+
+    @staticmethod
+    def _profile(profiles: list[Config], name: str) -> Config | None:
+        if cfg := [c for c in profiles if c.name == name]:
+            return cfg[0]
+        return None

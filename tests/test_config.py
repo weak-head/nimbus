@@ -1,7 +1,7 @@
 import pytest
 from strictyaml import YAMLError, load
 
-from nimbus.config import schema_observability
+from nimbus.config import schema_observability, schema_profiles
 
 
 @pytest.mark.parametrize(
@@ -201,6 +201,213 @@ from nimbus.config import schema_observability
 def test_schema_observability(yaml_snippet, cfg):
     try:
         validated_data = load(yaml_snippet, schema_observability())
+        assert validated_data == cfg
+    except YAMLError:
+        assert cfg is None
+
+
+@pytest.mark.parametrize(
+    ["yaml_snippet", "cfg"],
+    [
+        [
+            """
+            """,
+            None,
+        ],
+        [
+            """
+            archive:
+            """,
+            None,
+        ],
+        [
+            """
+            upload:
+            """,
+            None,
+        ],
+        [
+            """
+            archive:
+            upload:
+              - name: aws_store
+                provider: aws
+                access_key: XX
+                secret_key: XXX
+                bucket: aws.storage.bucket
+                storage_class: STANDARD
+              - name: aws_archival
+                provider: aws
+                access_key: XX
+                secret_key: XXX
+                bucket: aws.archival.bucket
+                storage_class: DEEP_ARCHIVE
+            """,
+            None,
+        ],
+        [
+            """
+            archive:
+              - name: rar_default
+                provider: rar
+              - name: rar_protected
+                provider: rar
+                password: SecretPwd
+                recovery: 3
+                compression: 1
+            upload:
+            """,
+            None,
+        ],
+        [
+            """
+            archive:
+              - name: rar_default
+                provider: rar
+            upload:
+              - name: aws_store
+                provider: aws
+                access_key: XX
+                secret_key: XXX
+                bucket: aws.storage.bucket
+                storage_class: STANDARD
+            """,
+            {
+                "archive": [
+                    {
+                        "name": "rar_default",
+                        "provider": "rar",
+                    },
+                ],
+                "upload": [
+                    {
+                        "name": "aws_store",
+                        "provider": "aws",
+                        "access_key": "XX",
+                        "secret_key": "XXX",
+                        "bucket": "aws.storage.bucket",
+                        "storage_class": "STANDARD",
+                    },
+                ],
+            },
+        ],
+        [
+            """
+            archive:
+              - name: rar_default
+                provider: rar
+              - name: rar_protected
+                provider: rar
+                password: SecretPwd
+                recovery: 3
+                compression: 1
+            upload:
+              - name: aws_store
+                provider: aws
+                access_key: XX
+                secret_key: XXX
+                bucket: aws.storage.bucket
+                storage_class: STANDARD
+              - name: aws_archival
+                provider: aws
+                access_key: XX
+                secret_key: XXX
+                bucket: aws.archival.bucket
+                storage_class: DEEP_ARCHIVE
+            """,
+            {
+                "archive": [
+                    {
+                        "name": "rar_default",
+                        "provider": "rar",
+                    },
+                    {
+                        "name": "rar_protected",
+                        "provider": "rar",
+                        "password": "SecretPwd",
+                        "recovery": 3,
+                        "compression": 1,
+                    },
+                ],
+                "upload": [
+                    {
+                        "name": "aws_store",
+                        "provider": "aws",
+                        "access_key": "XX",
+                        "secret_key": "XXX",
+                        "bucket": "aws.storage.bucket",
+                        "storage_class": "STANDARD",
+                    },
+                    {
+                        "name": "aws_archival",
+                        "provider": "aws",
+                        "access_key": "XX",
+                        "secret_key": "XXX",
+                        "bucket": "aws.archival.bucket",
+                        "storage_class": "DEEP_ARCHIVE",
+                    },
+                ],
+            },
+        ],
+        [
+            """
+            archive:
+              - name: rar_default
+                provider: rar
+              - name: rar_protected
+                provider: rar
+                password: SecretPwd
+                recovery: 3
+                compression: 1
+                some_other_field: value
+            upload:
+              - name: aws_store
+                provider: aws
+                access_key: XX
+                secret_key: XXX
+                bucket: aws.storage.bucket
+                storage_class: STANDARD
+              - name: aws_archival
+                provider: aws
+                access_key: XX
+                secret_key: XXX
+                bucket: aws.archival.bucket
+                storage_class: DEEP_ARCHIVE
+            """,
+            None,
+        ],
+        [
+            """
+            archive:
+              - name: rar_default
+                provider: rar
+              - name: rar_protected
+                provider: rar
+                password: SecretPwd
+                recovery: 3
+                compression: 1
+            upload:
+              - name: aws_store
+                provider: aws
+                access_key: XX
+                secret_key: XXX
+                bucket: aws.storage.bucket
+                storage_class: STANDARD
+                some_other_field: value
+              - name: aws_archival
+                provider: aws
+                access_key: XX
+                secret_key: XXX
+                bucket: aws.archival.bucket
+                storage_class: DEEP_ARCHIVE
+            """,
+            None,
+        ],
+    ],
+)
+def test_schema_profiles(yaml_snippet, cfg):
+    try:
+        validated_data = load(yaml_snippet, schema_profiles())
         assert validated_data == cfg
     except YAMLError:
         assert cfg is None
