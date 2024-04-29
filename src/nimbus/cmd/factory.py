@@ -40,12 +40,12 @@ class CommandFactory(ABC):
 class CfgCommandFactory(CommandFactory):
 
     def __init__(self, config: Config) -> None:
-        self._config = config
+        self._cfg = config
 
     @log_on_start(logging.DEBUG, "Creating Backup command")
     @log_on_error(logging.ERROR, "Failed to create Backup command: {e!r}", on_exceptions=Exception)
     def create_backup(self, selectors: list[str]) -> Command:
-        cfg = self._config.commands.backup
+        cfg = self._cfg.commands.backup
         return Backup(
             selectors,
             cfg.destination,
@@ -76,7 +76,7 @@ class CfgCommandFactory(CommandFactory):
     @log_on_end(logging.DEBUG, "Created Archiver: {result!r}")
     @log_on_error(logging.ERROR, "Failed to create Archiver: {e!r}", on_exceptions=Exception)
     def create_archiver(self, profile: str) -> Archiver:
-        if cfg := CfgCommandFactory._profile(self._config.profiles.archive, profile):
+        if cfg := CfgCommandFactory._profile(self._cfg.profiles.archive, profile):
             if cfg.provider == "rar":
                 return RarArchiver(
                     SubprocessRunner(),
@@ -91,7 +91,7 @@ class CfgCommandFactory(CommandFactory):
     @log_on_end(logging.DEBUG, "Created Uploader: {result!r}")
     @log_on_error(logging.ERROR, "Failed to create Uploader: {e!r}", on_exceptions=Exception)
     def create_uploader(self, profile: str) -> Uploader:
-        if cfg := CfgCommandFactory._profile(self._config.profiles.upload, profile):
+        if cfg := CfgCommandFactory._profile(self._cfg.profiles.upload, profile):
             if cfg.provider == "aws":
                 return AwsUploader(
                     cfg.access_key,
@@ -106,7 +106,7 @@ class CfgCommandFactory(CommandFactory):
     @log_on_end(logging.DEBUG, "Created Service Provider: {result!r}")
     @log_on_error(logging.ERROR, "Failed to create Service Provider: {e!r}", on_exceptions=Exception)
     def create_service_provider(self) -> ServiceProvider:
-        return ServiceProvider(self._config.commands.deploy.services)
+        return ServiceProvider(self._cfg.commands.deploy.services)
 
     @log_on_start(logging.DEBUG, "Creating Service Factory")
     @log_on_end(logging.DEBUG, "Created Service Factory: {result!r}")
@@ -114,7 +114,7 @@ class CfgCommandFactory(CommandFactory):
     def create_service_factory(self) -> ServiceFactory:
         return ServiceFactory(
             SubprocessRunner(),
-            Secrets(SecretsProvider(self._config.commands.deploy.secrets)),
+            Secrets(SecretsProvider(self._cfg.commands.deploy.secrets)),
         )
 
     @staticmethod

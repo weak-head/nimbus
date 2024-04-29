@@ -19,8 +19,24 @@ class Config:
     def __getitem__(self, key):
         return Config._convert(self._config.get(key))
 
+    def __eq__(self, value: object) -> bool:
+        if isinstance(value, Config):
+            return self._config == value._config
+        if isinstance(value, dict):
+            return self._config == value
+        return False
+
     def items(self):
         return self._config.items()
+
+    def nested(self, path: str):
+        value = self
+        for key in path.split("."):
+            if value is not None and hasattr(value, key):
+                value = getattr(value, key)
+            else:
+                return None
+        return value
 
     @staticmethod
     def _convert(val):

@@ -29,7 +29,7 @@ class CfgReporterFactory(ReporterFactory):
     """
 
     def __init__(self, config: Config) -> None:
-        self._config = config
+        self._cfg = config
 
     @log_on_start(logging.DEBUG, "Selecting report file path: [{extension!s}]")
     @log_on_end(logging.DEBUG, "Selected report file path: {result!s}")
@@ -72,10 +72,9 @@ class CfgReporterFactory(ReporterFactory):
         # If 'observability' section is omitted,
         # or 'observability.reports' is not specified
         # the reporting to a file would be disabled.
-        if cfg := self._config.observability:
-            if cfg := cfg.reports:
-                writer = self.create_writer(cfg.format, cfg.directory)
-                reporters.append(ReportWriter(writer))
+        if cfg := self._cfg.nested("observability.reports"):
+            writer = self.create_writer(cfg.format, cfg.directory)
+            reporters.append(ReportWriter(writer))
 
         if writer := self.create_writer("stdout"):
             reporters.append(ReportWriter(writer, details=False))

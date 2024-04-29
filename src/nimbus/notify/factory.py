@@ -21,7 +21,7 @@ class NotifierFactory(ABC):
 class CfgNotifierFactory(NotifierFactory):
 
     def __init__(self, config: Config) -> None:
-        self._config = config
+        self._cfg = config
 
     @log_on_start(logging.DEBUG, "Creating Notifier")
     @log_on_end(logging.DEBUG, "Created Notifier: {result!r}")
@@ -32,9 +32,7 @@ class CfgNotifierFactory(NotifierFactory):
         # If 'observability' section is omitted,
         # or 'observability.notifications' is not specified
         # the notifications would be disabled.
-        if cfg := self._config.observability:
-            if cfg := cfg.notifications:
-                if dc := cfg.discord:
-                    notifiers.append(DiscordNotifier(dc.webhook, dc.username, dc.avatar_url))
+        if cfg := self._cfg.nested("observability.notifications.discord"):
+            notifiers.append(DiscordNotifier(cfg.webhook, cfg.username, cfg.avatar_url))
 
         return CompositeNotifier(notifiers)
