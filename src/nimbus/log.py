@@ -67,11 +67,12 @@ def setup_logger(config: Config) -> LogConfig | None:
 
 
 def parse_config(config: Config, default: LogConfig) -> LogConfig:
-    if lc := config.observability.logs:
-        if lc.level:
-            default.level = lc.level
-        if lc.directory:
-            default.location = lc.directory
-        if lc.stdout:
-            default.stdout = lc.stdout
+    if lc := config.observability:
+        if lc := lc.logs:
+            if lc.level:
+                default.level = lc.level
+            if lc.directory:
+                default.location = lc.directory
+            if lc.stdout:
+                default.stdout = lc.stdout
     return default

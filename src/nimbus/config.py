@@ -51,7 +51,7 @@ def resolve_config(file_path: str = None) -> tuple[str | None, list[str]]:
 
 def load_config(file_path: str) -> Config:
     with open(file_path, mode="r", encoding="utf-8") as file:
-        return Config(load(file.read(), config_schema()))
+        return Config(load(file.read(), config_schema()).data)
 
 
 def config_schema() -> Map:

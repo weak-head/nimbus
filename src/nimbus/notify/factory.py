@@ -29,13 +29,12 @@ class CfgNotifierFactory(NotifierFactory):
     def create_notifier(self) -> Notifier:
         notifiers = []
 
-        if discord := self._config.observability.notifications.discord:
-            notifiers.append(
-                DiscordNotifier(
-                    discord.webhook,
-                    discord.username,
-                    discord.avatar_url,
-                )
-            )
+        # If 'observability' section is omitted,
+        # or 'observability.notifications' is not specified
+        # the notifications would be disabled.
+        if cfg := self._config.observability:
+            if cfg := cfg.notifications:
+                if dc := cfg.discord:
+                    notifiers.append(DiscordNotifier(dc.webhook, dc.username, dc.avatar_url))
 
         return CompositeNotifier(notifiers)
