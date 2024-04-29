@@ -1,7 +1,21 @@
 import pytest
 from strictyaml import YAMLError, load
 
-from nimbus.config import schema_observability, schema_profiles
+from nimbus.config import (
+    commands_schema,
+    config_schema,
+    observability_schema,
+    profiles_schema,
+)
+
+
+def validate_schema(schema, yaml_snippet, expected_cfg):
+    if expected_cfg is None:
+        with pytest.raises(YAMLError):
+            load(yaml_snippet, schema)
+    else:
+        parsed_cfg = load(yaml_snippet, schema)
+        assert parsed_cfg == expected_cfg
 
 
 @pytest.mark.parametrize(
@@ -198,12 +212,8 @@ from nimbus.config import schema_observability, schema_profiles
         ],
     ],
 )
-def test_schema_observability(yaml_snippet, cfg):
-    try:
-        validated_data = load(yaml_snippet, schema_observability())
-        assert validated_data == cfg
-    except YAMLError:
-        assert cfg is None
+def test_observability_schema(yaml_snippet, cfg):
+    validate_schema(observability_schema(), yaml_snippet, cfg)
 
 
 @pytest.mark.parametrize(
@@ -405,9 +415,394 @@ def test_schema_observability(yaml_snippet, cfg):
         ],
     ],
 )
-def test_schema_profiles(yaml_snippet, cfg):
-    try:
-        validated_data = load(yaml_snippet, schema_profiles())
-        assert validated_data == cfg
-    except YAMLError:
-        assert cfg is None
+def test_profiles_schema(yaml_snippet, cfg):
+    validate_schema(profiles_schema(), yaml_snippet, cfg)
+
+
+@pytest.mark.parametrize(
+    ["yaml_snippet", "cfg"],
+    [
+        [
+            """
+            """,
+            None,
+        ],
+        [
+            """
+            deploy:
+            backup:
+            """,
+            None,
+        ],
+        [
+            """
+            deploy:
+            backup:
+              destination: /mnt/backups
+              archive: rar_protected
+              upload: aws_archival
+              directories:
+                apps:
+                  - /mnt/ssd/apps/gitlab
+                  - /mnt/ssd/apps/nextcloud
+                  - /mnt/ssd/apps/plex
+                media:
+                  - ~/Music
+                  - ~/Videos
+                  - /mnt/hdd/music
+                  - /mnt/hdd/books
+                photos:
+                  - ~/Photos
+                  - /mnt/hdd/photos
+                docs:
+                  - ~/Documents
+            """,
+            None,
+        ],
+        [
+            """
+            deploy:
+              services:
+                - ~/services
+                - /mnt/ssd/services
+              secrets:
+              - service: "*"
+                environment:
+                  UID: 1001
+                  GID: 1001
+                  TZ: America/New_York
+                  SMTP_SERVER: smtp.server.com
+                  SMTP_PORT: 587
+                  SMTP_USERNAME: username
+                  SMTP_PASSWORD: password
+                  SMTP_DOMAIN: domain.com
+              - service: "git*"
+                environment:
+                  UID: 1002
+                  GID: 1002
+              - service: "gitlab"
+                environment:
+                  GITLAB_HTTP_PORT: 8080
+                  GITLAB_SSH_PORT: 8022
+            backup:
+            """,
+            None,
+        ],
+        [
+            """
+            deploy:
+              services:
+                - ~/services
+            backup:
+              destination: /mnt/backups
+              archive: rar_protected
+              directories:
+                apps:
+                  - /mnt/ssd/apps/gitlab
+            """,
+            {
+                "deploy": {"services": ["~/services"]},
+                "backup": {
+                    "destination": "/mnt/backups",
+                    "archive": "rar_protected",
+                    "directories": {"apps": ["/mnt/ssd/apps/gitlab"]},
+                },
+            },
+        ],
+        [
+            """
+            deploy:
+              services:
+                - ~/services
+            backup:
+              destination: /mnt/backups
+              archive: rar_protected
+              upload: aws_archival
+              directories:
+                apps:
+                  - /mnt/ssd/apps/gitlab
+            """,
+            {
+                "deploy": {"services": ["~/services"]},
+                "backup": {
+                    "destination": "/mnt/backups",
+                    "archive": "rar_protected",
+                    "upload": "aws_archival",
+                    "directories": {"apps": ["/mnt/ssd/apps/gitlab"]},
+                },
+            },
+        ],
+        [
+            """
+            deploy:
+              services:
+                - ~/services
+            backup:
+              destination: /mnt/backups
+              upload: aws_archival
+              directories:
+                apps:
+                  - /mnt/ssd/apps/gitlab
+            """,
+            None,
+        ],
+        [
+            """
+            deploy:
+              services:
+                - ~/services
+                - /mnt/ssd/services
+              secrets:
+              - service: "*"
+                environment:
+                  UID: 1001
+                  GID: 1001
+                  TZ: America/New_York
+                  SMTP_SERVER: smtp.server.com
+                  SMTP_PORT: 587
+                  SMTP_USERNAME: username
+                  SMTP_PASSWORD: password
+                  SMTP_DOMAIN: domain.com
+              - service: "git*"
+                environment:
+                  UID: 1002
+                  GID: 1002
+              - service: "gitlab"
+                environment:
+                  GITLAB_HTTP_PORT: 8080
+                  GITLAB_SSH_PORT: 8022
+            backup:
+              destination: /mnt/backups
+              archive: rar_protected
+              upload: aws_archival
+              directories:
+                apps:
+                  - /mnt/ssd/apps/gitlab
+                  - /mnt/ssd/apps/nextcloud
+                  - /mnt/ssd/apps/plex
+                media:
+                  - ~/Music
+                  - ~/Videos
+                  - /mnt/hdd/music
+                  - /mnt/hdd/books
+                photos:
+                  - ~/Photos
+                  - /mnt/hdd/photos
+                docs:
+                  - ~/Documents
+            """,
+            {
+                "deploy": {
+                    "services": [
+                        "~/services",
+                        "/mnt/ssd/services",
+                    ],
+                    "secrets": [
+                        {
+                            "service": "*",
+                            "environment": {
+                                "UID": "1001",
+                                "GID": "1001",
+                                "TZ": "America/New_York",
+                                "SMTP_SERVER": "smtp.server.com",
+                                "SMTP_PORT": "587",
+                                "SMTP_USERNAME": "username",
+                                "SMTP_PASSWORD": "password",
+                                "SMTP_DOMAIN": "domain.com",
+                            },
+                        },
+                        {
+                            "service": "git*",
+                            "environment": {
+                                "UID": "1002",
+                                "GID": "1002",
+                            },
+                        },
+                        {
+                            "service": "gitlab",
+                            "environment": {
+                                "GITLAB_HTTP_PORT": "8080",
+                                "GITLAB_SSH_PORT": "8022",
+                            },
+                        },
+                    ],
+                },
+                "backup": {
+                    "destination": "/mnt/backups",
+                    "archive": "rar_protected",
+                    "upload": "aws_archival",
+                    "directories": {
+                        "apps": [
+                            "/mnt/ssd/apps/gitlab",
+                            "/mnt/ssd/apps/nextcloud",
+                            "/mnt/ssd/apps/plex",
+                        ],
+                        "media": [
+                            "~/Music",
+                            "~/Videos",
+                            "/mnt/hdd/music",
+                            "/mnt/hdd/books",
+                        ],
+                        "photos": [
+                            "~/Photos",
+                            "/mnt/hdd/photos",
+                        ],
+                        "docs": [
+                            "~/Documents",
+                        ],
+                    },
+                },
+            },
+        ],
+    ],
+)
+def test_commands_schema(yaml_snippet, cfg):
+    validate_schema(commands_schema(), yaml_snippet, cfg)
+
+
+@pytest.mark.parametrize(
+    ["yaml_snippet", "cfg"],
+    [
+        [
+            """
+            """,
+            None,
+        ],
+        [
+            """
+            profiles:
+              archive:
+                - name: rar_default
+                  provider: rar
+              upload:
+                - name: aws_store
+                  provider: aws
+                  access_key: XX
+                  secret_key: XXX
+                  bucket: aws.storage.bucket
+                  storage_class: STANDARD
+            commands:
+              deploy:
+                services:
+                  - ~/services
+              backup:
+                destination: /mnt/backups
+                archive: rar_protected
+                upload: aws_archival
+                directories:
+                  apps:
+                    - /mnt/ssd/apps/gitlab
+            """,
+            {
+                "profiles": {
+                    "archive": [
+                        {
+                            "name": "rar_default",
+                            "provider": "rar",
+                        },
+                    ],
+                    "upload": [
+                        {
+                            "name": "aws_store",
+                            "provider": "aws",
+                            "access_key": "XX",
+                            "secret_key": "XXX",
+                            "bucket": "aws.storage.bucket",
+                            "storage_class": "STANDARD",
+                        },
+                    ],
+                },
+                "commands": {
+                    "deploy": {"services": ["~/services"]},
+                    "backup": {
+                        "destination": "/mnt/backups",
+                        "archive": "rar_protected",
+                        "upload": "aws_archival",
+                        "directories": {"apps": ["/mnt/ssd/apps/gitlab"]},
+                    },
+                },
+            },
+        ],
+        [
+            """
+            observability:
+              reports:
+                format: txt
+                directory: ~/reports
+              logs:
+                level: DEBUG
+                stdout: true
+                directory: ~/logs
+              notifications:
+                discord:
+                  webhook: http://hook.url
+                  username: name
+                  avatar_url: http://avatar.url
+            profiles:
+              archive:
+                - name: rar_default
+                  provider: rar
+              upload:
+                - name: aws_store
+                  provider: aws
+                  access_key: XX
+                  secret_key: XXX
+                  bucket: aws.storage.bucket
+                  storage_class: STANDARD
+            commands:
+              deploy:
+                services:
+                  - ~/services
+              backup:
+                destination: /mnt/backups
+                archive: rar_protected
+                upload: aws_archival
+                directories:
+                  apps:
+                    - /mnt/ssd/apps/gitlab
+            """,
+            {
+                "observability": {
+                    "reports": {"format": "txt", "directory": "~/reports"},
+                    "logs": {"level": "DEBUG", "stdout": True, "directory": "~/logs"},
+                    "notifications": {
+                        "discord": {
+                            "webhook": "http://hook.url",
+                            "username": "name",
+                            "avatar_url": "http://avatar.url",
+                        }
+                    },
+                },
+                "profiles": {
+                    "archive": [
+                        {
+                            "name": "rar_default",
+                            "provider": "rar",
+                        },
+                    ],
+                    "upload": [
+                        {
+                            "name": "aws_store",
+                            "provider": "aws",
+                            "access_key": "XX",
+                            "secret_key": "XXX",
+                            "bucket": "aws.storage.bucket",
+                            "storage_class": "STANDARD",
+                        },
+                    ],
+                },
+                "commands": {
+                    "deploy": {"services": ["~/services"]},
+                    "backup": {
+                        "destination": "/mnt/backups",
+                        "archive": "rar_protected",
+                        "upload": "aws_archival",
+                        "directories": {"apps": ["/mnt/ssd/apps/gitlab"]},
+                    },
+                },
+            },
+        ],
+    ],
+)
+def test_config_schema(yaml_snippet, cfg):
+    validate_schema(config_schema(), yaml_snippet, cfg)

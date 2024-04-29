@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from os.path import abspath, exists, expanduser
 
-from strictyaml import Bool, Enum, Int, Map, Optional, Seq, Str, load
+from strictyaml import Bool, Enum, Int, Map, MapPattern, Optional, Seq, Str, load
 
 
 class Config:
@@ -51,20 +51,20 @@ def resolve_config(file_path: str = None) -> tuple[str | None, list[str]]:
 
 def load_config(file_path: str) -> Config:
     with open(file_path, mode="r", encoding="utf-8") as file:
-        return Config(load(file.read(), schema()))
+        return Config(load(file.read(), config_schema()))
 
 
-def schema() -> Map:
+def config_schema() -> Map:
     return Map(
         {
-            Optional("observability"): schema_observability(),
-            "profiles": schema_profiles(),
-            "commands": Seq(Str()),
+            Optional("observability"): observability_schema(),
+            "profiles": profiles_schema(),
+            "commands": commands_schema(),
         }
     )
 
 
-def schema_observability() -> Map:
+def observability_schema() -> Map:
     return Map(
         {
             Optional("reports"): Map(
@@ -103,7 +103,7 @@ def schema_observability() -> Map:
     )
 
 
-def schema_profiles() -> Map:
+def profiles_schema() -> Map:
     return Map(
         {
             "archive": Seq(
@@ -137,6 +137,34 @@ def schema_profiles() -> Map:
                         ),
                     }
                 )
+            ),
+        }
+    )
+
+
+def commands_schema() -> Map:
+    return Map(
+        {
+            "deploy": Map(
+                {
+                    "services": Seq(Str()),
+                    Optional("secrets"): Seq(
+                        Map(
+                            {
+                                "service": Str(),
+                                "environment": MapPattern(Str(), Str()),
+                            }
+                        )
+                    ),
+                },
+            ),
+            "backup": Map(
+                {
+                    "destination": Str(),
+                    "archive": Str(),
+                    Optional("upload"): Str(),
+                    "directories": MapPattern(Str(), Seq(Str())),
+                }
             ),
         }
     )
