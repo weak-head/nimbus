@@ -1,6 +1,6 @@
-# Observability Configuration
+# Observability Configuration (Optional)
 observability:
-  # Operation Reports
+  # Operation Reports (Optional)
   reports:
     format: txt  # Report file format
     directory: ~/.nimbus/reports  # Report file directory
@@ -13,6 +13,7 @@ observability:
 
   # Notifications (Optional)
   notifications:
+    # Discord Notifications (Optional)
     discord:
       webhook: https://discord.com/api/webhooks/id/token  # Discord webhook
       username: nimbus # Optional: Override the default username of the webhook
@@ -22,9 +23,9 @@ observability:
 profiles:
   # Archival Profiles
   archive:
-    rar_default:
+    - name: rar_default
       provider: rar
-    rar_protected:
+    - name: rar_protected
       provider: rar
       password: SecretPwd  # Optional: Archive password
       recovery: 3  # Optional: Recovery data percentage
@@ -32,16 +33,16 @@ profiles:
 
   # Uploader Profiles
   upload:
-    aws_store:
+    - name: aws_store
       provider: aws
-      access_key: XXXXXXXXXXXXXXXXXXXX
-      secret_key: XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+      access_key: XXXXXXX
+      secret_key: XXXXXXXXXXXXX
       bucket: aws.storage.bucket
       storage_class: STANDARD  # Options: STANDARD | INTELLIGENT_TIERING | DEEP_ARCHIVE
-    aws_archival:
+    - name: aws_archival
       provider: aws
-      access_key: XXXXXXXXXXXXXXXXXXXX
-      secret_key: XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+      access_key: XXXXXXX
+      secret_key: XXXXXXXXXXXXXX
       bucket: aws.archival.bucket
       storage_class: DEEP_ARCHIVE
 
@@ -50,10 +51,9 @@ commands:
   # Service Deployment
   deploy:
     # Service Discovery
-    discovery:
-      directories:
-        - ~/services
-        - /mnt/ssd/services
+    services:
+      - ~/services
+      - /mnt/ssd/services
 
     # Secrets Configuration Mapping (Optional)
     secrets:

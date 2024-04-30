@@ -67,7 +67,7 @@ def setup_logger(config: Config) -> LogConfig | None:
 
 
 def parse_config(config: Config, default: LogConfig) -> LogConfig:
-    if lc := config.observability.logs:
+    if lc := config.nested("observability.logs"):
         if lc.level:
             default.level = lc.level
         if lc.directory:
