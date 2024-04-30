@@ -114,33 +114,34 @@ ni backup [selectors]
 Lets assume we have the following Nimbus configuration:
 
 ```yaml
-archivers:
-  rar-protected:
-    provider: rar
-    password: SecretPassword
-    recovery: 3
-    compression: 0
+profiles:
+  archive:
+    - name: rar-protected
+      provider: rar
+      password: SecretPassword
+      recovery: 3
+      compression: 0
+  upload:
+    - name: aws-archive
+      provider: aws
+      access_key: XXXXXXXXXXXXX
+      secret_key: XXXXXXXXXXXXXXXXXXXXXXXXX
+      bucket: backups.bucket.aws
+      storage_class: STANDARD
 
-uploaders:
-  aws-archive:
-    provider: aws
-    access_key: XXXXXXXXXXXXX
-    secret_key: XXXXXXXXXXXXXXXXXXXXXXXXX
-    bucket: backups.bucket.aws
-    storage_class: STANDARD
-
-backup:
-  destination: ~/.nimbus/backups
-  archiver: rar-protected
-  uploader: aws-archive
-  directories: 
-    photos:
-      - ~/Pictures
-      - /mnt/photos
-    cloud:
-      - /mnt/nextcloud
-    docs:
-      - ~/Documents
+commands:
+  backup:
+    destination: ~/.nimbus/backups
+    archiver: rar-protected
+    uploader: aws-archive
+    directories: 
+      photos:
+        - ~/Pictures
+        - /mnt/photos
+      cloud:
+        - /mnt/nextcloud
+      docs:
+        - ~/Documents
 ```
 
 With this configuration, the following `backup` commands would result in:
@@ -166,9 +167,10 @@ ni down [selectors]
 Lets assume we have the following Nimbus configuration:
 
 ```yaml
-services:
-  directories:
-    - ~/.nimbus/services
+commands:
+  deploy:
+    services:
+      - ~/.nimbus/services
 ```
 
 And under the `~/.nimbus/services` we have the following directory structure:

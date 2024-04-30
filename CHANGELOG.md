@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.3.0 (2024-05-01)
+
+### Changed
+
+- Simplified and re-designed application configuration.
+
+### Added
+
+- Support discord notifications.
+- Output current application version with `--version` flag.
+- Validate application configuration based on the expected schema.
+
 ## 0.2.0 (2024-04-19)
 
 ### Added
