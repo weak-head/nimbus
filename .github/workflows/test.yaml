@@ -45,7 +45,7 @@ jobs:
         pip install poetry
         poetry install
     - name: Run tests and collect coverage
-      run: poetry run pytest --cov=src
+      run: poetry run pytest --cov=src --cov-report=xml:coverage.xml
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v4
       env:
