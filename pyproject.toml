@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "nimbus"
-version = "0.2.0"
+version = "0.3.0"
 description = "Nimbus is engineered to optimize data backup processes and efficiently orchestrate service deployments."
 keywords = ["backup", "deploy", "administration"]
 authors = ["Oleksandr Zinchenko <zinchenko@live.com>"]
