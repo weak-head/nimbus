@@ -7,7 +7,8 @@ from strictyaml import Bool, Enum, Int, Map, MapPattern, Optional, Seq, Str, loa
 
 class Config:
     """
-    Config with support of '.' notation.
+    Application configuration, that support retrieval of
+    various settings through the use of dot-notation (`.`).
     """
 
     def __init__(self, config: dict):
@@ -27,9 +28,18 @@ class Config:
         return False
 
     def items(self):
+        """
+        Returns a set-like object providing a view on the child settings.
+        """
         return self._config.items()
 
     def nested(self, path: str):
+        """
+        Safely access nested fields of the configuration object.
+
+        :param path: A sequence of keys (separated by `.`) representing the nested fields.
+        :return: The value of the nested field or None if any field is None.
+        """
         value = self
         for key in path.split("."):
             if value is not None and hasattr(value, key):
@@ -71,6 +81,9 @@ def load_config(file_path: str) -> Config:
 
 
 def config_schema() -> Map:
+    """
+    YAML schema of the application configuration file.
+    """
     return Map(
         {
             Optional("observability"): observability_schema(),
@@ -91,15 +104,7 @@ def observability_schema() -> Map:
             ),
             Optional("logs"): Map(
                 {
-                    "level": Enum(
-                        [
-                            "DEBUG",
-                            "INFO",
-                            "WARNING",
-                            "ERROR",
-                            "CRITICAL",
-                        ]
-                    ),
+                    "level": Enum(["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]),
                     "stdout": Bool(),
                     "directory": Str(),
                 }
@@ -144,7 +149,6 @@ def profiles_schema() -> Map:
                         "storage_class": Enum(
                             [
                                 "STANDARD",
-                                "REDUCED_REDUNDANCY",
                                 "STANDARD_IA",
                                 "ONEZONE_IA ",
                                 "INTELLIGENT_TIERING",
