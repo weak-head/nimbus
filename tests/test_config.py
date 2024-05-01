@@ -1,7 +1,7 @@
 import pytest
 from strictyaml import YAMLError, load
 
-from nimbus.config import (
+from nimbuscli.config import (
     Config,
     commands_schema,
     config_schema,

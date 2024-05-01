@@ -4,12 +4,12 @@ import sys
 
 from strictyaml import YAMLError
 
-from nimbus.cli import RunnerFactory, parse_args
-from nimbus.cmd import CfgCommandFactory
-from nimbus.config import load_config, resolve_config
-from nimbus.log import setup_logger
-from nimbus.notify import CfgNotifierFactory
-from nimbus.report import CfgReporterFactory
+from nimbuscli.cli import RunnerFactory, parse_args
+from nimbuscli.cmd import CfgCommandFactory
+from nimbuscli.config import load_config, resolve_config
+from nimbuscli.log import setup_logger
+from nimbuscli.notify import CfgNotifierFactory
+from nimbuscli.report import CfgReporterFactory
 
 
 class ExitCode:

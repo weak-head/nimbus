@@ -2,7 +2,7 @@ from typing import Iterator
 
 import pytest
 
-from nimbus.provider.secret import Secret, Secrets, SecretsProvider
+from nimbuscli.provider.secret import Secret, Secrets, SecretsProvider
 
 
 class TestSecretsProvider:

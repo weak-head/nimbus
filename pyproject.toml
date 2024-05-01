@@ -3,8 +3,8 @@ requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-name = "nimbus"
-version = "0.3.0"
+name = "nimbuscli"
+version = "0.3.1"
 description = "Nimbus is engineered to optimize data backup processes and efficiently orchestrate service deployments."
 keywords = ["backup", "deploy", "administration"]
 authors = ["Oleksandr Zinchenko <zinchenko@live.com>"]
@@ -32,7 +32,7 @@ pytest-timeout = "^2.2.0"
 mock = "^5.1.0"
 
 [tool.poetry.scripts]
-ni = "nimbus.main:main"
+ni = "nimbuscli.main:main"
 
 [tool.coverage.run]
 branch = true

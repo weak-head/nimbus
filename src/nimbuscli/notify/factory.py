@@ -3,9 +3,9 @@ from abc import ABC, abstractmethod
 
 from logdecorator import log_on_end, log_on_error, log_on_start
 
-from nimbus.config import Config
-from nimbus.notify.discord import DiscordNotifier
-from nimbus.notify.notifier import CompositeNotifier, Notifier
+from nimbuscli.config import Config
+from nimbuscli.notify.discord import DiscordNotifier
+from nimbuscli.notify.notifier import CompositeNotifier, Notifier
 
 
 class NotifierFactory(ABC):

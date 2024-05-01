@@ -8,9 +8,9 @@ from typing import Any
 
 from logdecorator import log_on_end, log_on_start
 
-from nimbus.cmd.command import Action, ActionResult, Command
-from nimbus.core import ArchivalStatus, Archiver, Uploader, UploadProgress, UploadStatus
-from nimbus.provider import DirectoryProvider, DirectoryResource
+from nimbuscli.cmd.command import Action, ActionResult, Command
+from nimbuscli.core import ArchivalStatus, Archiver, Uploader, UploadProgress, UploadStatus
+from nimbuscli.provider import DirectoryProvider, DirectoryResource
 
 
 class Backup(Command):

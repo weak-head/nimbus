@@ -3,11 +3,11 @@ from typing import Iterator
 
 import requests
 
-import nimbus.report.format as fmt
-from nimbus.cmd import ExecutionResult
-from nimbus.cmd.backup import BackupActionResult, UploadActionResult
-from nimbus.cmd.deploy import DeploymentActionResult
-from nimbus.notify.notifier import Notifier
+import nimbuscli.report.format as fmt
+from nimbuscli.cmd import ExecutionResult
+from nimbuscli.cmd.backup import BackupActionResult, UploadActionResult
+from nimbuscli.cmd.deploy import DeploymentActionResult
+from nimbuscli.notify.notifier import Notifier
 
 
 class DiscordNotifier(Notifier):

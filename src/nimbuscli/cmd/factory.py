@@ -5,12 +5,12 @@ from abc import ABC, abstractmethod
 
 from logdecorator import log_on_end, log_on_error, log_on_start
 
-from nimbus.cmd.backup import Backup
-from nimbus.cmd.command import Command
-from nimbus.cmd.deploy import Down, Up
-from nimbus.config import Config
-from nimbus.core import Archiver, AwsUploader, RarArchiver, SubprocessRunner, Uploader
-from nimbus.provider import (
+from nimbuscli.cmd.backup import Backup
+from nimbuscli.cmd.command import Command
+from nimbuscli.cmd.deploy import Down, Up
+from nimbuscli.config import Config
+from nimbuscli.core import Archiver, AwsUploader, RarArchiver, SubprocessRunner, Uploader
+from nimbuscli.provider import (
     DirectoryProvider,
     Secrets,
     SecretsProvider,

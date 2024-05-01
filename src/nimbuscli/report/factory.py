@@ -7,9 +7,9 @@ from pathlib import Path
 
 from logdecorator import log_on_end, log_on_error, log_on_start
 
-from nimbus.config import Config
-from nimbus.report.reporter import CompositeReporter, Reporter, ReportWriter
-from nimbus.report.writer import TextWriter, Writer
+from nimbuscli.config import Config
+from nimbuscli.report.reporter import CompositeReporter, Reporter, ReportWriter
+from nimbuscli.report.writer import TextWriter, Writer
 
 
 class ReporterFactory(ABC):

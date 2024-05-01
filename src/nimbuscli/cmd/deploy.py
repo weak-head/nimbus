@@ -6,9 +6,9 @@ from typing import Any
 
 from logdecorator import log_on_end
 
-from nimbus.cmd.command import Action, ActionResult, Command
-from nimbus.core import OperationStatus, Service
-from nimbus.provider import ServiceFactory, ServiceProvider, ServiceResource
+from nimbuscli.cmd.command import Action, ActionResult, Command
+from nimbuscli.core import OperationStatus, Service
+from nimbuscli.provider import ServiceFactory, ServiceProvider, ServiceResource
 
 
 class Deployment(Command):

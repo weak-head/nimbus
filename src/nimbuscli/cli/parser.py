@@ -19,7 +19,7 @@ def create_parser() -> ArgumentParser:
     parser.add_argument(
         "--version",
         action="version",
-        version=f"%(prog)s {metadata.version('nimbus')}",
+        version=f"%(prog)s {metadata.version('nimbuscli')}",
     )
     parser.add_argument(
         "--config",
