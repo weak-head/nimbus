@@ -3,7 +3,7 @@ from datetime import timedelta as td
 import pytest
 from mock import Mock, call
 
-from nimbus.core import DockerService, OperationStatus
+from nimbuscli.core import DockerService, OperationStatus
 
 
 class MockProc:

@@ -1,5 +1,6 @@
 <div align="center">
-  <img src="./docs/logo.png" width="450" />
+
+  <img src="https://raw.githubusercontent.com/weak-head/nimbus/main/docs/logo.png" width="450" />
   
   # nimbus <!-- omit from toc --> 
   
@@ -8,7 +9,7 @@
 
   [![build](https://img.shields.io/github/actions/workflow/status/weak-head/nimbus/test.yaml)](https://github.com/weak-head/nimbus/actions/workflows/test.yaml)
   [![codecov](https://codecov.io/github/weak-head/nimbus/graph/badge.svg?token=yg0BbspGV6)](https://codecov.io/github/weak-head/nimbus)
-  [![pypi](https://img.shields.io/pypi/v/nimbus-admin?color=blue)](https://pypi.python.org/pypi/nimbus-admin)
+  [![pypi](https://img.shields.io/pypi/v/nimbuscli?color=blue)](https://pypi.python.org/pypi/nimbuscli)
   [![py3.12](https://img.shields.io/badge/python-3.12-4584b6.svg)](https://www.python.org/downloads/release/python-3120/)
   [![MIT License](https://img.shields.io/badge/license-MIT-blue)](https://opensource.org/license/mit)
 
@@ -19,8 +20,6 @@
 
 - [Overview](#overview)
 - [Getting Started](#getting-started)
-  - [Package Installation](#package-installation)
-  - [Build from Source](#build-from-source)
 - [Usage](#usage)
   - [Backups](#backups)
   - [Deployments](#deployments)
@@ -31,49 +30,36 @@ Nimbus stands as a comprehensive data backup manager and service deployment orch
 
 ## Getting Started
 
-To begin using Nimbus, you have two primary options:
-- Package Installation: Conveniently install Nimbus via a package registry.  
-  This option is best for users looking for a quick and straightforward setup.
-- Build from Source: Compile and run Nimbus directly from the source code.  
-  This method is ideal for those who wish to customize or contribute to the project.
-
-### Package Installation
-
-Install Nimbus from [PyPI](https://pypi.org/) and access it using `ni` shortcut:
+Install `ni` with [pipx](https://pipx.pypa.io/stable/) or `pip`:
 
 ```bash
-pip install nimbus-admin
+pip install nimbuscli
 ni --version
 ```
 
-### Build from Source
-
-Nimbus uses [poetry](https://python-poetry.org/) for dependency management and packaging.  
-Poetry could be installed using `pipx`. For any other installation options consult the documentation.
+Alternatively you can build it from source. Nimbus uses [poetry](https://python-poetry.org/) for dependency management and packaging.  
 
 ```bash
 pipx ensurepath
 pipx install poetry
 
-# Python versions and environments could be managed using `pyenv`
 curl https://pyenv.run | bash
 
 pyenv install 3.12
 pyenv virtualenv 3.12 ni_env
 pyenv local ni_env
-```
 
-Once you have set up `poetry` and `pyenv` you can install Nimbus and access it using `ni` shortcut.
-
-```bash
 poetry install
+ni --version
 ```
+
+To do something with nimbus you need to setup the application configuration.
+For guidance and examples on setting up your configuration, please refer to the [configuration example](./docs/config.example.yaml).  
 
 ## Usage
 
 By default, Nimbus searches for its configuration file at the `~/.nimbus/config.yaml` path.  
 It is anticipated that all configurations for the application will be centralized within this file.  
-For guidance and examples on setting up your configuration, please refer to the [config example](./docs/config.example.yaml).  
 
 > **Important Note on Glob Patterns in bash/sh**  
 > When using the `ni` command, it’s essential to use `\*` in place of `*`.  

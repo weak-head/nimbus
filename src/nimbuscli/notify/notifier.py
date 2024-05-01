@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-from nimbus.cmd import ExecutionResult
+from nimbuscli.cmd import ExecutionResult
 
 
 class Notifier(ABC):

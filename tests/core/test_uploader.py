@@ -4,7 +4,7 @@ from datetime import timedelta as td
 import pytest
 from mock import Mock, PropertyMock, patch
 
-from nimbus.core import AwsUploader, UploadProgress, UploadStatus
+from nimbuscli.core import AwsUploader, UploadProgress, UploadStatus
 from tests.helpers import MockDateTime
 
 
@@ -55,7 +55,7 @@ class TestAwsUploaderCallbackAdapter:
         ],
     )
     @patch("os.stat")
-    @patch("nimbus.core.uploader.datetime", MockDateTime)
+    @patch("nimbuscli.core.uploader.datetime", MockDateTime)
     def test_onprogress(self, mock_osstat, filesize, upbytes, reported):
         type(mock_osstat.return_value).st_size = PropertyMock(return_value=filesize)
 
@@ -93,7 +93,7 @@ class TestAwsUploader:
             self._client_name = name
             return Mock()
 
-    @patch("nimbus.core.uploader.Session", MockSession)
+    @patch("nimbuscli.core.uploader.Session", MockSession)
     def test_config(self):
         uploader = AwsUploader("key", "secret", "bucket", "class")
 
@@ -106,8 +106,8 @@ class TestAwsUploader:
         assert cfg == {"S3 Bucket": "bucket", "S3 Storage": "class"}
 
     @patch("os.stat")
-    @patch("nimbus.core.uploader.Session", Mock)
-    @patch("nimbus.core.uploader.datetime", MockDateTime)
+    @patch("nimbuscli.core.uploader.Session", Mock)
+    @patch("nimbuscli.core.uploader.datetime", MockDateTime)
     def test_upload(self, mock_osstat):
         started_dt = dt(2024, 5, 10, 12, 30, 50)
         completed_dt = dt(2024, 5, 10, 12, 35, 55)
@@ -143,8 +143,8 @@ class TestAwsUploader:
         )
 
     @patch("os.stat")
-    @patch("nimbus.core.uploader.Session", Mock)
-    @patch("nimbus.core.uploader.datetime", MockDateTime)
+    @patch("nimbuscli.core.uploader.Session", Mock)
+    @patch("nimbuscli.core.uploader.datetime", MockDateTime)
     def test_upload_exception(self, mock_osstat):
         started_dt = dt(2024, 5, 10, 12, 30, 50)
         completed_dt = dt(2024, 5, 10, 12, 35, 55)

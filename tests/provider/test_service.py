@@ -2,7 +2,7 @@ from pathlib import Path
 
 import pytest
 
-from nimbus.provider.service import ServiceProvider
+from nimbuscli.provider.service import ServiceProvider
 
 
 class TestServiceProvider:

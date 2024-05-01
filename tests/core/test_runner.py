@@ -4,14 +4,14 @@ from datetime import timedelta as td
 import pytest
 from mock import Mock, PropertyMock, patch
 
-from nimbus.core import CompletedProcess, SubprocessRunner
+from nimbuscli.core import CompletedProcess, SubprocessRunner
 from tests.helpers import MockDateTime
 
 
 class TestSubprocessRunner:
 
     @patch("subprocess.run")
-    @patch("nimbus.core.runner.datetime", MockDateTime)
+    @patch("nimbuscli.core.runner.datetime", MockDateTime)
     def test_execute(self, mock_run, monkeypatch):
         started_dt = dt(2024, 5, 10, 12, 30, 50)
         completed_dt = dt(2024, 5, 10, 12, 35, 55)

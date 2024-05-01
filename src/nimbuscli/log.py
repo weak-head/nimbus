@@ -7,7 +7,7 @@ from datetime import datetime
 
 from logdecorator import log_on_end
 
-from nimbus.config import Config
+from nimbuscli.config import Config
 
 
 class LogConfig:

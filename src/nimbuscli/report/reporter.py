@@ -8,19 +8,19 @@ from typing import Iterator
 
 from logdecorator import log_on_start
 
-import nimbus.report.format as fmt
-from nimbus.cmd import ExecutionResult
-from nimbus.cmd.backup import (
+import nimbuscli.report.format as fmt
+from nimbuscli.cmd import ExecutionResult
+from nimbuscli.cmd.backup import (
     BackupActionResult,
     DirectoryMappingActionResult,
     UploadActionResult,
 )
-from nimbus.cmd.deploy import (
+from nimbuscli.cmd.deploy import (
     CreateServicesActionResult,
     DeploymentActionResult,
     ServiceMappingActionResult,
 )
-from nimbus.report.writer import Writer
+from nimbuscli.report.writer import Writer
 
 
 class Reporter(ABC):

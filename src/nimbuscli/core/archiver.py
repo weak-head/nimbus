@@ -6,7 +6,7 @@ from abc import ABC, abstractmethod
 
 from logdecorator import log_on_end, log_on_start
 
-from nimbus.core.runner import CompletedProcess, Runner
+from nimbuscli.core.runner import CompletedProcess, Runner
 
 
 class Archiver(ABC):

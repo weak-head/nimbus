@@ -1,6 +1,6 @@
 import pytest
 
-from nimbus.provider.directory import DirectoryProvider
+from nimbuscli.provider.directory import DirectoryProvider
 
 
 class TestDirectoryProvider:
