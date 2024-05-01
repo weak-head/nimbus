@@ -6,9 +6,9 @@
   Nimbus is engineered to optimize data backup processes and efficiently orchestrate service deployments for homelabs and dev environments.
   <br/><br/>
 
-  [![pipeline](https://git.lothric.net/lothric/infrastructure/nimbus/badges/main/pipeline.svg)](https://git.lothric.net/lothric/infrastructure/nimbus/-/pipelines)
-  [![coverage](https://git.lothric.net/lothric/infrastructure/nimbus/badges/main/coverage.svg)](https://lothric.pages.lothric.net/infrastructure/nimbus)
-  [![release](https://git.lothric.net/lothric/infrastructure/nimbus/-/badges/release.svg)](https://git.lothric.net/lothric/infrastructure/nimbus/-/releases)
+  [![build](https://img.shields.io/github/actions/workflow/status/weak-head/nimbus/test.yaml)](https://github.com/weak-head/nimbus/actions/workflows/test.yaml)
+  [![codecov](https://codecov.io/github/weak-head/nimbus/graph/badge.svg?token=yg0BbspGV6)](https://codecov.io/github/weak-head/nimbus)
+  [![pypi](https://img.shields.io/pypi/v/nimbus-admin?color=blue)](https://pypi.python.org/pypi/nimbus-admin)
   [![py3.12](https://img.shields.io/badge/python-3.12-4584b6.svg)](https://www.python.org/downloads/release/python-3120/)
   [![MIT License](https://img.shields.io/badge/license-MIT-blue)](https://opensource.org/license/mit)
 
@@ -19,8 +19,8 @@
 
 - [Overview](#overview)
 - [Getting Started](#getting-started)
-  - [Build from Source](#build-from-source)
   - [Package Installation](#package-installation)
+  - [Build from Source](#build-from-source)
 - [Usage](#usage)
   - [Backups](#backups)
   - [Deployments](#deployments)
@@ -32,10 +32,19 @@ Nimbus stands as a comprehensive data backup manager and service deployment orch
 ## Getting Started
 
 To begin using Nimbus, you have two primary options:
-- Build from Source: Compile and run Nimbus directly from the source code.  
-  This method is ideal for those who wish to customize or contribute to the project.
 - Package Installation: Conveniently install Nimbus via a package registry.  
   This option is best for users looking for a quick and straightforward setup.
+- Build from Source: Compile and run Nimbus directly from the source code.  
+  This method is ideal for those who wish to customize or contribute to the project.
+
+### Package Installation
+
+Install Nimbus from [PyPI](https://pypi.org/) and access it using `ni` shortcut:
+
+```bash
+pip install nimbus-admin
+ni --version
+```
 
 ### Build from Source
 
@@ -45,11 +54,8 @@ Poetry could be installed using `pipx`. For any other installation options consu
 ```bash
 pipx ensurepath
 pipx install poetry
-```
 
-Python versions and environments are managed using `pyenv`.
-
-```bash
+# Python versions and environments could be managed using `pyenv`
 curl https://pyenv.run | bash
 
 pyenv install 3.12
@@ -61,34 +67,6 @@ Once you have set up `poetry` and `pyenv` you can install Nimbus and access it u
 
 ```bash
 poetry install
-```
-
-### Package Installation
-
-Create a [Personal Access Token](https://docs.gitlab.com/ee/user/profile/personal_access_tokens.html) with `read_api` scope and, optionally, configure pip (`~/.pip/pip.conf`) to use GitLab Package Registry:
-
-```ini
-[global]
-index-url=https://__token__:PERSONAL_ACCESS_TOKEN@git.lothric.net/api/v4/projects/112/packages/pypi/simple
-extra-index-url=https://pypi.org/simple
-```
-
-Ensure [Python 3.12](https://www.python.org/downloads/release/python-3120/) is installed and used globally:
-
-```bash
-pyenv install 3.12
-pyenv global 3.12
-```
-
-Install Nimbus from the GitLab Package Registry:
-
-```bash
-# If pip is configured
-pip install nimbus
-
-# If pip is not configured, explicitly specify the index-url
-pip install nimbus \
-  --index-url https://__token__:PERSONAL_ACCESS_TOKEN@git.lothric.net/api/v4/projects/112/packages/pypi/simple
 ```
 
 ## Usage
