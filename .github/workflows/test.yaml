@@ -23,6 +23,12 @@ jobs:
         poetry install --no-root
     - name: Analyze with flake8
       run: poetry run flake8 .
+    - name: Analyze with black
+      run: poetry run black --check .
+    - name: Analyze with pylint
+      run: poetry run pylint src tests
+    - name: Analyze with isort
+      run: poetry run isort src tests --check-only
 
   unit-test:
     needs:
@@ -45,7 +51,10 @@ jobs:
         pip install poetry
         poetry install
     - name: Run tests and collect coverage
-      run: poetry run pytest --cov=src --cov-report=xml:coverage.xml
+      run: >
+        poetry run pytest 
+        --cov=src 
+        --cov-report=xml:coverage.xml
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v4
       env:
