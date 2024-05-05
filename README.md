@@ -37,23 +37,11 @@ pip install nimbuscli
 ni --version
 ```
 
-Alternatively you can build it from source. Nimbus uses [poetry](https://python-poetry.org/) for dependency management and packaging.  
+To do something with nimbus you need to:
+  - Setup application configuration
+  - Install `docker`
+  - Install `rar`
 
-```bash
-pipx ensurepath
-pipx install poetry
-
-curl https://pyenv.run | bash
-
-pyenv install 3.12
-pyenv virtualenv 3.12 ni_env
-pyenv local ni_env
-
-poetry install
-ni --version
-```
-
-To do something with nimbus you need to setup the application configuration.
 For guidance and examples on setting up your configuration, please refer to the [configuration example](./docs/config.example.yaml).  
 
 ## Usage
