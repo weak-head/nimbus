@@ -1,6 +1,6 @@
 <div align="center">
 
-  <img src="https://raw.githubusercontent.com/weak-head/nimbus/main/docs/logo.png" width="450" />
+  <img src="https://raw.githubusercontent.com/weak-head/nimbus/main/docs/logo.png" width="350" />
   
   # nimbus <!-- omit from toc --> 
   
@@ -37,8 +37,7 @@ pipx install nimbuscli --python python3.12
 ni --version
 ```
 
-Before using nimbus you need to configure it.  
-Below is the minimal configuration for the `~/Documents` directory backup and deployment of a docker compose services that could be discovered under `~/services` directory:
+Before using nimbus you need to configure it. Below is a minimal example configuration:
 
 ```yaml
 commands:
@@ -53,11 +52,12 @@ commands:
         - ~/Documents
 ```
 
-With this configuration:
-  - `ni up` will deploy all docker compose services that could be discovered under `~/services` root directory.
-  - `ni backup` will create `tar` backup of the `~/Documents` and save it under `~/backups`.
+- `ni up` deploys all Docker Compose services under `~/services` root directory.
+- `ni backup` creates a `tar` backup of the `~/Documents` directory and saves it under `~/backups/docs/Documents/Documents_{datetime}.tar`.
+- Notifications (such as Discord or email) are disabled.
+- Generation of the operation report is also disabled.
 
-For the detailed configuration options and examples on setting it up, please refer to the [configuration example](https://github.com/weak-head/nimbus/blob/main/docs/config.example.yaml).
+For more configuration options, refer to the [example configuration file](https://github.com/weak-head/nimbus/blob/main/docs/config.example.yaml).
 
 ## Usage
 
