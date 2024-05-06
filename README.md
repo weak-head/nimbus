@@ -30,26 +30,41 @@ Nimbus stands as a comprehensive data backup manager and service deployment orch
 
 ## Getting Started
 
-Install `ni` with [pipx](https://pipx.pypa.io/stable/) or `pip`:
+It is recommended to install nimbus using [pipx](https://pipx.pypa.io/stable/):
 
 ```bash
-pip install nimbuscli
+pipx install nimbuscli --python python3.12
 ni --version
 ```
 
-To do something with nimbus you need to:
-  - Setup application configuration
-  - Install `docker`
-  - Install `rar`
+Before using nimbus you need to configure it.  
+Below is the minimal configuration for the `~/Documents` directory backup and deployment of a docker compose services that could be discovered under `~/services` directory:
 
-For guidance and examples on setting up your configuration, please refer to the [configuration example](./docs/config.example.yaml).  
+```yaml
+commands:
+  deploy:
+    services:
+      - ~/services
+  backup:
+    destination: ~/backups
+    archive: tar
+    directories:
+      docs:
+        - ~/Documents
+```
+
+With this configuration:
+  - `ni up` will deploy all docker compose services that could be discovered under `~/services` root directory.
+  - `ni backup` will create `tar` backup of the `~/Documents` and save it under `~/backups`.
+
+For the detailed configuration options and examples on setting it up, please refer to the [configuration example](https://github.com/weak-head/nimbus/blob/main/docs/config.example.yaml).
 
 ## Usage
 
 By default, Nimbus searches for its configuration file at the `~/.nimbus/config.yaml` path.  
 It is anticipated that all configurations for the application will be centralized within this file.  
 
-> **Important Note on Glob Patterns in bash/sh**  
+> [!TIP]
 > When using the `ni` command, it’s essential to use `\*` in place of `*`.  
 > This is because `bash` or `sh` interprets `*` as a glob pattern and attempts to expand it before passing it to `ni`.  
 > By escaping the asterisk (`\*`), you ensure that `ni` receives the character literally, allowing it to process the glob pattern as intended.
@@ -84,8 +99,8 @@ profiles:
 commands:
   backup:
     destination: ~/.nimbus/backups
-    archiver: rar-protected
-    uploader: aws-archive
+    archive: rar-protected
+    upload: aws-archive
     directories: 
       photos:
         - ~/Pictures
