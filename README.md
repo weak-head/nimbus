@@ -23,6 +23,7 @@
 - [Usage](#usage)
   - [Backups](#backups)
   - [Deployments](#deployments)
+- [Reports and Notifications](#reports-and-notifications)
 
 ## Overview
 
@@ -71,60 +72,37 @@ It is anticipated that all configurations for the application will be centralize
 
 ### Backups
 
-The `backup` command facilitates the creation of backups and enables their optional upload to a remote destination, such as an AWS S3 bucket.  
-The command accepts optional selectors, that filter the configured backup groups using specified [glob patterns](https://en.wikipedia.org/wiki/Glob_(programming)).
+The `backup` command facilitates the creation of backups and enables their optional upload to a remote destination, such as an AWS S3 bucket. The command accepts optional group selectors, that filter the configured backup groups using specified [glob patterns](https://en.wikipedia.org/wiki/Glob_(programming)).
 
 ```bash
 ni backup [selectors]
 ```
 
-Lets assume we have the following Nimbus configuration:
+For example, we have the following directory groups:
 
 ```yaml
-profiles:
-  archive:
-    - name: rar-protected
-      provider: rar
-      password: SecretPassword
-      recovery: 3
-      compression: 0
-  upload:
-    - name: aws-archive
-      provider: aws
-      access_key: XXXXXXXXXXXXX
-      secret_key: XXXXXXXXXXXXXXXXXXXXXXXXX
-      bucket: backups.bucket.aws
-      storage_class: STANDARD
-
-commands:
-  backup:
-    destination: ~/.nimbus/backups
-    archive: rar-protected
-    upload: aws-archive
-    directories: 
-      photos:
-        - ~/Pictures
-        - /mnt/photos
-      cloud:
-        - /mnt/nextcloud
-      docs:
-        - ~/Documents
+directories: 
+  photos:
+    - ~/Pictures
+  cloud:
+    - ~/.nextcloud
+  docs:
+    - ~/Documents
 ```
 
-With this configuration, the following `backup` commands would result in:
+With these directory groups, the following `backup` commands would result in:
 
-| Command | Selected Backup groups |
+| Command | Selected Groups |
 | --- | --- |
-| `ni backup` | photos cloud docs |
+| `ni backup` | `photos` `cloud` `docs` |
 | `ni backup nx\*` | |
-| `ni backup photos` | photos |
-| `ni backup ph\* \*cloud\*` | photos cloud |
-| `ni backup \*o\?\?` | cloud docs |
+| `ni backup photos` | `photos` |
+| `ni backup ph\* \*cloud\*` | `photos` `cloud` |
+| `ni backup \*o\?\?` | `cloud` `docs` |
 
 ### Deployments
 
-The `up` and `down` commands manage deployments of services. Nimbus supports services structured as [Docker Compose](https://docs.docker.com/compose/) stacks and performs recursive service discovery for the configured directories.  
-The command accepts optional selectors, that filter the discovered services using specified [glob patterns](https://en.wikipedia.org/wiki/Glob_(programming)).
+The `up` and `down` commands manage deployments of services. Nimbus supports services structured as [Docker Compose](https://docs.docker.com/compose/) stacks and performs recursive service discovery for the configured directories. The command accepts optional service selectors, that filter the discovered services using specified [glob patterns](https://en.wikipedia.org/wiki/Glob_(programming)).
 
 ```bash
 ni up [selectors]
@@ -144,9 +122,13 @@ And under the `~/.nimbus/services` we have the following directory structure:
 
 ```
 |- services
-    |- media
-        |- .env
-        |- compose.yaml
+    |- shared
+        |- media
+            |- .env
+            |- compose.yaml
+        |- getty
+            |- deploy.sh
+            |- readme.md
     |- cloud
         |- .env
         |- compose.yaml
@@ -159,8 +141,12 @@ With this configuration and directory structure, the following deployment comman
 
 | Command | Selected Services |
 | --- | --- |
-| `ni up` | media cloud |
-| `ni up media` | media |
+| `ni up` | `media` `cloud` |
+| `ni up media` | `media` |
 | `ni down g\*` | |
 | `ni down git` | |
-| `ni down cl\*` | cloud |
+| `ni down cl\*` | `cloud` |
+
+## Reports and Notifications
+
+tbd
