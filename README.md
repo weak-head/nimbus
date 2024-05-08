@@ -22,6 +22,9 @@
 - [Getting Started](#getting-started)
 - [Usage](#usage)
   - [Backups](#backups)
+    - [Directory Groups](#directory-groups)
+    - [Archive Profiles](#archive-profiles)
+    - [Upload Profiles](#upload-profiles)
   - [Deployments](#deployments)
 - [Reports and Notifications](#reports-and-notifications)
 
@@ -78,7 +81,11 @@ The `backup` command facilitates the creation of backups and enables their optio
 ni backup [selectors]
 ```
 
-For example, we have the following directory groups:
+#### Directory Groups
+
+Nimbus organizes backup directories into directory groups, allowing you to manage and back up specific sets of data. Each directory group can be backed up independently. You can also select multiple groups using group selectors. If no group selectors are specified, all directory groups will be backed up.
+
+Consider the following directory groups defined in your configuration:
 
 ```yaml
 directories: 
@@ -89,16 +96,58 @@ directories:
   docs:
     - ~/Documents
 ```
-
 With these directory groups, the following `backup` commands would result in:
 
 | Command | Selected Groups |
 | --- | --- |
 | `ni backup` | `photos` `cloud` `docs` |
-| `ni backup nx\*` | |
+| `ni backup nx*` | _(No groups selected)_ |
 | `ni backup photos` | `photos` |
-| `ni backup ph\* \*cloud\*` | `photos` `cloud` |
-| `ni backup \*o\?\?` | `cloud` `docs` |
+| `ni backup ph* *cloud*` | `photos` `cloud` |
+| `ni backup *o??` | `cloud` `docs` |
+
+#### Archive Profiles
+
+Nimbus supports various archival backends for creating backups. Each backend has a default profile with a matching name. For example the `tar` backend has a default `tar` profile that could be used using the `archive: tar` configuration. You can also create custom profiles or overwrite default ones.
+
+**Available Archival Backends**
+
+| Backend | Support | Output |
+| --- | --- | --- |
+| `zip` | Native | [zip](https://en.wikipedia.org/wiki/ZIP_(file_format)) archive |
+| `tar` | Native | [tar](https://en.wikipedia.org/wiki/Tar_(computing)) archive |
+| `rar` | Requires [rar](https://www.win-rar.com/) | [rar](https://en.wikipedia.org/wiki/RAR_(file_format)) archive |
+
+**Customizing Archival Profiles**
+
+You can define custom profiles in your configuration file. For example:
+
+```yaml
+profiles:
+  archive:
+    - name: rar # Overwrite default 'rar' profile
+      provider: rar
+      recovery: 5
+    - name: rar_protected
+      provider: rar
+      password: SecretPwd
+      recovery: 3
+      compression: 1
+
+commands:
+  backup:
+    archive: rar_protected
+```
+
+In the above example:
+- The `rar` profile is overwritten with custom settings (`recovery level: 5`).
+- A new profile named `rar_protected` is defined with a password, recovery level, and compression settings.
+
+Remember to adjust the profiles according to your backup requirements. For detailed configuration options, refer to the [example configuration file](https://github.com/weak-head/nimbus/blob/main/docs/config.example.yaml).
+
+#### Upload Profiles
+
+tbd
 
 ### Deployments
 
