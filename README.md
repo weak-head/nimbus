@@ -20,12 +20,11 @@
 
 - [Overview](#overview)
 - [Getting Started](#getting-started)
-- [Usage](#usage)
-  - [Backups](#backups)
-    - [Directory Groups](#directory-groups)
-    - [Archiver Profiles](#archiver-profiles)
-    - [Uploader Profiles](#uploader-profiles)
-  - [Deployments](#deployments)
+- [Backups](#backups)
+  - [Directory Groups](#directory-groups)
+  - [Archiver Profiles](#archiver-profiles)
+  - [Uploader Profiles](#uploader-profiles)
+- [Deployments](#deployments)
 - [Reports](#reports)
 - [Notifications](#notifications)
 
@@ -35,14 +34,14 @@ Nimbus stands as a comprehensive data backup manager and service deployment orch
 
 ## Getting Started
 
-It is recommended to install nimbus using [pipx](https://pipx.pypa.io/stable/):
+It is recommended to use [pipx](https://pipx.pypa.io/stable/) for installing Nimbus:
 
 ```bash
 pipx install nimbuscli --python python3.12
 ni --version
 ```
 
-Before using nimbus you need to configure it. Below is a minimal example configuration:
+Before using Nimbus you need to configure it. By default, Nimbus looks for its configuration file at `~/.nimbus/config.yaml`. All application configurations are centralized within this file.  Below is a minimal example configuration:
 
 ```yaml
 commands:
@@ -57,24 +56,19 @@ commands:
         - ~/Documents
 ```
 
-- `ni up` deploys all Docker Compose services under `~/services` root directory.
+> [!TIP]
+> When using the `ni` command, it’s essential to use `\*` in place of `*` when specifying a selector that follows a glob pattern. This is because `bash` or `sh` interprets `*` as a glob pattern and attempts to expand it before passing it to `ni`. By escaping the asterisk (`\*`), you ensure that `ni` receives the character literally, allowing it to process the glob pattern as intended.
+
+With the above configuration:
+- `ni up` deploys all Docker Compose services under `~/services`.
 - `ni backup` creates a `tar` backup of the `~/Documents` directory and saves it under `~/backups/docs/Documents/Documents_{datetime}.tar`.
 - Notifications (such as Discord or email) are disabled.
 - Generation of the operation report is also disabled.
 
-For more configuration options, refer to the [example configuration file](https://github.com/weak-head/nimbus/blob/main/docs/config.example.yaml).
+For additional configuration options, refer to the [example configuration file](https://github.com/weak-head/nimbus/blob/main/docs/config.example.yaml).
 
-## Usage
 
-By default, Nimbus searches for its configuration file at the `~/.nimbus/config.yaml` path.  
-It is anticipated that all configurations for the application will be centralized within this file.  
-
-> [!TIP]
-> When using the `ni` command, it’s essential to use `\*` in place of `*` when specifying a selector that follows a glob pattern.  
-> This is because `bash` or `sh` interprets `*` as a glob pattern and attempts to expand it before passing it to `ni`.  
-> By escaping the asterisk (`\*`), you ensure that `ni` receives the character literally, allowing it to process the glob pattern as intended.
-
-### Backups
+## Backups
 
 The `backup` command facilitates the creation of backups and enables their optional upload to a remote destination, such as an AWS S3 bucket. The command accepts optional group selectors, that filter the configured backup groups using specified [glob patterns](https://en.wikipedia.org/wiki/Glob_(programming)).
 
@@ -82,7 +76,7 @@ The `backup` command facilitates the creation of backups and enables their optio
 ni backup [selectors]
 ```
 
-#### Directory Groups
+### Directory Groups
 
 Nimbus organizes backup directories into directory groups, allowing you to manage and back up specific sets of data. Each directory group can be backed up independently. You can also select multiple groups using group selectors. If no group selectors are specified, all directory groups will be backed up.
 
@@ -107,7 +101,7 @@ With these directory groups, the following `backup` commands would result in:
 | `ni backup ph* *cloud*` | `photos` `cloud` |
 | `ni backup *o??` | `cloud` `docs` |
 
-#### Archiver Profiles
+### Archiver Profiles
 
 Nimbus supports various archiver backends for creating backups. Each backend has a default profile with a matching name. For example the `tar` backend has a default `tar` profile that could be used using the `archive: tar` configuration. You can also create custom profiles or overwrite default ones.
 
@@ -142,7 +136,7 @@ In the above example:
 
 Remember to adjust the profiles according to your backup requirements. For detailed configuration options, refer to the [example configuration file](https://github.com/weak-head/nimbus/blob/main/docs/config.example.yaml).
 
-#### Uploader Profiles
+### Uploader Profiles
 
 Nimbus supports various uploader backends for uploading the created archives. If you want to use the upload functionality, consider creating a custom uploader profile.
 
@@ -179,7 +173,7 @@ In the above example:
 
 Remember to adjust the profiles according to your backup requirements. For detailed configuration options, refer to the [example configuration file](https://github.com/weak-head/nimbus/blob/main/docs/config.example.yaml).
 
-### Deployments
+## Deployments
 
 The `up` and `down` commands manage deployments of services. Nimbus supports services structured as [Docker Compose](https://docs.docker.com/compose/) stacks and performs recursive service discovery for the configured directories. The command accepts optional service selectors, that filter the discovered services using specified [glob patterns](https://en.wikipedia.org/wiki/Glob_(programming)).
 
