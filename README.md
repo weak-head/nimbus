@@ -23,10 +23,11 @@
 - [Usage](#usage)
   - [Backups](#backups)
     - [Directory Groups](#directory-groups)
-    - [Archive Profiles](#archive-profiles)
-    - [Upload Profiles](#upload-profiles)
+    - [Archiver Profiles](#archiver-profiles)
+    - [Uploader Profiles](#uploader-profiles)
   - [Deployments](#deployments)
-- [Reports and Notifications](#reports-and-notifications)
+- [Reports](#reports)
+- [Notifications](#notifications)
 
 ## Overview
 
@@ -69,7 +70,7 @@ By default, Nimbus searches for its configuration file at the `~/.nimbus/config.
 It is anticipated that all configurations for the application will be centralized within this file.  
 
 > [!TIP]
-> When using the `ni` command, it’s essential to use `\*` in place of `*`.  
+> When using the `ni` command, it’s essential to use `\*` in place of `*` when specifying a selector that follows a glob pattern.  
 > This is because `bash` or `sh` interprets `*` as a glob pattern and attempts to expand it before passing it to `ni`.  
 > By escaping the asterisk (`\*`), you ensure that `ni` receives the character literally, allowing it to process the glob pattern as intended.
 
@@ -106,19 +107,19 @@ With these directory groups, the following `backup` commands would result in:
 | `ni backup ph* *cloud*` | `photos` `cloud` |
 | `ni backup *o??` | `cloud` `docs` |
 
-#### Archive Profiles
+#### Archiver Profiles
 
-Nimbus supports various archival backends for creating backups. Each backend has a default profile with a matching name. For example the `tar` backend has a default `tar` profile that could be used using the `archive: tar` configuration. You can also create custom profiles or overwrite default ones.
+Nimbus supports various archiver backends for creating backups. Each backend has a default profile with a matching name. For example the `tar` backend has a default `tar` profile that could be used using the `archive: tar` configuration. You can also create custom profiles or overwrite default ones.
 
-**Available Archival Backends**
+**Available Archiver Backends**
 
 | Backend | Support | Output |
 | --- | --- | --- |
 | `zip` | Native | [zip](https://en.wikipedia.org/wiki/ZIP_(file_format)) archive |
 | `tar` | Native | [tar](https://en.wikipedia.org/wiki/Tar_(computing)) archive |
-| `rar` | Requires [rar](https://www.win-rar.com/) | [rar](https://en.wikipedia.org/wiki/RAR_(file_format)) archive |
+| `rar` | Requires installation of [rar](https://www.win-rar.com/) | [rar](https://en.wikipedia.org/wiki/RAR_(file_format)) archive |
 
-**Customizing Archival Profiles**
+**Customizing Archiver Profiles**
 
 You can define custom profiles in your configuration file. For example:
 
@@ -133,10 +134,6 @@ profiles:
       password: SecretPwd
       recovery: 3
       compression: 1
-
-commands:
-  backup:
-    archive: rar_protected
 ```
 
 In the above example:
@@ -145,9 +142,42 @@ In the above example:
 
 Remember to adjust the profiles according to your backup requirements. For detailed configuration options, refer to the [example configuration file](https://github.com/weak-head/nimbus/blob/main/docs/config.example.yaml).
 
-#### Upload Profiles
+#### Uploader Profiles
 
-tbd
+Nimbus supports various uploader backends for uploading the created archives. If you want to use the upload functionality, consider creating a custom uploader profile.
+
+**Available Uploader Backends**
+
+| Backend | Support | Destination |
+| --- | --- | --- |
+| `aws` | Native | [AWS S3](https://aws.amazon.com/s3/) bucket |
+
+**Customizing Uploader Profiles**
+
+Define custom profiles in your configuration file. For example:
+
+```yaml
+profiles:
+  upload:
+    - name: aws_store
+      provider: aws
+      access_key: XXXXXXX
+      secret_key: XXXXXXXXXXXXX
+      bucket: aws.storage.bucket
+      storage_class: STANDARD
+    - name: aws_archival
+      provider: aws
+      access_key: XXXXXXX
+      secret_key: XXXXXXXXXXXXXX
+      bucket: aws.archival.bucket
+      storage_class: DEEP_ARCHIVE
+```
+
+In the above example:
+- The `aws_store` profile specifies settings for storing backups in an S3 bucket with standard storage class.
+- The `aws_archival` profile configures archival storage with a deep archive storage class.
+
+Remember to adjust the profiles according to your backup requirements. For detailed configuration options, refer to the [example configuration file](https://github.com/weak-head/nimbus/blob/main/docs/config.example.yaml).
 
 ### Deployments
 
@@ -192,10 +222,14 @@ With this configuration and directory structure, the following deployment comman
 | --- | --- |
 | `ni up` | `media` `cloud` |
 | `ni up media` | `media` |
-| `ni down g\*` | |
-| `ni down git` | |
-| `ni down cl\*` | `cloud` |
+| `ni down g*` | _(No services selected)_ |
+| `ni down git` | _(No services selected)_ |
+| `ni down cl*` | `cloud` |
 
-## Reports and Notifications
+## Reports 
+
+tbd
+
+## Notifications
 
 tbd
