@@ -288,8 +288,22 @@ For more details, refer to the example [configuration file][configuration-exampl
 
 ## Notifications
 
-tbd
+Nimbus supports Discord notifications for completed operations. If detailed reports are enabled, they will be included in the Discord notification as file attachments. To enable Discord notifications, configure a Discord webhook and specify it in the Nimbus configuration:
 
+```yaml
+observability:
+  notifications:
+    discord:
+      webhook: https://discord.com/api/webhooks/id/token
+```
+
+The following Discord notification, including the detailed operation report as an attachment, would be generated for the deployment command:
+
+<div align="center">
+  <img src="https://raw.githubusercontent.com/weak-head/nimbus/main/docs/images/notification.discord.png" width="60%" />
+</div> 
+
+For more details, refer to the example [configuration file][configuration-example].
 
 [configuration-example]: https://github.com/weak-head/nimbus/blob/main/docs/examples/config.yaml
 [report-example]: https://github.com/weak-head/nimbus/blob/main/docs/examples/report.txt
