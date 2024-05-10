@@ -1,6 +1,6 @@
 <div align="center">
 
-  <img src="https://raw.githubusercontent.com/weak-head/nimbus/main/docs/logo.png" width="350" />
+  <img src="https://raw.githubusercontent.com/weak-head/nimbus/main/docs/images/logo.png" width="350" />
   
   # nimbus <!-- omit from toc --> 
   
@@ -25,6 +25,9 @@
   - [Archiver Profiles](#archiver-profiles)
   - [Uploader Profiles](#uploader-profiles)
 - [Deployments](#deployments)
+  - [Service Providers](#service-providers)
+  - [Service Discovery](#service-discovery)
+  - [Environment Configuration](#environment-configuration)
 - [Reports](#reports)
 - [Notifications](#notifications)
 
@@ -62,10 +65,10 @@ commands:
 With the above configuration:
 - `ni up` deploys all Docker Compose services under `~/services`.
 - `ni backup` creates a `tar` backup of the `~/Documents` directory and saves it under `~/backups/docs/Documents/Documents_{datetime}.tar`.
-- Notifications (such as Discord or email) are disabled.
+- Notifications (such as [Discord](https://discord.com/) or email) are disabled.
 - Generation of the operation report is also disabled.
 
-For additional configuration options, refer to the [example configuration file](https://github.com/weak-head/nimbus/blob/main/docs/config.example.yaml).
+For additional configuration options, refer to the [example configuration file](https://github.com/weak-head/nimbus/blob/main/docs/examples/config.yaml).
 
 
 ## Backups
@@ -134,7 +137,7 @@ In the above example:
 - The `rar` profile is overwritten with custom settings (`recovery level: 5`).
 - A new profile named `rar_protected` is defined with a password, recovery level, and compression settings.
 
-Remember to adjust the profiles according to your backup requirements. For detailed configuration options, refer to the [example configuration file](https://github.com/weak-head/nimbus/blob/main/docs/config.example.yaml).
+Remember to adjust the profiles according to your backup requirements. For detailed configuration options, refer to the [example configuration file](https://github.com/weak-head/nimbus/blob/main/docs/examples/config.yaml).
 
 ### Uploader Profiles
 
@@ -171,7 +174,7 @@ In the above example:
 - The `aws_store` profile specifies settings for storing backups in an S3 bucket with standard storage class.
 - The `aws_archival` profile configures archival storage with a deep archive storage class.
 
-Remember to adjust the profiles according to your backup requirements. For detailed configuration options, refer to the [example configuration file](https://github.com/weak-head/nimbus/blob/main/docs/config.example.yaml).
+Remember to adjust the profiles according to your backup requirements. For detailed configuration options, refer to the [example configuration file](https://github.com/weak-head/nimbus/blob/main/docs/examples/config.yaml).
 
 ## Deployments
 
@@ -181,6 +184,15 @@ The `up` and `down` commands manage deployments of services. Nimbus supports ser
 ni up [selectors]
 ni down [selectors]
 ```
+
+### Service Providers
+
+| Provider | Support | Identified By |
+| --- | --- | --- |
+| `docker` | Requires installation of [docker](https://www.docker.com/) | [Docker Compose file](https://docs.docker.com/compose/compose-file/) |
+
+
+### Service Discovery
 
 Lets assume we have the following Nimbus configuration:
 
@@ -219,6 +231,10 @@ With this configuration and directory structure, the following deployment comman
 | `ni down g*` | _(No services selected)_ |
 | `ni down git` | _(No services selected)_ |
 | `ni down cl*` | `cloud` |
+
+### Environment Configuration
+
+tbd
 
 ## Reports 
 
