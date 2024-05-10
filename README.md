@@ -178,23 +178,29 @@ Remember to adjust the profiles according to your backup requirements. For detai
 
 ## Deployments
 
-The `up` and `down` commands manage deployments of services. Nimbus supports services structured as [Docker Compose](https://docs.docker.com/compose/) stacks and performs recursive service discovery for the configured directories. The command accepts optional service selectors, that filter the discovered services using specified [glob patterns](https://en.wikipedia.org/wiki/Glob_(programming)).
+Nimbus manages service deployments using the `up` and `down` commands. The commands accepts optional service selectors, allowing you to filter the discovered services using specified [glob patterns](https://en.wikipedia.org/wiki/Glob_(programming)).
 
-```bash
+```sh
+# Deploys services based on the specified service selectors.
 ni up [selectors]
+
+# Undeploys services based on the specified service selectors.
 ni down [selectors]
 ```
 
 ### Service Providers
 
+Nimbus supports various service providers and performs recursive service discovery within the configured directories.
+
 | Provider | Support | Identified By |
 | --- | --- | --- |
-| `docker` | Requires installation of [docker](https://www.docker.com/) | [Docker Compose file](https://docs.docker.com/compose/compose-file/) |
-
+| `docker` | Requires installation of [Docker](https://www.docker.com/) | [Docker Compose file](https://docs.docker.com/compose/compose-file/) |
 
 ### Service Discovery
 
-Lets assume we have the following Nimbus configuration:
+Nimbus performs recursive service discovery within the configured directories, searching for specific files associated with each service provider to identify discovered services.
+
+Let’s assume the following Nimbus configuration:
 
 ```yaml
 commands:
@@ -203,7 +209,7 @@ commands:
       - ~/.nimbus/services
 ```
 
-And under the `~/.nimbus/services` we have the following directory structure:
+Under the `~/.nimbus/services` directory, we have the following structure:
 
 ```
 |- services
@@ -234,7 +240,37 @@ With this configuration and directory structure, the following deployment comman
 
 ### Environment Configuration
 
-tbd
+Optionally, you can configure environment variable mappings for deployed services. Each environment mapping is specified by a glob pattern. The discovered service will receive a consolidated collection of environment variables based on all matched patterns, following a top-to-bottom approach. For example:
+
+```yaml
+commands:
+  deploy:
+    secrets:
+      - service: "*"
+        environment:
+          UID: 1001
+          GID: 1001
+      - service: "git*"
+        environment:
+          UID: 1002
+          GID: 1002 
+      - service: "gitlab"
+        environment:
+          HTTP_PORT: 8080
+          SSH_PORT: 8022
+```
+
+With this configuration:
+- The `cloud` service will have the following environment variables:
+  - `UID: 1001`
+  - `GID: 1001`
+- The `gitlab` service will have the following environment variables:
+  - `UID: 1002`
+  - `GID: 1002`
+  - `HTTP_PORT: 8080`
+  - `SSH_PORT: 8082`
+
+Feel free to customize your environment mappings based on your specific deployment needs.
 
 ## Reports 
 
