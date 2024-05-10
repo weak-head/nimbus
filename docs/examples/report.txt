@@ -1,0 +1,233 @@
+====================================================================================================
+== 2024-04-19 18:11:18
+
+📄️ Summary
+    Command                   Backup
+    Arguments                 services
+    Groups                    services
+    Destination               /mnt/thor
+    Upload                    True
+    S3 Bucket                 archive.bucket.aws
+    S3 Storage                DEEP_ARCHIVE
+    Started                   🗓️ 2024-04-19 14:36:55
+    Completed                 🗓️ 2024-04-19 18:11:18
+    Elapsed                   ⌛ 03h 34m 23s
+
+    👍 Successful backups [ ⚖️ 212.5 GB ] -- (ﾉ◕ヮ◕)ﾉ
+        1. 📦 services/books/books_2024-04-19_1436.rar     [ ⚖️   3.7 GB | ⌛         21s | 🚀 184.4 MB/s ]
+        2. 📦 services/cloud/cloud_2024-04-19_1437.rar     [ ⚖️ 207.5 GB | ⌛ 02h 08m 46s | 🚀  27.5 MB/s ]
+        3. 📦 services/fetcher/fetcher_2024-04-19_1646.rar [ ⚖️   1.9 MB | ⌛         01s | 🚀   2.6 MB/s ]
+        4. 📦 services/monitor/monitor_2024-04-19_1714.rar [ ⚖️ 152.9 MB | ⌛         01s | 🚀 129.0 MB/s ]
+        5. 📦 services/wiki/wiki_2024-04-19_1714.rar       [ ⚖️   1.0 GB | ⌛         06s | 🚀 179.5 MB/s ]
+
+    ❌ Failed backups -- ¯\_(ツ)_/¯
+        1. 📁 /mnt/odin/services/git
+        2. 📁 /mnt/odin/services/media
+
+    👍 Successful uploads [ ⚖️ 212.5 GB ] -- (ﾉ◕ヮ◕)ﾉ
+        1. 📦 services/books/books_2024-04-19_1436.rar     [ ⚖️   3.7 GB | ⌛ 01m 10s | 🚀 55.2 MB/s ]
+        2. 📦 services/cloud/cloud_2024-04-19_1437.rar     [ ⚖️ 207.5 GB | ⌛ 54m 42s | 🚀 64.7 MB/s ]
+        3. 📦 services/fetcher/fetcher_2024-04-19_1646.rar [ ⚖️   1.9 MB | ⌛     01s | 🚀  1.7 MB/s ]
+        4. 📦 services/monitor/monitor_2024-04-19_1714.rar [ ⚖️ 152.9 MB | ⌛     07s | 🚀 22.3 MB/s ]
+        5. 📦 services/wiki/wiki_2024-04-19_1714.rar       [ ⚖️   1.0 GB | ⌛     21s | 🚀 51.0 MB/s ]
+
+🔍 Details
+
+    🗺️ Mapped Directories
+        Success               👍 True
+        Started               🗓️ 2024-04-19 14:36:55
+        Completed             🗓️ 2024-04-19 14:36:55
+        Elapsed               ⌛ < 01s
+
+        Group [services]:
+            📁 /mnt/odin/services/books
+            📁 /mnt/odin/services/cloud
+            📁 /mnt/odin/services/fetcher
+            📁 /mnt/odin/services/git
+            📁 /mnt/odin/services/media
+            📁 /mnt/odin/services/monitor
+            📁 /mnt/odin/services/wiki
+
+    💼 Backup
+        Success               👍 True
+        Total Size            ⚖️ 212.5 GB
+        Started               🗓️ 2024-04-19 14:36:55
+        Completed             🗓️ 2024-04-19 17:14:57
+        Elapsed               ⌛ 02h 38m 02s
+
+        [1/7] [services] 📁 /mnt/odin/services/books
+            Success           👍 True
+            Started           🗓️ 2024-04-19 14:36:55
+            Completed         🗓️ 2024-04-19 14:37:16
+            Elapsed           ⌛ 21s
+            Size              ⚖️ 3.7 GB
+            Speed             🚀 184.4 MB/s
+            Archive           📦 /mnt/thor/services/books/books_2024-04-19_1436.rar
+
+        [2/7] [services] 📁 /mnt/odin/services/cloud
+            Success           👍 True
+            Started           🗓️ 2024-04-19 14:37:16
+            Completed         🗓️ 2024-04-19 16:46:02
+            Elapsed           ⌛ 02h 08m 46s
+            Size              ⚖️ 207.5 GB
+            Speed             🚀 27.5 MB/s
+            Archive           📦 /mnt/thor/services/cloud/cloud_2024-04-19_1437.rar
+
+        [3/7] [services] 📁 /mnt/odin/services/fetcher
+            Success           👍 True
+            Started           🗓️ 2024-04-19 16:46:02
+            Completed         🗓️ 2024-04-19 16:46:02
+            Elapsed           ⌛ 01s
+            Size              ⚖️ 1.9 MB
+            Speed             🚀 2.6 MB/s
+            Archive           📦 /mnt/thor/services/fetcher/fetcher_2024-04-19_1646.rar
+
+        [4/7] [services] 📁 /mnt/odin/services/git
+            Success           ❌ False
+            Started           🗓️ 2024-04-19 16:46:02
+            Completed         🗓️ 2024-04-19 16:48:47
+            Elapsed           ⌛ 02m 44s
+            Exit Code         ❗ 6
+            StdErr
+                Cannot open /mnt/odin/services/git/gitlab/logs/gitlab-exporter/config
+                No such file or directory
+
+        [5/7] [services] 📁 /mnt/odin/services/media
+            Success           ❌ False
+            Started           🗓️ 2024-04-19 16:48:47
+            Completed         🗓️ 2024-04-19 17:14:50
+            Elapsed           ⌛ 26m 03s
+            Exit Code         ❗ 6
+            StdErr
+                Cannot open /mnt/odin/services/media/plex/Library/Application Support/Plex Media Server/Cache/va-dri-linux-x86_64/iHD_drv_video.so
+                No such file or directory
+
+        [6/7] [services] 📁 /mnt/odin/services/monitor
+            Success           👍 True
+            Started           🗓️ 2024-04-19 17:14:50
+            Completed         🗓️ 2024-04-19 17:14:51
+            Elapsed           ⌛ 01s
+            Size              ⚖️ 152.9 MB
+            Speed             🚀 129.0 MB/s
+            Archive           📦 /mnt/thor/services/monitor/monitor_2024-04-19_1714.rar
+
+        [7/7] [services] 📁 /mnt/odin/services/wiki
+            Success           👍 True
+            Started           🗓️ 2024-04-19 17:14:51
+            Completed         🗓️ 2024-04-19 17:14:57
+            Elapsed           ⌛ 06s
+            Size              ⚖️ 1.0 GB
+            Speed             🚀 179.5 MB/s
+            Archive           📦 /mnt/thor/services/wiki/wiki_2024-04-19_1714.rar
+
+    ⬆️ Upload
+        Success               👍 True
+        Total Size            ⚖️ 212.5 GB
+        Started               🗓️ 2024-04-19 17:14:57
+        Completed             🗓️ 2024-04-19 18:11:18
+        Elapsed               ⌛ 56m 21s
+
+        [1/5] 📦 services/books/books_2024-04-19_1436.rar
+            Success           👍 True
+            Started           🗓️ 2024-04-19 17:14:57
+            Completed         🗓️ 2024-04-19 17:16:07
+            Elapsed           ⌛ 01m 10s
+            Size              ⚖️ 3.7 GB
+            Speed             🚀 55.2 MB/s
+            Archive           📦 /mnt/thor/services/books/books_2024-04-19_1436.rar
+
+            📤 Upload Progress
+                🗓️ 2024-04-19 17:15:08 |  10% | 🚀 33.5 MB/s | ⌛     12s
+                🗓️ 2024-04-19 17:15:15 |  20% | 🚀 43.7 MB/s | ⌛     18s
+                🗓️ 2024-04-19 17:15:21 |  30% | 🚀 49.1 MB/s | ⌛     24s
+                🗓️ 2024-04-19 17:15:27 |  40% | 🚀 50.8 MB/s | ⌛     31s
+                🗓️ 2024-04-19 17:15:34 |  50% | 🚀 52.7 MB/s | ⌛     37s
+                🗓️ 2024-04-19 17:15:40 |  60% | 🚀 53.9 MB/s | ⌛     43s
+                🗓️ 2024-04-19 17:15:47 |  70% | 🚀 53.6 MB/s | ⌛     51s
+                🗓️ 2024-04-19 17:15:55 |  80% | 🚀 53.5 MB/s | ⌛     58s
+                🗓️ 2024-04-19 17:16:01 |  90% | 🚀 54.8 MB/s | ⌛ 01m 04s
+                🗓️ 2024-04-19 17:16:07 | 100% | 🚀 55.7 MB/s | ⌛ 01m 10s
+
+        [2/5] 📦 services/cloud/cloud_2024-04-19_1437.rar
+            Success           👍 True
+            Started           🗓️ 2024-04-19 17:16:07
+            Completed         🗓️ 2024-04-19 18:10:49
+            Elapsed           ⌛ 54m 42s
+            Size              ⚖️ 207.5 GB
+            Speed             🚀 64.7 MB/s
+            Archive           📦 /mnt/thor/services/cloud/cloud_2024-04-19_1437.rar
+
+            📤 Upload Progress
+                🗓️ 2024-04-19 17:21:49 |  10% | 🚀 62.1 MB/s | ⌛ 05m 42s
+                🗓️ 2024-04-19 17:27:16 |  20% | 🚀 63.5 MB/s | ⌛ 11m 09s
+                🗓️ 2024-04-19 17:32:35 |  30% | 🚀 64.5 MB/s | ⌛ 16m 28s
+                🗓️ 2024-04-19 17:37:54 |  40% | 🚀 65.0 MB/s | ⌛ 21m 46s
+                🗓️ 2024-04-19 17:43:34 |  50% | 🚀 64.5 MB/s | ⌛ 27m 27s
+                🗓️ 2024-04-19 17:49:32 |  60% | 🚀 63.5 MB/s | ⌛ 33m 25s
+                🗓️ 2024-04-19 17:54:48 |  70% | 🚀 64.0 MB/s | ⌛ 38m 41s
+                🗓️ 2024-04-19 18:00:06 |  80% | 🚀 64.4 MB/s | ⌛ 43m 59s
+                🗓️ 2024-04-19 18:05:24 |  90% | 🚀 64.6 MB/s | ⌛ 49m 17s
+                🗓️ 2024-04-19 18:10:47 | 100% | 🚀 64.7 MB/s | ⌛ 54m 40s
+
+        [3/5] 📦 services/fetcher/fetcher_2024-04-19_1646.rar
+            Success           👍 True
+            Started           🗓️ 2024-04-19 18:10:49
+            Completed         🗓️ 2024-04-19 18:10:50
+            Elapsed           ⌛ 01s
+            Size              ⚖️ 1.9 MB
+            Speed             🚀 1.7 MB/s
+            Archive           📦 /mnt/thor/services/fetcher/fetcher_2024-04-19_1646.rar
+
+            📤 Upload Progress
+                🗓️ 2024-04-19 18:10:49 |  12% | 🚀 256.0 KB/s | ⌛ 01s
+                🗓️ 2024-04-19 18:10:49 |  25% | 🚀 512.0 KB/s | ⌛ 01s
+                🗓️ 2024-04-19 18:10:49 |  38% | 🚀 768.0 KB/s | ⌛ 01s
+                🗓️ 2024-04-19 18:10:49 |  51% | 🚀   1.0 MB/s | ⌛ 01s
+                🗓️ 2024-04-19 18:10:49 |  64% | 🚀   1.2 MB/s | ⌛ 01s
+                🗓️ 2024-04-19 18:10:49 |  77% | 🚀   1.5 MB/s | ⌛ 01s
+                🗓️ 2024-04-19 18:10:49 |  90% | 🚀   1.7 MB/s | ⌛ 01s
+                🗓️ 2024-04-19 18:10:50 | 100% | 🚀   1.7 MB/s | ⌛ 01s
+
+        [4/5] 📦 services/monitor/monitor_2024-04-19_1714.rar
+            Success           👍 True
+            Started           🗓️ 2024-04-19 18:10:50
+            Completed         🗓️ 2024-04-19 18:10:57
+            Elapsed           ⌛ 07s
+            Size              ⚖️ 152.9 MB
+            Speed             🚀 22.3 MB/s
+            Archive           📦 /mnt/thor/services/monitor/monitor_2024-04-19_1714.rar
+
+            📤 Upload Progress
+                🗓️ 2024-04-19 18:10:53 |  10% | 🚀  4.5 MB/s | ⌛ 03s
+                🗓️ 2024-04-19 18:10:54 |  20% | 🚀  8.6 MB/s | ⌛ 04s
+                🗓️ 2024-04-19 18:10:54 |  30% | 🚀 12.2 MB/s | ⌛ 04s
+                🗓️ 2024-04-19 18:10:54 |  40% | 🚀 15.0 MB/s | ⌛ 04s
+                🗓️ 2024-04-19 18:10:54 |  50% | 🚀 17.6 MB/s | ⌛ 04s
+                🗓️ 2024-04-19 18:10:55 |  60% | 🚀 20.3 MB/s | ⌛ 05s
+                🗓️ 2024-04-19 18:10:55 |  70% | 🚀 22.3 MB/s | ⌛ 05s
+                🗓️ 2024-04-19 18:10:55 |  80% | 🚀 24.3 MB/s | ⌛ 05s
+                🗓️ 2024-04-19 18:10:55 |  90% | 🚀 26.2 MB/s | ⌛ 05s
+                🗓️ 2024-04-19 18:10:56 | 100% | 🚀 26.7 MB/s | ⌛ 06s
+
+        [5/5] 📦 services/wiki/wiki_2024-04-19_1714.rar
+            Success           👍 True
+            Started           🗓️ 2024-04-19 18:10:57
+            Completed         🗓️ 2024-04-19 18:11:18
+            Elapsed           ⌛ 21s
+            Size              ⚖️ 1.0 GB
+            Speed             🚀 51.0 MB/s
+            Archive           📦 /mnt/thor/services/wiki/wiki_2024-04-19_1714.rar
+
+            📤 Upload Progress
+                🗓️ 2024-04-19 18:11:01 |  10% | 🚀 27.5 MB/s | ⌛ 04s
+                🗓️ 2024-04-19 18:11:03 |  20% | 🚀 38.2 MB/s | ⌛ 06s
+                🗓️ 2024-04-19 18:11:05 |  30% | 🚀 40.9 MB/s | ⌛ 08s
+                🗓️ 2024-04-19 18:11:07 |  40% | 🚀 43.6 MB/s | ⌛ 10s
+                🗓️ 2024-04-19 18:11:08 |  50% | 🚀 46.7 MB/s | ⌛ 12s
+                🗓️ 2024-04-19 18:11:10 |  60% | 🚀 49.2 MB/s | ⌛ 13s
+                🗓️ 2024-04-19 18:11:12 |  70% | 🚀 50.9 MB/s | ⌛ 15s
+                🗓️ 2024-04-19 18:11:14 |  80% | 🚀 51.0 MB/s | ⌛ 17s
+                🗓️ 2024-04-19 18:11:15 |  90% | 🚀 52.4 MB/s | ⌛ 19s
+                🗓️ 2024-04-19 18:11:17 | 100% | 🚀 52.5 MB/s | ⌛ 21s
+
+====================================================================================================

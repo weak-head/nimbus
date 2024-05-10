@@ -68,7 +68,7 @@ With the above configuration:
 - Notifications (such as [Discord](https://discord.com/) or email) are disabled.
 - Generation of the operation report is also disabled.
 
-For additional configuration options, refer to the [example configuration file](https://github.com/weak-head/nimbus/blob/main/docs/examples/config.yaml).
+For additional configuration options, refer to the example [configuration file][configuration-example].
 
 
 ## Backups
@@ -137,7 +137,7 @@ In the above example:
 - The `rar` profile is overwritten with custom settings (`recovery level: 5`).
 - A new profile named `rar_protected` is defined with a password, recovery level, and compression settings.
 
-Remember to adjust the profiles according to your backup requirements. For detailed configuration options, refer to the [example configuration file](https://github.com/weak-head/nimbus/blob/main/docs/examples/config.yaml).
+Remember to adjust the profiles according to your backup requirements. For detailed configuration options, refer to the example [configuration file][configuration-example].
 
 ### Uploader Profiles
 
@@ -174,7 +174,7 @@ In the above example:
 - The `aws_store` profile specifies settings for storing backups in an S3 bucket with standard storage class.
 - The `aws_archival` profile configures archival storage with a deep archive storage class.
 
-Remember to adjust the profiles according to your backup requirements. For detailed configuration options, refer to the [example configuration file](https://github.com/weak-head/nimbus/blob/main/docs/examples/config.yaml).
+Remember to adjust the profiles according to your backup requirements. For detailed configuration options, refer to the example [configuration file][configuration-example].
 
 ## Deployments
 
@@ -240,7 +240,7 @@ With this configuration and directory structure, the following deployment comman
 
 ### Environment Configuration
 
-Optionally, you can configure environment variable mappings for deployed services. Each environment mapping is specified by a glob pattern. The discovered service will receive a consolidated collection of environment variables based on all matched patterns, following a top-to-bottom approach. For example:
+Optionally, you can configure environment variable mappings for deployed services. Each environment mapping is specified by a [glob pattern](https://en.wikipedia.org/wiki/Glob_(programming)). The discovered service will receive a consolidated collection of environment variables based on all matched patterns, following a top-to-bottom approach. For example:
 
 ```yaml
 commands:
@@ -270,12 +270,26 @@ With this configuration:
   - `HTTP_PORT: 8080`
   - `SSH_PORT: 8082`
 
-Feel free to customize your environment mappings based on your specific deployment needs.
+Feel free to customize your environment mappings based on your specific deployment needs. For the details, refer to the example [configuration file][configuration-example].
 
 ## Reports 
 
-tbd
+Nimbus can optionally generate a detailed report for each executed command. By default, the detailed reports are disabled, but a summary report is output to stdout. To enable detailed reports, include the following `reports` section in your configuration file and configure the root directory where all reports will be stored:
+
+```yaml
+observability:
+  reports:
+    format: txt
+    directory: ~/.nimbus/reports
+```
+
+For more details, refer to the example [configuration file][configuration-example]. You can also find an example of the detailed report [here][report-example].
+
 
 ## Notifications
 
 tbd
+
+
+[configuration-example]: https://github.com/weak-head/nimbus/blob/main/docs/examples/config.yaml
+[report-example]: https://github.com/weak-head/nimbus/blob/main/docs/examples/report.txt
