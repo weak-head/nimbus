@@ -4,7 +4,7 @@ from abc import ABC, abstractmethod
 from datetime import timedelta
 from functools import reduce
 
-from nimbuscli.core.runner import CompletedProcess
+from nimbuscli.core.execute import CompletedProcess
 
 
 class Service(ABC):

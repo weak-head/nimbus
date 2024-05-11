@@ -5,7 +5,7 @@ import logging
 from logdecorator import log_on_end, log_on_start
 
 from nimbuscli.core.deploy.service import OperationStatus, Service
-from nimbuscli.core.runner import Runner
+from nimbuscli.core.execute import Runner
 
 
 class DockerService(Service):

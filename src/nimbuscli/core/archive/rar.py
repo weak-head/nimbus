@@ -4,7 +4,7 @@ import os
 from logdecorator import log_on_end, log_on_start
 
 from nimbuscli.core.archive.archiver import ArchivalStatus, Archiver
-from nimbuscli.core.runner import Runner
+from nimbuscli.core.execute import Runner
 
 
 class RarArchiver(Archiver):

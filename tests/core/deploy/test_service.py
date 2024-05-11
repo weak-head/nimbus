@@ -2,7 +2,7 @@ from datetime import timedelta as td
 
 import pytest
 
-from nimbuscli.core import OperationStatus
+from nimbuscli.core.deploy.service import OperationStatus
 
 
 class MockProc:

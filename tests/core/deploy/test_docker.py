@@ -1,7 +1,7 @@
 import pytest
 from mock import Mock, call
 
-from nimbuscli.core import DockerService
+from nimbuscli.core.deploy.docker import DockerService
 
 
 class MockProc:

@@ -4,7 +4,7 @@ from datetime import timedelta as td
 import pytest
 from mock import Mock, PropertyMock, patch
 
-from nimbuscli.core import AwsUploader, UploadProgress, UploadStatus
+from nimbuscli.core.uploader import AwsUploader, UploadProgress, UploadStatus
 from tests.helpers import MockDateTime
 
 

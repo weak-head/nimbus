@@ -6,7 +6,8 @@ from typing import Iterator
 
 from logdecorator import log_on_end, log_on_error, log_on_start
 
-from nimbuscli.core import DockerService, Runner, Service
+from nimbuscli.core.deploy import DockerService, Service
+from nimbuscli.core.execute import Runner
 from nimbuscli.provider.resource import Provider, Resource
 from nimbuscli.provider.secret import Secrets
 

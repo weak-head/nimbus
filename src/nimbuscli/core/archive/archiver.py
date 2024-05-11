@@ -3,7 +3,7 @@ from __future__ import annotations
 import os
 from abc import ABC, abstractmethod
 
-from nimbuscli.core.runner import CompletedProcess
+from nimbuscli.core.execute import CompletedProcess
 
 
 class Archiver(ABC):

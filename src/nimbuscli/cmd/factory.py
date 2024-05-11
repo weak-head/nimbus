@@ -9,8 +9,9 @@ from nimbuscli.cmd.backup import Backup
 from nimbuscli.cmd.command import Command
 from nimbuscli.cmd.deploy import Down, Up
 from nimbuscli.config import Config
-from nimbuscli.core import AwsUploader, SubprocessRunner, Uploader
 from nimbuscli.core.archive import Archiver, RarArchiver
+from nimbuscli.core.execute import SubprocessRunner
+from nimbuscli.core.uploader import AwsUploader, Uploader
 from nimbuscli.provider import (
     DirectoryProvider,
     Secrets,

@@ -1,7 +1,7 @@
 import pytest
 from mock import Mock, call, patch
 
-from nimbuscli.core.archive import RarArchiver
+from nimbuscli.core.archive.rar import RarArchiver
 
 
 class TestRarArchiver:
