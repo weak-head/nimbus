@@ -24,7 +24,7 @@ class TestSubprocessRunner:
         type(run_result).stderr = PropertyMock(return_value="  stderr_abc  ")
         mock_run.return_value = run_result
 
-        cmd = "rar a -b -c -txv file folder"
+        cmd = "rar a -b -c -txv file directory"
         cwd = "/home/user/path"
         env = {"PROC_KEY": "PROC_VALUE"}
         expected_env = {
@@ -50,7 +50,7 @@ class TestSubprocessRunner:
         exc = Exception("Some exception")
         mock_run.side_effect = exc
 
-        cmd = "rar a -b -c -txv file folder"
+        cmd = "rar a -b -c -txv file directory"
         cwd = "/home/user/path"
         env = {"PROC_KEY": "PROC_VALUE"}
 

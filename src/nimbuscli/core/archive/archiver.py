@@ -12,20 +12,20 @@ class Archiver(ABC):
     """
 
     @abstractmethod
-    def archive(self, folder: str, archive: str) -> ArchivalStatus:
+    def archive(self, directory: str, archive: str) -> ArchivalStatus:
         """
-        Archive a folder.
+        Archive a directory.
 
-        :param folder: Full path to the folder that should be archived.
+        :param directory: Full path to the directory that should be archived.
         :param archive: A file path where the archive should be created.
-        :return: Status of the folder archival.
+        :return: Status of the directory archival.
         """
 
 
 class ArchivalStatus:
 
-    def __init__(self, folder: str, archive: str, started: datetime, completed: datetime):
-        self.folder = folder
+    def __init__(self, directory: str, archive: str, started: datetime, completed: datetime):
+        self.directory = directory
         self.archive = archive
         self.started = started
         self.completed = completed
@@ -36,7 +36,7 @@ class ArchivalStatus:
             [
                 self.started,
                 self.completed,
-                self.folder,
+                self.directory,
                 self.archive,
                 os.path.exists(self.archive),
             ]

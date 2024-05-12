@@ -94,7 +94,7 @@ class DiscordNotifier(Notifier):
                             [
                                 f"{ix:02d}. "
                                 f"{fmt.ch('success') if entry.success else fmt.ch('failure')} "
-                                f"{fmt.ch('folder')} {entry.folder}"
+                                f"{fmt.ch('directory')} {entry.directory}"
                                 for ix, entry in enumerate(action.entries)
                             ]
                         ),

@@ -57,20 +57,20 @@ class RarArchiver(Archiver):
         ]
         return "RarArchiver(" + ", ".join(params) + ")"
 
-    @log_on_start(logging.INFO, "Archiving {folder!s} -> {archive!s}")
+    @log_on_start(logging.INFO, "Archiving {directory!s} -> {archive!s}")
     @log_on_end(logging.INFO, "Archived [{result.success!s}]: {archive!s}")
-    def archive(self, folder: str, archive: str) -> ArchivalStatus:
-        # Ensure destination folder exists
+    def archive(self, directory: str, archive: str) -> ArchivalStatus:
+        # Ensure destination directory exists
         directory_path = os.path.dirname(archive)
         if not os.path.exists(directory_path):
             os.makedirs(directory_path, exist_ok=True)
 
         # It is expected that 'rar' executable
         # is available in a system PATH.
-        proc = self._runner.execute(self._build_cmd(folder, archive))
-        return RarArchivalStatus(proc, folder, archive)
+        proc = self._runner.execute(self._build_cmd(directory, archive))
+        return RarArchivalStatus(proc, directory, archive)
 
-    def _build_cmd(self, folder: str, archive: str) -> list[str]:
+    def _build_cmd(self, directory: str, archive: str) -> list[str]:
         # fmt: off
         cmd = [
             "rar",
@@ -99,14 +99,14 @@ class RarArchiver(Archiver):
         if self._password is not None:
             cmd.append(f"-hp{self._password}")
 
-        cmd.extend([archive, folder])
+        cmd.extend([archive, directory])
         return cmd
 
 
 class RarArchivalStatus(ArchivalStatus):
 
-    def __init__(self, proc: CompletedProcess, folder: str, archive: str):
-        super().__init__(folder, archive, proc.started, proc.completed)
+    def __init__(self, proc: CompletedProcess, directory: str, archive: str):
+        super().__init__(directory, archive, proc.started, proc.completed)
         self.proc = proc
 
     @property

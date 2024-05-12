@@ -23,8 +23,8 @@ class ServiceResource(Resource):
 class ServiceProvider(Provider[ServiceResource]):
     """
     This class provides a recursive mechanism for
-    discovering services within all parent folders.
-    By traversing through parent folders, it facilitates
+    discovering services within all parent directories.
+    By traversing through parent directories, it facilitates
     the identification and interaction with services,
     """
 

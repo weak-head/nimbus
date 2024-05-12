@@ -8,11 +8,11 @@ from nimbuscli.core.archive.rar import RarArchivalStatus, RarArchiver
 
 class TestRarArchivalStatus:
 
-    @pytest.mark.parametrize("folder", [True, False])
+    @pytest.mark.parametrize("directory", [True, False])
     @pytest.mark.parametrize("archive", [True, False])
     @pytest.mark.parametrize("success", [True, False])
     @pytest.mark.parametrize("exists", [True, False])
-    def test_success(self, folder, archive, success, exists):
+    def test_success(self, directory, archive, success, exists):
         patcher = patch("os.path.exists")
         mock_exists = patcher.start()
         mock_exists.return_value = exists
@@ -27,12 +27,12 @@ class TestRarArchivalStatus:
         completed_mock = PropertyMock(return_value=datetime(2024, 1, 1, 10, 35, 10))
         type(mock_proc).completed = completed_mock
 
-        fdr = "folder" if folder else None
+        fdr = "directory" if directory else None
         arc = "archive" if archive else None
 
         a = RarArchivalStatus(mock_proc, fdr, arc)
 
-        assert a.success == all([folder, archive, success, exists])
+        assert a.success == all([directory, archive, success, exists])
         success_mock.assert_called_once()
 
 
@@ -99,10 +99,10 @@ class TestRarArchiver:
 
         archiver = RarArchiver(mock_runner, password)
 
-        folder = "folder_path"
+        directory = "directory_path"
         archive = "archive_path"
 
-        result = archiver.archive(folder, archive)
+        result = archiver.archive(directory, archive)
 
         mock_dirname.assert_called_with(archive)
         mock_exists.assert_has_calls(
@@ -114,7 +114,7 @@ class TestRarArchiver:
         mock_makedirs.assert_called_with("DIRNAME", exist_ok=True)
         mock_runner.execute.assert_called_once()
 
-        assert result.folder == folder
+        assert result.directory == directory
         assert result.archive == archive
         assert result.proc == mock_proc
         assert result.success
@@ -129,10 +129,10 @@ class TestRarArchiver:
             compression,
             recovery,
         )
-        cmd = archiver._build_cmd("folder123", "archive123.rar")
+        cmd = archiver._build_cmd("directory123", "archive123.rar")
 
         assert "archive123.rar" == cmd[-2]
-        assert "folder123" == cmd[-1]
+        assert "directory123" == cmd[-1]
 
         if password is None:
             assert f"-hp{password}" not in cmd

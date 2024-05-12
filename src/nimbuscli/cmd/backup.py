@@ -69,12 +69,12 @@ class Backup(Command):
                 archive_path = self._compose_path(
                     self._destination,
                     backup.group,
-                    backup.folder,
+                    backup.directory,
                     datetime.now(),
                 )
 
                 backup.archive = self._archiver.archive(
-                    backup.folder,
+                    backup.directory,
                     archive_path,
                 )
 
@@ -90,7 +90,7 @@ class Backup(Command):
 
             upload_key = self._compose_upload_key(
                 backup.group,
-                backup.folder,
+                backup.directory,
                 backup.archive.archive,
             )
 
@@ -104,10 +104,10 @@ class Backup(Command):
 
         return result
 
-    def _compose_path(self, destination: str, group: str, folder: str, today: datetime) -> str:
+    def _compose_path(self, destination: str, group: str, directory: str, today: datetime) -> str:
         suffix = 0
         today_path = today.strftime("%Y-%m-%d_%H%M")
-        archive_name = Path(folder).name
+        archive_name = Path(directory).name
         base_path = os.path.join(destination, group, archive_name, f"{archive_name}_{today_path}")
 
         # Don't overwrite the existing backups under the same path.
@@ -137,9 +137,9 @@ class ProgressTracker:
 
 class BackupEntry:
 
-    def __init__(self, group: str, folder: str):
+    def __init__(self, group: str, directory: str):
         self.group: str = group
-        self.folder: str = folder
+        self.directory: str = directory
         self.archive: ArchivalStatus = None
 
     @property

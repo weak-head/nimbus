@@ -186,7 +186,7 @@ class ReportWriter(Reporter):
                 style="number",
             )
 
-        if failed := sorted(f"{fmt.ch('folder')} {b.folder}" for b in result.entries if not b.success):
+        if failed := sorted(f"{fmt.ch('directory')} {b.directory}" for b in result.entries if not b.success):
             b = w.section(f"{fmt.ch('failure')} Failed backups -- ¯\\_(ツ)_/¯")
             b.list(failed, style="number")
 
@@ -263,7 +263,7 @@ class ReportWriter(Reporter):
 
         for group in sorted(result.entries, key=lambda e: e.name):
             g = d.section(f"Group [{group.name}]:")
-            g.list((f"{fmt.ch('folder')} {v}" for v in sorted(group.directories)))
+            g.list((f"{fmt.ch('directory')} {v}" for v in sorted(group.directories)))
 
     def details_backup(self, w: Writer, result: BackupActionResult):
         d = w.section(f"{fmt.ch('backup')} Backup")
@@ -274,8 +274,8 @@ class ReportWriter(Reporter):
         d.row("Elapsed", f"{fmt.ch('duration')} {fmt.duration(result.elapsed)}")
 
         total_backups = len(result.entries)
-        for ix, entry in enumerate(sorted(result.entries, key=lambda e: (e.group, e.folder))):
-            b = d.section(f"[{ix+1}/{total_backups}] [{entry.group}] {fmt.ch('folder')} {entry.folder}")
+        for ix, entry in enumerate(sorted(result.entries, key=lambda e: (e.group, e.directory))):
+            b = d.section(f"[{ix+1}/{total_backups}] [{entry.group}] {fmt.ch('directory')} {entry.directory}")
             b.row("Success", f"{fmt.ch('success') if entry.success else fmt.ch('failure')} {entry.success}")
             b.row("Started", f"{fmt.ch('time')} {fmt.datetime(entry.archive.started)}")
             b.row("Completed", f"{fmt.ch('time')} {fmt.datetime(entry.archive.completed)}")
@@ -357,7 +357,7 @@ class ReportWriter(Reporter):
         g = s.section(f"{fmt.ch('service')} Services")
         g.list(
             [
-                f"{fmt.ch(kind)} {name} | {fmt.ch('folder')} {directory}"
+                f"{fmt.ch(kind)} {name} | {fmt.ch('directory')} {directory}"
                 for name, directory, kind in fmt.align(mapping, "llr")
             ],
         )
@@ -389,7 +389,7 @@ class ReportWriter(Reporter):
             for proc in entry.processes:
                 p = b.section(f"{fmt.ch('shell')} {' '.join(proc.cmd)}")
                 p.row("Success", f"{fmt.ch('success') if proc.success else fmt.ch('failure')} {proc.success}")
-                p.row("Directory", f"{fmt.ch('folder')} {proc.cwd}")
+                p.row("Directory", f"{fmt.ch('directory')} {proc.cwd}")
                 p.row("Started", f"{fmt.ch('time')} {fmt.datetime(proc.started)}")
                 p.row("Completed", f"{fmt.ch('time')} {fmt.datetime(proc.completed)}")
                 p.row("Elapsed", f"{fmt.ch('duration')} {fmt.duration(proc.elapsed)}")
