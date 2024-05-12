@@ -11,7 +11,7 @@ from nimbuscli.cmd.deploy import Down, Up
 from nimbuscli.config import Config
 from nimbuscli.core.archive import Archiver, RarArchiver
 from nimbuscli.core.execute import SubprocessRunner
-from nimbuscli.core.uploader import AwsUploader, Uploader
+from nimbuscli.core.upload import AwsUploader, Uploader
 from nimbuscli.provider import (
     DirectoryProvider,
     Secrets,

@@ -4,7 +4,7 @@ from datetime import timedelta as td
 import pytest
 from mock import Mock, PropertyMock, patch
 
-from nimbuscli.core.uploader import AwsUploader, UploadProgress, UploadStatus
+from nimbuscli.core.upload import AwsUploader, UploadProgress, UploadStatus
 from tests.helpers import MockDateTime
 
 
@@ -55,7 +55,7 @@ class TestAwsUploaderCallbackAdapter:
         ],
     )
     @patch("os.stat")
-    @patch("nimbuscli.core.uploader.datetime", MockDateTime)
+    @patch("nimbuscli.core.upload.aws.datetime", MockDateTime)
     def test_onprogress(self, mock_osstat, filesize, upbytes, reported):
         type(mock_osstat.return_value).st_size = PropertyMock(return_value=filesize)
 
@@ -93,7 +93,7 @@ class TestAwsUploader:
             self._client_name = name
             return Mock()
 
-    @patch("nimbuscli.core.uploader.Session", MockSession)
+    @patch("nimbuscli.core.upload.aws.Session", MockSession)
     def test_config(self):
         uploader = AwsUploader("key", "secret", "bucket", "class")
 
@@ -106,8 +106,8 @@ class TestAwsUploader:
         assert cfg == {"S3 Bucket": "bucket", "S3 Storage": "class"}
 
     @patch("os.stat")
-    @patch("nimbuscli.core.uploader.Session", Mock)
-    @patch("nimbuscli.core.uploader.datetime", MockDateTime)
+    @patch("nimbuscli.core.upload.aws.Session", Mock)
+    @patch("nimbuscli.core.upload.aws.datetime", MockDateTime)
     def test_upload(self, mock_osstat):
         started_dt = dt(2024, 5, 10, 12, 30, 50)
         completed_dt = dt(2024, 5, 10, 12, 35, 55)
@@ -143,8 +143,8 @@ class TestAwsUploader:
         )
 
     @patch("os.stat")
-    @patch("nimbuscli.core.uploader.Session", Mock)
-    @patch("nimbuscli.core.uploader.datetime", MockDateTime)
+    @patch("nimbuscli.core.upload.aws.Session", Mock)
+    @patch("nimbuscli.core.upload.aws.datetime", MockDateTime)
     def test_upload_exception(self, mock_osstat):
         started_dt = dt(2024, 5, 10, 12, 30, 50)
         completed_dt = dt(2024, 5, 10, 12, 35, 55)
@@ -183,48 +183,3 @@ class TestAwsUploader:
             ExtraArgs={"StorageClass": "class"},
             Callback=AwsUploader.CallbackAdapter("filepath", mock_onprogress),
         )
-
-
-class TestUploadStatus:
-
-    def test_status(self):
-        us = UploadStatus("file", "key")
-        assert us.status == UploadStatus.SUCCESS
-
-        us.exception = Exception()
-        assert us.status == UploadStatus.FAILED
-
-    def test_success(self):
-        us = UploadStatus("file", "key")
-        us.size = 100
-        us.started = dt.now()
-        us.completed = dt.now()
-        assert us.success
-
-        us.completed = None
-        assert not us.success
-
-    def test_elapsed(self):
-        us = UploadStatus("file", "key")
-
-        us.started = dt.now()
-        us.completed = us.started
-        assert us.elapsed == td(seconds=1)
-
-        us.started = dt(year=2024, month=1, day=1, hour=10, minute=30, second=0)
-        us.completed = dt(year=2024, month=1, day=1, hour=11, minute=35, second=7)
-        assert us.elapsed == td(hours=1, minutes=5, seconds=7)
-
-    def test_speed(self):
-        us = UploadStatus("file", "key")
-        us.size = 60_000
-        us.started = dt(year=2024, month=1, day=1, hour=10, minute=30, second=0)
-        us.completed = dt(year=2024, month=1, day=1, hour=10, minute=31, second=0)
-        assert us.speed == 1000
-
-        us.size = 0
-        assert us.speed == 0
-
-        us.size = 100
-        us.completed = None
-        assert us.speed == 0
