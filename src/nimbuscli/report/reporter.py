@@ -20,6 +20,7 @@ from nimbuscli.cmd.deploy import (
     DeploymentActionResult,
     ServiceMappingActionResult,
 )
+from nimbuscli.core.archive import RarArchivalStatus
 from nimbuscli.report.writer import Writer
 
 
@@ -165,7 +166,7 @@ class ReportWriter(Reporter):
             (
                 b.archive.archive.replace(base, "")[1:],
                 fmt.size(b.archive.size),
-                fmt.duration(b.archive.proc.elapsed),
+                fmt.duration(b.archive.elapsed),
                 fmt.speed(b.archive.speed),
             )
             for b in result.entries
@@ -276,29 +277,31 @@ class ReportWriter(Reporter):
         for ix, entry in enumerate(sorted(result.entries, key=lambda e: (e.group, e.folder))):
             b = d.section(f"[{ix+1}/{total_backups}] [{entry.group}] {fmt.ch('folder')} {entry.folder}")
             b.row("Success", f"{fmt.ch('success') if entry.success else fmt.ch('failure')} {entry.success}")
-            b.row("Started", f"{fmt.ch('time')} {fmt.datetime(entry.archive.proc.started)}")
-            b.row("Completed", f"{fmt.ch('time')} {fmt.datetime(entry.archive.proc.completed)}")
-            b.row("Elapsed", f"{fmt.ch('duration')} {fmt.duration(entry.archive.proc.elapsed)}")
+            b.row("Started", f"{fmt.ch('time')} {fmt.datetime(entry.archive.started)}")
+            b.row("Completed", f"{fmt.ch('time')} {fmt.datetime(entry.archive.completed)}")
+            b.row("Elapsed", f"{fmt.ch('duration')} {fmt.duration(entry.archive.elapsed)}")
 
-            if entry.archive.proc.success:
+            if entry.archive.success:
                 b.row("Size", f"{fmt.ch('size')} {fmt.size(entry.archive.size)}")
                 b.row("Speed", f"{fmt.ch('speed')} {fmt.speed(entry.archive.speed)}")
                 b.row("Archive", f"{fmt.ch('archive')} {entry.archive.archive}")
             else:
-                if entry.archive.proc.exitcode:
-                    b.row("Exit Code", f"{fmt.ch('exitcode')} {entry.archive.proc.exitcode}")
+                match entry.archive:
+                    case RarArchivalStatus():
+                        if entry.archive.proc.exitcode:
+                            b.row("Exit Code", f"{fmt.ch('exitcode')} {entry.archive.proc.exitcode}")
 
-                if entry.archive.proc.stdout:
-                    s = b.section("StdOut", indent=False)
-                    s.list(entry.archive.proc.stdout.split("\n"))
+                        if entry.archive.proc.stdout:
+                            s = b.section("StdOut", indent=False)
+                            s.list(entry.archive.proc.stdout.split("\n"))
 
-                if entry.archive.proc.stderr:
-                    s = b.section("StdErr", indent=False)
-                    s.list(entry.archive.proc.stderr.split("\n"))
+                        if entry.archive.proc.stderr:
+                            s = b.section("StdErr", indent=False)
+                            s.list(entry.archive.proc.stderr.split("\n"))
 
-                if entry.archive.proc.exception:
-                    ex = b.section(f"{fmt.ch('exception')} Exception")
-                    ex.list(fmt.wrap(str(entry.archive.proc.exception)))
+                        if entry.archive.proc.exception:
+                            ex = b.section(f"{fmt.ch('exception')} Exception")
+                            ex.list(fmt.wrap(str(entry.archive.proc.exception)))
 
     def details_upload(self, w: Writer, result: UploadActionResult):
         d = w.section(f"{fmt.ch('upload')} Upload")

@@ -1,7 +1,39 @@
-import pytest
-from mock import Mock, call, patch
+from datetime import datetime
 
-from nimbuscli.core.archive.rar import RarArchiver
+import pytest
+from mock import Mock, PropertyMock, call, patch
+
+from nimbuscli.core.archive.rar import RarArchivalStatus, RarArchiver
+
+
+class TestRarArchivalStatus:
+
+    @pytest.mark.parametrize("folder", [True, False])
+    @pytest.mark.parametrize("archive", [True, False])
+    @pytest.mark.parametrize("success", [True, False])
+    @pytest.mark.parametrize("exists", [True, False])
+    def test_success(self, folder, archive, success, exists):
+        patcher = patch("os.path.exists")
+        mock_exists = patcher.start()
+        mock_exists.return_value = exists
+
+        mock_proc = Mock()
+        success_mock = PropertyMock(return_value=success)
+        type(mock_proc).success = success_mock
+
+        started_mock = PropertyMock(return_value=datetime(2024, 1, 1, 10, 30, 00))
+        type(mock_proc).started = started_mock
+
+        completed_mock = PropertyMock(return_value=datetime(2024, 1, 1, 10, 35, 10))
+        type(mock_proc).completed = completed_mock
+
+        fdr = "folder" if folder else None
+        arc = "archive" if archive else None
+
+        a = RarArchivalStatus(mock_proc, fdr, arc)
+
+        assert a.success == all([folder, archive, success, exists])
+        success_mock.assert_called_once()
 
 
 class TestRarArchiver:

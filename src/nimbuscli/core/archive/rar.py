@@ -4,7 +4,7 @@ import os
 from logdecorator import log_on_end, log_on_start
 
 from nimbuscli.core.archive.archiver import ArchivalStatus, Archiver
-from nimbuscli.core.execute import Runner
+from nimbuscli.core.execute import CompletedProcess, Runner
 
 
 class RarArchiver(Archiver):
@@ -68,7 +68,7 @@ class RarArchiver(Archiver):
         # It is expected that 'rar' executable
         # is available in a system PATH.
         proc = self._runner.execute(self._build_cmd(folder, archive))
-        return ArchivalStatus(proc, folder, archive)
+        return RarArchivalStatus(proc, folder, archive)
 
     def _build_cmd(self, folder: str, archive: str) -> list[str]:
         # fmt: off
@@ -101,3 +101,14 @@ class RarArchiver(Archiver):
 
         cmd.extend([archive, folder])
         return cmd
+
+
+class RarArchivalStatus(ArchivalStatus):
+
+    def __init__(self, proc: CompletedProcess, folder: str, archive: str):
+        super().__init__(folder, archive, proc.started, proc.completed)
+        self.proc = proc
+
+    @property
+    def success(self) -> bool:
+        return all([self.proc.success, super().success])

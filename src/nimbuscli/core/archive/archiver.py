@@ -2,8 +2,7 @@ from __future__ import annotations
 
 import os
 from abc import ABC, abstractmethod
-
-from nimbuscli.core.execute import CompletedProcess
+from datetime import datetime, timedelta
 
 
 class Archiver(ABC):
@@ -25,16 +24,18 @@ class Archiver(ABC):
 
 class ArchivalStatus:
 
-    def __init__(self, proc: CompletedProcess, folder: str, archive: str):
-        self.proc = proc
+    def __init__(self, folder: str, archive: str, started: datetime, completed: datetime):
         self.folder = folder
         self.archive = archive
+        self.started = started
+        self.completed = completed
 
     @property
     def success(self) -> bool:
         return all(
             [
-                self.proc.success,
+                self.started,
+                self.completed,
                 self.folder,
                 self.archive,
                 os.path.exists(self.archive),
@@ -47,4 +48,8 @@ class ArchivalStatus:
 
     @property
     def speed(self) -> int:
-        return int(self.size // self.proc.elapsed.total_seconds()) if self.success else 0
+        return int(self.size // self.elapsed.total_seconds()) if self.success else 0
+
+    @property
+    def elapsed(self) -> timedelta:
+        return self.completed - self.started
