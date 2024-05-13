@@ -66,12 +66,13 @@ class Backup(Command):
             for directory in group.directories:
                 backup = BackupEntry(group.name, directory)
 
-                archive_path = self._compose_path(
+                archive_path = self._generate_backup_path(
                     self._destination,
                     backup.group,
                     backup.directory,
-                    datetime.now(),
                 )
+
+                os.makedirs(os.path.dirname(archive_path), exist_ok=True)
 
                 backup.archive = self._archiver.archive(
                     backup.directory,
@@ -88,7 +89,7 @@ class Backup(Command):
         for backup in filter(lambda e: e.success, backups.entries):
             entry = UploadEntry(backup)
 
-            upload_key = self._compose_upload_key(
+            upload_key = self._generate_upload_key(
                 backup.group,
                 backup.directory,
                 backup.archive.archive,
@@ -104,25 +105,27 @@ class Backup(Command):
 
         return result
 
-    def _compose_path(self, destination: str, group: str, directory: str, today: datetime) -> str:
-        suffix = 0
-        today_path = today.strftime("%Y-%m-%d_%H%M")
-        archive_name = Path(directory).name
-        base_path = os.path.join(destination, group, archive_name, f"{archive_name}_{today_path}")
+    def _generate_backup_path(self, destination: str, group: str, directory: str) -> str:
+        now = datetime.now().strftime("%Y-%m-%d_%H%M")
+        name = Path(directory).name
+        base_path = os.path.join(destination, group, name, f"{name}_{now}")
+        archive = f"{base_path}.{self._archiver.extension}"
 
         # Don't overwrite the existing backups under the same path.
         # Find the next available name that matches the pattern.
-        while True:
-            archive_path = base_path + (f"_{suffix:02d}.rar" if suffix > 0 else ".rar")
-            if os.path.exists(archive_path):
-                suffix += 1
-            else:
-                return archive_path
+        suffix = 1
+        while os.path.exists(archive):
+            archive = f"{base_path}_{suffix:02d}.{self._archiver.extension}"
+            suffix += 1
 
-    def _compose_upload_key(self, group: str, directory: str, archive: str) -> str:
-        directory_name = Path(directory).name
-        archive_name = Path(archive).name
-        return os.path.join(group, directory_name, archive_name)
+        return archive
+
+    def _generate_upload_key(self, group: str, directory: str, archive: str) -> str:
+        return os.path.join(
+            group,
+            Path(directory).name,
+            Path(archive).name,
+        )
 
 
 class ProgressTracker:

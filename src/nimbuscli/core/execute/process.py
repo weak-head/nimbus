@@ -57,6 +57,8 @@ class SubprocessRunner(ProcessRunner):
 
     @log_on_start(logging.DEBUG, "Execute {cmd!s}; cwd: {cwd!s}")
     @log_on_end(logging.DEBUG, "Exit code: {result.returncode!s}")
+    @log_on_end(logging.DEBUG, "StdErr: {result.stderr!r}")
+    @log_on_end(logging.DEBUG, "StdOut: {result.stdout!r}")
     @log_on_error(logging.ERROR, "Failed to execute: {e!r}", on_exceptions=Exception)
     def _run(self, cmd: list[str], cwd: str, env: dict[str, str]):
         return subprocess.run(

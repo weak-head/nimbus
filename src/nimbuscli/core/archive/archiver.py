@@ -21,6 +21,13 @@ class Archiver(ABC):
         :return: Status of the directory archival.
         """
 
+    @property
+    @abstractmethod
+    def extension(self) -> str:
+        """
+        The recommended file extension for the archive.
+        """
+
 
 class ArchivalStatus:
 

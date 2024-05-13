@@ -79,39 +79,29 @@ class TestRarArchiver:
                 recovery,
             )
 
-    @patch("os.path.dirname")
     @patch("os.path.exists")
-    @patch("os.makedirs")
-    def test_archive(self, mock_makedirs, mock_exists, mock_dirname):
-        mock_dirname.return_value = "DIRNAME"
+    def test_archive(self, mock_exists):
         mock_exists.side_effect = [
-            False,  # DIRNAME
             True,  # @log_on_end
             True,  # assert result.success
         ]
-        mock_makedirs.return_value = True
 
         mock_proc = Mock()
         mock_proc.success.return_value = True
+
         mock_runner = Mock()
         mock_runner.execute.return_value = mock_proc
-        password = "pwd"
 
-        archiver = RarArchiver(mock_runner, password)
-
+        archiver = RarArchiver(mock_runner, "pwd")
         directory = "directory_path"
         archive = "archive_path"
-
         result = archiver.archive(directory, archive)
 
-        mock_dirname.assert_called_with(archive)
         mock_exists.assert_has_calls(
             [
-                call("DIRNAME"),  # called by directory check
                 call(archive),  # called by @log_on_end
             ]
         )
-        mock_makedirs.assert_called_with("DIRNAME", exist_ok=True)
         mock_runner.execute.assert_called_once()
 
         assert result.directory == directory
@@ -122,14 +112,14 @@ class TestRarArchiver:
     @pytest.mark.parametrize("password", [None, "abc", "bbc3"])
     @pytest.mark.parametrize("compression", [None, 0, 1, 3, 5])
     @pytest.mark.parametrize("recovery", [None, 0, 1, 3, 33])
-    def test_build_cmd(self, password, compression, recovery):
+    def test__generate_cmd(self, password, compression, recovery):
         archiver = RarArchiver(
             Mock(),
             password,
             compression,
             recovery,
         )
-        cmd = archiver._build_cmd("directory123", "archive123.rar")
+        cmd = archiver._generate_cmd("directory123", "archive123.rar")
 
         assert "archive123.rar" == cmd[-2]
         assert "directory123" == cmd[-1]

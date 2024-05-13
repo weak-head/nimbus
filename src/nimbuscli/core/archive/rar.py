@@ -1,5 +1,4 @@
 import logging
-import os
 
 from logdecorator import log_on_end, log_on_start
 
@@ -9,7 +8,7 @@ from nimbuscli.core.execute import CompletedProcess, Runner
 
 class RarArchiver(Archiver):
     """
-    Create a password protected archive using 'WinRar'.
+    Creates a password protected archive using 'WinRar'.
     https://www.win-rar.com/download.html
     """
 
@@ -57,20 +56,20 @@ class RarArchiver(Archiver):
         ]
         return "RarArchiver(" + ", ".join(params) + ")"
 
+    @property
+    def extension(self) -> str:
+        return "rar"
+
     @log_on_start(logging.INFO, "Archiving {directory!s} -> {archive!s}")
     @log_on_end(logging.INFO, "Archived [{result.success!s}]: {archive!s}")
     def archive(self, directory: str, archive: str) -> ArchivalStatus:
-        # Ensure destination directory exists
-        directory_path = os.path.dirname(archive)
-        if not os.path.exists(directory_path):
-            os.makedirs(directory_path, exist_ok=True)
-
         # It is expected that 'rar' executable
         # is available in a system PATH.
-        proc = self._runner.execute(self._build_cmd(directory, archive))
+        cmd = self._generate_cmd(directory, archive)
+        proc = self._runner.execute(cmd)
         return RarArchivalStatus(proc, directory, archive)
 
-    def _build_cmd(self, directory: str, archive: str) -> list[str]:
+    def _generate_cmd(self, directory: str, archive: str) -> list[str]:
         # fmt: off
         cmd = [
             "rar",
