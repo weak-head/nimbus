@@ -282,13 +282,13 @@ def test_observability_schema(yaml_snippet, cfg):
                 access_key: XX
                 secret_key: XXX
                 bucket: aws.storage.bucket
-                storage_class: STANDARD
+                storage: STANDARD
               - name: aws_archival
                 provider: aws
                 access_key: XX
                 secret_key: XXX
                 bucket: aws.archival.bucket
-                storage_class: DEEP_ARCHIVE
+                storage: DEEP_ARCHIVE
             """,
             None,
         ],
@@ -301,7 +301,7 @@ def test_observability_schema(yaml_snippet, cfg):
                 provider: rar
                 password: SecretPwd
                 recovery: 3
-                compression: 1
+                compress: 1
             upload:
             """,
             None,
@@ -317,7 +317,7 @@ def test_observability_schema(yaml_snippet, cfg):
                 access_key: XX
                 secret_key: XXX
                 bucket: aws.storage.bucket
-                storage_class: STANDARD
+                storage: STANDARD
             """,
             {
                 "archive": [
@@ -333,7 +333,7 @@ def test_observability_schema(yaml_snippet, cfg):
                         "access_key": "XX",
                         "secret_key": "XXX",
                         "bucket": "aws.storage.bucket",
-                        "storage_class": "STANDARD",
+                        "storage": "STANDARD",
                     },
                 ],
             },
@@ -347,20 +347,20 @@ def test_observability_schema(yaml_snippet, cfg):
                 provider: rar
                 password: SecretPwd
                 recovery: 3
-                compression: 1
+                compress: 1
             upload:
               - name: aws_store
                 provider: aws
                 access_key: XX
                 secret_key: XXX
                 bucket: aws.storage.bucket
-                storage_class: STANDARD
+                storage: STANDARD
               - name: aws_archival
                 provider: aws
                 access_key: XX
                 secret_key: XXX
                 bucket: aws.archival.bucket
-                storage_class: DEEP_ARCHIVE
+                storage: DEEP_ARCHIVE
             """,
             {
                 "archive": [
@@ -373,7 +373,7 @@ def test_observability_schema(yaml_snippet, cfg):
                         "provider": "rar",
                         "password": "SecretPwd",
                         "recovery": 3,
-                        "compression": 1,
+                        "compress": 1,
                     },
                 ],
                 "upload": [
@@ -383,7 +383,7 @@ def test_observability_schema(yaml_snippet, cfg):
                         "access_key": "XX",
                         "secret_key": "XXX",
                         "bucket": "aws.storage.bucket",
-                        "storage_class": "STANDARD",
+                        "storage": "STANDARD",
                     },
                     {
                         "name": "aws_archival",
@@ -391,7 +391,7 @@ def test_observability_schema(yaml_snippet, cfg):
                         "access_key": "XX",
                         "secret_key": "XXX",
                         "bucket": "aws.archival.bucket",
-                        "storage_class": "DEEP_ARCHIVE",
+                        "storage": "DEEP_ARCHIVE",
                     },
                 ],
             },
@@ -405,7 +405,7 @@ def test_observability_schema(yaml_snippet, cfg):
                 provider: rar
                 password: SecretPwd
                 recovery: 3
-                compression: 1
+                compress: 1
                 some_other_field: value
             upload:
               - name: aws_store
@@ -413,13 +413,13 @@ def test_observability_schema(yaml_snippet, cfg):
                 access_key: XX
                 secret_key: XXX
                 bucket: aws.storage.bucket
-                storage_class: STANDARD
+                storage: STANDARD
               - name: aws_archival
                 provider: aws
                 access_key: XX
                 secret_key: XXX
                 bucket: aws.archival.bucket
-                storage_class: DEEP_ARCHIVE
+                storage: DEEP_ARCHIVE
             """,
             None,
         ],
@@ -432,21 +432,21 @@ def test_observability_schema(yaml_snippet, cfg):
                 provider: rar
                 password: SecretPwd
                 recovery: 3
-                compression: 1
+                compress: 1
             upload:
               - name: aws_store
                 provider: aws
                 access_key: XX
                 secret_key: XXX
                 bucket: aws.storage.bucket
-                storage_class: STANDARD
+                storage: STANDARD
                 some_other_field: value
               - name: aws_archival
                 provider: aws
                 access_key: XX
                 secret_key: XXX
                 bucket: aws.archival.bucket
-                storage_class: DEEP_ARCHIVE
+                storage: DEEP_ARCHIVE
             """,
             None,
         ],
@@ -717,7 +717,7 @@ def test_commands_schema(yaml_snippet, cfg):
                   access_key: XX
                   secret_key: XXX
                   bucket: aws.storage.bucket
-                  storage_class: STANDARD
+                  storage: STANDARD
             commands:
               deploy:
                 services:
@@ -745,7 +745,7 @@ def test_commands_schema(yaml_snippet, cfg):
                             "access_key": "XX",
                             "secret_key": "XXX",
                             "bucket": "aws.storage.bucket",
-                            "storage_class": "STANDARD",
+                            "storage": "STANDARD",
                         },
                     ],
                 },
@@ -785,7 +785,7 @@ def test_commands_schema(yaml_snippet, cfg):
                   access_key: XX
                   secret_key: XXX
                   bucket: aws.storage.bucket
-                  storage_class: STANDARD
+                  storage: STANDARD
             commands:
               deploy:
                 services:
@@ -824,7 +824,7 @@ def test_commands_schema(yaml_snippet, cfg):
                             "access_key": "XX",
                             "secret_key": "XXX",
                             "bucket": "aws.storage.bucket",
-                            "storage_class": "STANDARD",
+                            "storage": "STANDARD",
                         },
                     ],
                 },

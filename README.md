@@ -130,7 +130,7 @@ profiles:
       provider: rar
       password: SecretPwd
       recovery: 3
-      compression: 1
+      compress: 1
 ```
 
 In the above example:
@@ -161,13 +161,13 @@ profiles:
       access_key: XXXXXXX
       secret_key: XXXXXXXXXXXXX
       bucket: aws.storage.bucket
-      storage_class: STANDARD
+      storage: STANDARD
     - name: aws_archival
       provider: aws
       access_key: XXXXXXX
       secret_key: XXXXXXXXXXXXXX
       bucket: aws.archival.bucket
-      storage_class: DEEP_ARCHIVE
+      storage: DEEP_ARCHIVE
 ```
 
 In the above example:

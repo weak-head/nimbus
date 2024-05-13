@@ -9,7 +9,7 @@ from nimbuscli.cmd.backup import Backup
 from nimbuscli.cmd.command import Command
 from nimbuscli.cmd.deploy import Down, Up
 from nimbuscli.config import Config
-from nimbuscli.core.archive import Archiver, RarArchiver
+from nimbuscli.core.archive import Archiver, RarArchiver, TarArchiver
 from nimbuscli.core.execute import SubprocessRunner
 from nimbuscli.core.upload import AwsUploader, Uploader
 from nimbuscli.provider import (
@@ -79,13 +79,11 @@ class CfgCommandFactory(CommandFactory):
     @log_on_error(logging.ERROR, "Failed to create Archiver: {e!r}", on_exceptions=Exception)
     def create_archiver(self, profile: str) -> Archiver:
         if cfg := CfgCommandFactory._profile(self._cfg.profiles.archive, profile):
-            if cfg.provider == "rar":
-                return RarArchiver(
-                    SubprocessRunner(),
-                    cfg.password,
-                    cfg.compression,
-                    cfg.recovery,
-                )
+            match cfg.provider:
+                case "rar":
+                    return RarArchiver(SubprocessRunner(), cfg.password, cfg.compress, cfg.recovery)
+                case "tar":
+                    return TarArchiver(cfg.compress)
 
         return None
 
@@ -99,7 +97,7 @@ class CfgCommandFactory(CommandFactory):
                     cfg.access_key,
                     cfg.secret_key,
                     cfg.bucket,
-                    cfg.storage_class,
+                    cfg.storage,
                 )
 
         return None
