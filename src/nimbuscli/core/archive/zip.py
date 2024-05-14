@@ -1,6 +1,6 @@
 import logging
 import os
-import tarfile
+import zipfile
 from datetime import datetime
 
 from logdecorator import log_on_end, log_on_start
@@ -8,45 +8,49 @@ from logdecorator import log_on_end, log_on_start
 from nimbuscli.core.archive.archiver import ArchivalStatus, Archiver
 
 
-class TarArchiver(Archiver):
+class ZipArchiver(Archiver):
     """
-    Creates tar archives, including those using gzip, bz2 and lzma compression.
+    Creates zip archives, including ZIP64 extensions.
     """
 
     def __init__(self, compression: str = None):
         """
-        Creates a new instance of the TarArchiver.
+        Creates a new instance of the ZipArchiver.
 
-        :param compressor: Data compression method.
+        :param compression: Data compression method.
             You can specify the following values:
-                - bz2 - Creates Tarfile with bzip2 compression.
-                - gz - Creates Tarfile with gzip compression.
-                - xz - Creates Tarfile with lzma compression.
+                - zip - Uses usual ZIP compression method.
+                - bz2 - Uses BZIP2 compression method.
+                - xz - Uses LZMA compression method.
         """
 
         if compression is not None:
             if compression not in ("bz2", "gz", "xz"):
                 raise ValueError("Compression should be None or one of: 'bz2', 'gz' or 'xz'.")
 
-        self._compression = compression
+        self._compression: int = {
+            None: zipfile.ZIP_STORED,
+            "bz2": zipfile.ZIP_BZIP2,
+            "gz": zipfile.ZIP_DEFLATED,
+            "xz": zipfile.ZIP_LZMA,
+        }[compression]
 
     def __repr__(self) -> str:
         params = [f"cmp='{self._compression}'"]
-        return "TarArchiver(" + ", ".join(params) + ")"
+        return "ZipArchiver(" + ", ".join(params) + ")"
 
     @property
     def extension(self) -> str:
-        return "tar" if self._compression is None else f"tar.{self._compression}"
+        return "zip"
 
     @log_on_start(logging.INFO, "Archiving {directory!s} -> {archive!s}")
     @log_on_end(logging.INFO, "Archived [{result.success!s}]: {archive!s}")
     def archive(self, directory: str, archive: str) -> ArchivalStatus:
         started = datetime.now()
-        mode = "w" if self._compression is None else f"w:{self._compression}"
-        with tarfile.open(archive, mode) as tar:
+        with zipfile.ZipFile(archive, "w", self._compression) as zipf:
             for root, _, files in os.walk(directory):
                 for file in files:
                     file_path = os.path.join(root, file)
                     file_name = os.path.relpath(file_path, directory)
-                    tar.add(file_path, arcname=file_name)
+                    zipf.write(file_path, arcname=file_name)
         return ArchivalStatus(directory, archive, started, datetime.now())

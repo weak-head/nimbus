@@ -11,25 +11,25 @@ from tests.helpers import MockDateTime
 class TestTarArchiver:
 
     @pytest.mark.parametrize(
-        "compressor",
+        "compression",
         ["bz2", "gz", "xz", None],
     )
-    def test_init(self, compressor):
-        archiver = TarArchiver(compressor)
-        assert archiver._compressor == compressor
+    def test_init(self, compression):
+        archiver = TarArchiver(compression)
+        assert archiver._compression == compression
 
-        if compressor is None:
+        if compression is None:
             assert archiver.extension == "tar"
         else:
-            assert archiver.extension == f"tar.{compressor}"
+            assert archiver.extension == f"tar.{compression}"
 
     @pytest.mark.parametrize(
-        "compressor",
+        "compression",
         ["value", "dif", "lz", "lzma", "lzop", "zstd"],
     )
-    def test_init_failed_params(self, compressor):
+    def test_init_failed_params(self, compression):
         with pytest.raises(ValueError):
-            TarArchiver(compressor)
+            TarArchiver(compression)
 
     @patch("tarfile.open")
     @patch("os.walk")
