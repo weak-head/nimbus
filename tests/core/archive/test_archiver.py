@@ -1,7 +1,7 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 
 import pytest
-from mock import patch
+from mock import PropertyMock, patch
 
 from nimbuscli.core.archive.archiver import ArchivalStatus
 
@@ -24,3 +24,40 @@ class TestArchivalStatus:
         a = ArchivalStatus(fdr, arc, started, completed)
 
         assert a.success == all([directory, archive, exists, started, completed])
+
+    @patch("os.stat")
+    @patch("os.path.exists")
+    def test_size(self, mock_exists, mock_osstat):
+        type(mock_osstat.return_value).st_size = PropertyMock(return_value=100)
+        mock_exists.return_value = True
+
+        a = ArchivalStatus(
+            "dir",
+            "arc",
+            datetime(2024, 1, 1, 10, 30, 00),
+            datetime(2024, 1, 1, 10, 35, 00),
+        )
+        assert a.size == 100
+
+        mock_exists.return_value = False
+        assert a.size is None
+
+    @patch("os.stat")
+    @patch("os.path.exists")
+    def test_speed(self, mock_exists, mock_osstat):
+        type(mock_osstat.return_value).st_size = PropertyMock(return_value=6_600)
+        mock_exists.return_value = True
+
+        a = ArchivalStatus(
+            "dir",
+            "arc",
+            datetime(2024, 1, 1, 10, 30, 00),
+            datetime(2024, 1, 1, 10, 31, 00),
+        )
+
+        assert a.speed == 110
+        assert a.elapsed == timedelta(minutes=1)
+
+        mock_exists.return_value = False
+        assert a.speed == 0
+        assert a.elapsed == timedelta(minutes=1)

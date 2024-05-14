@@ -55,6 +55,7 @@ class TestRarArchiver:
         assert archiver._password == password
         assert archiver._recovery == recovery
         assert archiver._compression == compression
+        assert archiver.extension == "rar"
 
     def test_init_failed_runner(self):
         with pytest.raises(ValueError):

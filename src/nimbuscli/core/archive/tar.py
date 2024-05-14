@@ -1,4 +1,7 @@
 import logging
+import os
+import tarfile
+from datetime import datetime
 
 from logdecorator import log_on_end, log_on_start
 
@@ -13,6 +16,8 @@ class TarArchiver(Archiver):
     def __init__(self, compressor: str = None):
         """
         Creates a new instance of the TarArchiver.
+
+        :param compressor: Data compressor. One of [ bz2 | gz | xz ].
         """
 
         if compressor is not None:
@@ -27,9 +32,17 @@ class TarArchiver(Archiver):
 
     @property
     def extension(self) -> str:
-        return "tar"
+        return "tar" if self._compressor is None else f"tar.{self._compressor}"
 
     @log_on_start(logging.INFO, "Archiving {directory!s} -> {archive!s}")
     @log_on_end(logging.INFO, "Archived [{result.success!s}]: {archive!s}")
     def archive(self, directory: str, archive: str) -> ArchivalStatus:
-        pass
+        started = datetime.now()
+        mode = "w" if self._compressor is None else f"w:{self._compressor}"
+        with tarfile.open(archive, mode) as tar:
+            for root, _, files in os.walk(directory):
+                for file in files:
+                    file_path = os.path.join(root, file)
+                    file_name = os.path.relpath(file_path, directory)
+                    tar.add(file_path, arcname=file_name)
+        return ArchivalStatus(directory, archive, started, datetime.now())
