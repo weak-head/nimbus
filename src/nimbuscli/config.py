@@ -132,9 +132,9 @@ def profiles_schema() -> Map:
                     {
                         "name": Str(),
                         "provider": Str(),
-                        Optional("password"): Str(),
+                        Optional("compress"): Int() | Str(),
                         Optional("recovery"): Int(),
-                        Optional("compression"): Int(),
+                        Optional("password"): Str(),
                     }
                 )
             ),
@@ -146,7 +146,7 @@ def profiles_schema() -> Map:
                         "access_key": Str(),
                         "secret_key": Str(),
                         "bucket": Str(),
-                        "storage_class": Enum(
+                        "storage": Enum(
                             [
                                 "STANDARD",
                                 "STANDARD_IA",

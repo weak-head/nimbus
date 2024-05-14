@@ -1,61 +1,14 @@
-from __future__ import annotations
-
 import logging
-import os
-from abc import ABC, abstractmethod
 
 from logdecorator import log_on_end, log_on_start
 
-from nimbuscli.core.runner import CompletedProcess, Runner
-
-
-class Archiver(ABC):
-    """
-    Defines an abstract archiver.
-    All archivers should follow the APIs defined by this class.
-    """
-
-    @abstractmethod
-    def archive(self, folder: str, archive: str) -> ArchivalStatus:
-        """
-        Archive a folder.
-
-        :param folder: Full path to the folder that should be archived.
-        :param archive: A file path where the archive should be created.
-        :return: Status of the folder archival.
-        """
-
-
-class ArchivalStatus:
-
-    def __init__(self, proc: CompletedProcess, folder: str, archive: str):
-        self.proc = proc
-        self.folder = folder
-        self.archive = archive
-
-    @property
-    def success(self) -> bool:
-        return all(
-            [
-                self.proc.success,
-                self.folder,
-                self.archive,
-                os.path.exists(self.archive),
-            ]
-        )
-
-    @property
-    def size(self) -> int:
-        return os.stat(self.archive).st_size if self.success else None
-
-    @property
-    def speed(self) -> int:
-        return int(self.size // self.proc.elapsed.total_seconds()) if self.success else 0
+from nimbuscli.core.archive.archiver import ArchivalStatus, Archiver
+from nimbuscli.core.execute import CompletedProcess, Runner
 
 
 class RarArchiver(Archiver):
     """
-    Create a password protected archive using 'WinRar'.
+    Creates a password protected archive using 'WinRar'.
     https://www.win-rar.com/download.html
     """
 
@@ -103,20 +56,20 @@ class RarArchiver(Archiver):
         ]
         return "RarArchiver(" + ", ".join(params) + ")"
 
-    @log_on_start(logging.INFO, "Archiving {folder!s} -> {archive!s}")
-    @log_on_end(logging.INFO, "Archived [{result.success!s}]: {archive!s}")
-    def archive(self, folder: str, archive: str) -> ArchivalStatus:
-        # Ensure destination folder exists
-        directory_path = os.path.dirname(archive)
-        if not os.path.exists(directory_path):
-            os.makedirs(directory_path, exist_ok=True)
+    @property
+    def extension(self) -> str:
+        return "rar"
 
+    @log_on_start(logging.INFO, "Archiving {directory!s} -> {archive!s}")
+    @log_on_end(logging.INFO, "Archived [{result.success!s}]: {archive!s}")
+    def archive(self, directory: str, archive: str) -> ArchivalStatus:
         # It is expected that 'rar' executable
         # is available in a system PATH.
-        proc = self._runner.execute(self._build_cmd(folder, archive))
-        return ArchivalStatus(proc, folder, archive)
+        cmd = self._generate_cmd(directory, archive)
+        proc = self._runner.execute(cmd)
+        return RarArchivalStatus(proc, directory, archive)
 
-    def _build_cmd(self, folder: str, archive: str) -> list[str]:
+    def _generate_cmd(self, directory: str, archive: str) -> list[str]:
         # fmt: off
         cmd = [
             "rar",
@@ -145,5 +98,16 @@ class RarArchiver(Archiver):
         if self._password is not None:
             cmd.append(f"-hp{self._password}")
 
-        cmd.extend([archive, folder])
+        cmd.extend([archive, directory])
         return cmd
+
+
+class RarArchivalStatus(ArchivalStatus):
+
+    def __init__(self, proc: CompletedProcess, directory: str, archive: str):
+        super().__init__(directory, archive, proc.started, proc.completed)
+        self.proc = proc
+
+    @property
+    def success(self) -> bool:
+        return all([self.proc.success, super().success])

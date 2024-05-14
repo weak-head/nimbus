@@ -1,7 +1,39 @@
+from datetime import datetime
+
 import pytest
 from mock import Mock, PropertyMock, call, patch
 
-from nimbuscli.core import ArchivalStatus, RarArchiver
+from nimbuscli.core.archive.rar import RarArchivalStatus, RarArchiver
+
+
+class TestRarArchivalStatus:
+
+    @pytest.mark.parametrize("directory", [True, False])
+    @pytest.mark.parametrize("archive", [True, False])
+    @pytest.mark.parametrize("success", [True, False])
+    @pytest.mark.parametrize("exists", [True, False])
+    def test_success(self, directory, archive, success, exists):
+        patcher = patch("os.path.exists")
+        mock_exists = patcher.start()
+        mock_exists.return_value = exists
+
+        mock_proc = Mock()
+        success_mock = PropertyMock(return_value=success)
+        type(mock_proc).success = success_mock
+
+        started_mock = PropertyMock(return_value=datetime(2024, 1, 1, 10, 30, 00))
+        type(mock_proc).started = started_mock
+
+        completed_mock = PropertyMock(return_value=datetime(2024, 1, 1, 10, 35, 10))
+        type(mock_proc).completed = completed_mock
+
+        fdr = "directory" if directory else None
+        arc = "archive" if archive else None
+
+        a = RarArchivalStatus(mock_proc, fdr, arc)
+
+        assert a.success == all([directory, archive, success, exists])
+        success_mock.assert_called_once()
 
 
 class TestRarArchiver:
@@ -23,6 +55,7 @@ class TestRarArchiver:
         assert archiver._password == password
         assert archiver._recovery == recovery
         assert archiver._compression == compression
+        assert archiver.extension == "rar"
 
     def test_init_failed_runner(self):
         with pytest.raises(ValueError):
@@ -47,42 +80,32 @@ class TestRarArchiver:
                 recovery,
             )
 
-    @patch("os.path.dirname")
     @patch("os.path.exists")
-    @patch("os.makedirs")
-    def test_archive(self, mock_makedirs, mock_exists, mock_dirname):
-        mock_dirname.return_value = "DIRNAME"
+    def test_archive(self, mock_exists):
         mock_exists.side_effect = [
-            False,  # DIRNAME
             True,  # @log_on_end
             True,  # assert result.success
         ]
-        mock_makedirs.return_value = True
 
         mock_proc = Mock()
         mock_proc.success.return_value = True
+
         mock_runner = Mock()
         mock_runner.execute.return_value = mock_proc
-        password = "pwd"
 
-        archiver = RarArchiver(mock_runner, password)
-
-        folder = "folder_path"
+        archiver = RarArchiver(mock_runner, "pwd")
+        directory = "directory_path"
         archive = "archive_path"
+        result = archiver.archive(directory, archive)
 
-        result = archiver.archive(folder, archive)
-
-        mock_dirname.assert_called_with(archive)
         mock_exists.assert_has_calls(
             [
-                call("DIRNAME"),  # called by directory check
                 call(archive),  # called by @log_on_end
             ]
         )
-        mock_makedirs.assert_called_with("DIRNAME", exist_ok=True)
         mock_runner.execute.assert_called_once()
 
-        assert result.folder == folder
+        assert result.directory == directory
         assert result.archive == archive
         assert result.proc == mock_proc
         assert result.success
@@ -90,17 +113,17 @@ class TestRarArchiver:
     @pytest.mark.parametrize("password", [None, "abc", "bbc3"])
     @pytest.mark.parametrize("compression", [None, 0, 1, 3, 5])
     @pytest.mark.parametrize("recovery", [None, 0, 1, 3, 33])
-    def test_build_cmd(self, password, compression, recovery):
+    def test__generate_cmd(self, password, compression, recovery):
         archiver = RarArchiver(
             Mock(),
             password,
             compression,
             recovery,
         )
-        cmd = archiver._build_cmd("folder123", "archive123.rar")
+        cmd = archiver._generate_cmd("directory123", "archive123.rar")
 
         assert "archive123.rar" == cmd[-2]
-        assert "folder123" == cmd[-1]
+        assert "directory123" == cmd[-1]
 
         if password is None:
             assert f"-hp{password}" not in cmd
@@ -116,27 +139,3 @@ class TestRarArchiver:
             assert f"-rr{recovery}" not in cmd
         else:
             assert f"-rr{recovery}" in cmd
-
-
-class TestArchivalStatus:
-
-    @pytest.mark.parametrize("folder", [True, False])
-    @pytest.mark.parametrize("archive", [True, False])
-    @pytest.mark.parametrize("success", [True, False])
-    @pytest.mark.parametrize("exists", [True, False])
-    def test_success(self, folder, archive, success, exists):
-        patcher = patch("os.path.exists")
-        mock_exists = patcher.start()
-        mock_exists.return_value = exists
-
-        mock_proc = Mock()
-        success_mock = PropertyMock(return_value=success)
-        type(mock_proc).success = success_mock
-
-        fdr = "folder" if folder else None
-        arc = "archive" if archive else None
-
-        a = ArchivalStatus(mock_proc, fdr, arc)
-
-        assert a.success == all([folder, archive, success, exists])
-        success_mock.assert_called_once()

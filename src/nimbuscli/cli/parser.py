@@ -53,7 +53,7 @@ def create_parser() -> ArgumentParser:
         "selectors",
         nargs="*",
         default="",
-        help="glob patterns to filter folder groups",
+        help="glob patterns to filter directory groups",
     )
 
     return parser

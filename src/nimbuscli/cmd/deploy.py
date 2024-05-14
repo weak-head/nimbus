@@ -7,7 +7,7 @@ from typing import Any
 from logdecorator import log_on_end
 
 from nimbuscli.cmd.command import Action, ActionResult, Command
-from nimbuscli.core import OperationStatus, Service
+from nimbuscli.core.deploy import OperationStatus, Service
 from nimbuscli.provider import ServiceFactory, ServiceProvider, ServiceResource
 
 

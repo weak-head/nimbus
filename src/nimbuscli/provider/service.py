@@ -6,7 +6,8 @@ from typing import Iterator
 
 from logdecorator import log_on_end, log_on_error, log_on_start
 
-from nimbuscli.core import DockerService, Runner, Service
+from nimbuscli.core.deploy import DockerService, Service
+from nimbuscli.core.execute import Runner
 from nimbuscli.provider.resource import Provider, Resource
 from nimbuscli.provider.secret import Secrets
 
@@ -22,8 +23,8 @@ class ServiceResource(Resource):
 class ServiceProvider(Provider[ServiceResource]):
     """
     This class provides a recursive mechanism for
-    discovering services within all parent folders.
-    By traversing through parent folders, it facilitates
+    discovering services within all parent directories.
+    By traversing through parent directories, it facilitates
     the identification and interaction with services,
     """
 

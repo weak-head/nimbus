@@ -28,8 +28,11 @@ profiles:
     - name: rar_protected
       provider: rar
       password: SecretPwd  # Optional: Archive password
-      recovery: 3  # Optional: Recovery data percentage
-      compression: 1  # Optional: Compression level (0-5)
+      recovery: 3  # Optional: Recovery data percentage (0-1000)
+      compress: 1  # Optional: Compression level (0-5)
+    - name: tar_gz
+      provider: tar
+      compress: gz  # Optional: Compressor [ bz2 | gz | xz ]
 
   # Uploader Profiles
   upload:
@@ -38,13 +41,13 @@ profiles:
       access_key: XXXXXXX
       secret_key: XXXXXXXXXXXXX
       bucket: aws.storage.bucket
-      storage_class: STANDARD  # Options: STANDARD | INTELLIGENT_TIERING | DEEP_ARCHIVE
+      storage: STANDARD  # Options: STANDARD | INTELLIGENT_TIERING | DEEP_ARCHIVE
     - name: aws_archival
       provider: aws
       access_key: XXXXXXX
       secret_key: XXXXXXXXXXXXXX
       bucket: aws.archival.bucket
-      storage_class: DEEP_ARCHIVE
+      storage: DEEP_ARCHIVE
 
 # Command Configuration
 commands:
