@@ -19,9 +19,9 @@ class TarArchiver(Archiver):
 
         :param compressor: Data compression method.
             You can specify the following values:
-                - bz2 - Creates Tarfile with bzip2 compression.
                 - gz - Creates Tarfile with gzip compression.
                 - xz - Creates Tarfile with lzma compression.
+                - bz2 - Creates Tarfile with bzip2 compression.
         """
 
         if compression is not None:

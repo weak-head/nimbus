@@ -19,9 +19,9 @@ class ZipArchiver(Archiver):
 
         :param compression: Data compression method.
             You can specify the following values:
-                - zip - Uses usual ZIP compression method.
-                - bz2 - Uses BZIP2 compression method.
-                - xz - Uses LZMA compression method.
+                - gz - Creates zipfile with gzip compression.
+                - xz - Creates zipfile with lzma compression.
+                - bz2 - Creates zipfile with bzip2 compression.
         """
 
         if compression is not None:

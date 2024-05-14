@@ -32,7 +32,10 @@ profiles:
       compress: 1  # Optional: Compression level (0-5)
     - name: tar_gz
       provider: tar
-      compress: gz  # Optional: Compressor [ bz2 | gz | xz ]
+      compress: gz  # Optional: Compression ( bz2 | gz | xz )
+    - name: zip_bz
+      provider: zip
+      compress: bz2  # Optional: Compression ( bz2 | gz | xz )
 
   # Uploader Profiles
   upload:

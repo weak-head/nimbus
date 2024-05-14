@@ -9,7 +9,7 @@ from nimbuscli.cmd.backup import Backup
 from nimbuscli.cmd.command import Command
 from nimbuscli.cmd.deploy import Down, Up
 from nimbuscli.config import Config
-from nimbuscli.core.archive import Archiver, RarArchiver, TarArchiver
+from nimbuscli.core.archive import Archiver, RarArchiver, TarArchiver, ZipArchiver
 from nimbuscli.core.execute import SubprocessRunner
 from nimbuscli.core.upload import AwsUploader, Uploader
 from nimbuscli.provider import (
@@ -84,6 +84,8 @@ class CfgCommandFactory(CommandFactory):
                     return RarArchiver(SubprocessRunner(), cfg.password, cfg.compress, cfg.recovery)
                 case "tar":
                     return TarArchiver(cfg.compress)
+                case "zip":
+                    return ZipArchiver(cfg.compress)
 
         return None
 
