@@ -13,7 +13,7 @@ class ZipArchiver(Archiver):
     Creates zip archives, including ZIP64 extensions.
     """
 
-    def __init__(self, compression: str = None):
+    def __init__(self, compression: str | None = None):
         """
         Creates a new instance of the ZipArchiver.
 
@@ -24,9 +24,8 @@ class ZipArchiver(Archiver):
                 - bz2 - Creates zipfile with bzip2 compression.
         """
 
-        if compression is not None:
-            if compression not in ("bz2", "gz", "xz"):
-                raise ValueError("Compression should be None or one of: 'bz2', 'gz' or 'xz'.")
+        if compression not in (None, "bz2", "gz", "xz"):
+            raise ValueError("Compression should be None or one of: 'bz2', 'gz' or 'xz'.")
 
         self._compression: int = {
             None: zipfile.ZIP_STORED,

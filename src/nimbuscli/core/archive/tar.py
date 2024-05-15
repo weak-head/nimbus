@@ -13,7 +13,7 @@ class TarArchiver(Archiver):
     Creates tar archives, including those using gzip, bz2 and lzma compression.
     """
 
-    def __init__(self, compression: str = None):
+    def __init__(self, compression: str | None = None):
         """
         Creates a new instance of the TarArchiver.
 
@@ -24,9 +24,8 @@ class TarArchiver(Archiver):
                 - bz2 - Creates Tarfile with bzip2 compression.
         """
 
-        if compression is not None:
-            if compression not in ("bz2", "gz", "xz"):
-                raise ValueError("Compression should be None or one of: 'bz2', 'gz' or 'xz'.")
+        if compression not in (None, "bz2", "gz", "xz"):
+            raise ValueError("Compression should be None or one of: 'bz2', 'gz' or 'xz'.")
 
         self._compression = compression
 
