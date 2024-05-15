@@ -102,7 +102,9 @@ class RarArchiver(Archiver):
 class RarArchivalStatus(ArchivalStatus):
 
     def __init__(self, proc: CompletedProcess, directory: str, archive: str):
-        super().__init__(directory, archive, proc.started, proc.completed)
+        super().__init__(directory, archive)
+        self.started = proc.started
+        self.completed = proc.completed
         self.proc = proc
 
     @property

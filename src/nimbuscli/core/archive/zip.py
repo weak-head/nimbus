@@ -1,14 +1,13 @@
 import logging
-import os
 import zipfile
-from datetime import datetime
+from typing import ContextManager
 
-from logdecorator import log_on_end, log_on_start
+from logdecorator import log_on_error
 
-from nimbuscli.core.archive.archiver import ArchivalStatus, Archiver
+from nimbuscli.core.archive.archiver import FSArchiver
 
 
-class ZipArchiver(Archiver):
+class ZipArchiver(FSArchiver):
     """
     Creates zip archives, including ZIP64 extensions.
     """
@@ -42,14 +41,10 @@ class ZipArchiver(Archiver):
     def extension(self) -> str:
         return "zip"
 
-    @log_on_start(logging.INFO, "Archiving {directory!s} -> {archive!s}")
-    @log_on_end(logging.INFO, "Archived [{result.success!s}]: {archive!s}")
-    def archive(self, directory: str, archive: str) -> ArchivalStatus:
-        started = datetime.now()
-        with zipfile.ZipFile(archive, "w", self._compression) as zipf:
-            for root, _, files in os.walk(directory):
-                for file in files:
-                    file_path = os.path.join(root, file)
-                    file_name = os.path.relpath(file_path, directory)
-                    zipf.write(file_path, arcname=file_name)
-        return ArchivalStatus(directory, archive, started, datetime.now())
+    @log_on_error(logging.ERROR, "Failed init archiver: {e!r}", on_exceptions=Exception)
+    def init_archiver(self, archive: str) -> ContextManager:
+        return zipfile.ZipFile(archive, "w", self._compression)
+
+    @log_on_error(logging.ERROR, "Failed to add file: {e!r}", on_exceptions=Exception)
+    def add_file(self, arc: zipfile.ZipFile, file_path: str, file_name: str) -> None:
+        arc.write(file_path, arcname=file_name)

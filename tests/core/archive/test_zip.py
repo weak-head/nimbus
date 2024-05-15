@@ -35,7 +35,7 @@ class TestZipArchiver:
 
     @patch("zipfile.ZipFile")
     @patch("os.walk")
-    @patch("nimbuscli.core.archive.zip.datetime", MockDateTime)
+    @patch("nimbuscli.core.archive.archiver.datetime", MockDateTime)
     def test_archive(self, os_walk, zipfile_mock):
         directory = "DIRECTORY_PATH/abc"
         archive = "archive/abc.zip"
@@ -60,6 +60,7 @@ class TestZipArchiver:
         assert res.completed == completed
         assert res.directory == directory
         assert res.archive == archive
+        assert res.exception is None
 
         zipfile_mock.assert_called_with(archive, "w", zipfile.ZIP_DEFLATED)
         os_walk.assert_called_with(directory)

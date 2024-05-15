@@ -33,7 +33,7 @@ class TestTarArchiver:
 
     @patch("tarfile.open")
     @patch("os.walk")
-    @patch("nimbuscli.core.archive.tar.datetime", MockDateTime)
+    @patch("nimbuscli.core.archive.archiver.datetime", MockDateTime)
     def test_archive(self, os_walk, tarfile_open):
         directory = "DIRECTORY_PATH/abc"
         archive = "archive/abc.tar.gz"
@@ -58,6 +58,7 @@ class TestTarArchiver:
         assert res.completed == completed
         assert res.directory == directory
         assert res.archive == archive
+        assert res.exception is None
 
         tarfile_open.assert_called_with(archive, "w:gz")
         os_walk.assert_called_with(directory)
@@ -72,3 +73,68 @@ class TestTarArchiver:
                 call(os.path.join(directory, "subB/fileB2"), arcname="subB/fileB2"),
             ]
         )
+
+    @patch("tarfile.open")
+    @patch("os.walk")
+    @patch("nimbuscli.core.archive.archiver.datetime", MockDateTime)
+    def test_archive_exception_open(self, os_walk, tarfile_open):
+        directory = "DIRECTORY_PATH/abc"
+        archive = "archive/abc.tar.gz"
+        started = dt(2024, 1, 1, 10, 00, 00)
+        completed = dt(2024, 1, 1, 10, 30, 15)
+        MockDateTime.now_returns(started, completed)
+
+        exc = Exception("test exception")
+
+        tar_mock = Mock()
+        tarfile_open.return_value.__enter__.side_effect = exc
+
+        tar = TarArchiver("gz")
+        res = tar.archive(directory, archive)
+
+        assert res.started == started
+        assert res.completed == completed
+        assert res.directory == directory
+        assert res.archive == archive
+        assert res.exception == exc
+
+        tarfile_open.assert_called_with(archive, "w:gz")
+        os_walk.assert_not_called()
+        tar_mock.add.assert_not_called()
+
+    @patch("tarfile.open")
+    @patch("os.walk")
+    @patch("nimbuscli.core.archive.archiver.datetime", MockDateTime)
+    def test_archive_exception_add(self, os_walk, tarfile_open):
+        directory = "DIRECTORY_PATH/abc"
+        archive = "archive/abc.tar.gz"
+        started = dt(2024, 1, 1, 10, 00, 00)
+        completed = dt(2024, 1, 1, 10, 30, 15)
+        MockDateTime.now_returns(started, completed)
+
+        exc = Exception("test exception")
+
+        tar_mock = Mock()
+        tarfile_open.return_value.__enter__.return_value = tar_mock
+
+        os_walk.return_value = [
+            (directory, ["subA", "subB"], ["file1", "file2"]),
+            (os.path.join(directory, "subA"), ["subAA"], ["fileA1", "fileA2"]),
+            (os.path.join(directory, "subA", "subAA"), [], ["fileAA1"]),
+            (os.path.join(directory, "subB"), ["subB"], ["fileB1", "fileB2"]),
+        ]
+
+        tar_mock.add.side_effect = exc
+
+        tar = TarArchiver("gz")
+        res = tar.archive(directory, archive)
+
+        assert res.started == started
+        assert res.completed == completed
+        assert res.directory == directory
+        assert res.archive == archive
+        assert res.exception == exc
+
+        tarfile_open.assert_called_with(archive, "w:gz")
+        os_walk.assert_called_with(directory)
+        tar_mock.add.assert_has_calls([call(os.path.join(directory, "file1"), arcname="file1")])
