@@ -21,9 +21,24 @@ class TestArchivalStatus:
         fdr = "directory" if directory else None
         arc = "archive" if archive else None
 
-        a = ArchivalStatus(fdr, arc, started, completed)
+        a = ArchivalStatus(fdr, arc)
+        a.started = started
+        a.completed = completed
 
         assert a.success == all([directory, archive, exists, started, completed])
+
+    def test_success_with_exception(self):
+        patcher = patch("os.path.exists")
+        mock_exists = patcher.start()
+        mock_exists.return_value = True
+
+        a = ArchivalStatus("dir", "arc")
+        a.started = datetime(2024, 1, 1, 10, 30, 00)
+        a.completed = datetime(2024, 1, 1, 10, 32, 00)
+        assert a.success
+
+        a.exception = Exception()
+        assert not a.success
 
     @patch("os.stat")
     @patch("os.path.exists")
@@ -31,12 +46,10 @@ class TestArchivalStatus:
         type(mock_osstat.return_value).st_size = PropertyMock(return_value=100)
         mock_exists.return_value = True
 
-        a = ArchivalStatus(
-            "dir",
-            "arc",
-            datetime(2024, 1, 1, 10, 30, 00),
-            datetime(2024, 1, 1, 10, 35, 00),
-        )
+        a = ArchivalStatus("dir", "arc")
+        a.started = datetime(2024, 1, 1, 10, 30, 00)
+        a.completed = datetime(2024, 1, 1, 10, 35, 00)
+
         assert a.size == 100
 
         mock_exists.return_value = False
@@ -48,12 +61,9 @@ class TestArchivalStatus:
         type(mock_osstat.return_value).st_size = PropertyMock(return_value=6_600)
         mock_exists.return_value = True
 
-        a = ArchivalStatus(
-            "dir",
-            "arc",
-            datetime(2024, 1, 1, 10, 30, 00),
-            datetime(2024, 1, 1, 10, 31, 00),
-        )
+        a = ArchivalStatus("dir", "arc")
+        a.started = datetime(2024, 1, 1, 10, 30, 00)
+        a.completed = datetime(2024, 1, 1, 10, 31, 00)
 
         assert a.speed == 110
         assert a.elapsed == timedelta(minutes=1)
@@ -61,3 +71,27 @@ class TestArchivalStatus:
         mock_exists.return_value = False
         assert a.speed == 0
         assert a.elapsed == timedelta(minutes=1)
+
+        mock_exists.return_value = True
+        a.completed = None
+        assert a.speed == 0
+        assert a.elapsed is None
+
+    @patch("os.stat")
+    @patch("os.path.exists")
+    def test_elapsed(self, mock_exists, mock_osstat):
+        type(mock_osstat.return_value).st_size = PropertyMock(return_value=100)
+        mock_exists.return_value = False
+
+        a = ArchivalStatus("dir", "arc")
+
+        a.started = datetime(2024, 1, 1, 10, 30, 00)
+        a.completed = datetime(2024, 1, 1, 10, 35, 00)
+        assert a.elapsed == timedelta(minutes=5)
+
+        a.completed = None
+        assert a.elapsed is None
+
+        a.started = None
+        a.completed = datetime(2024, 1, 1, 10, 35, 00)
+        assert a.elapsed is None

@@ -30,17 +30,14 @@ class RarArchiver(Archiver):
         if runner is None:
             raise ValueError("The runner cannot be None")
 
-        if password is not None:
-            if password == "":
-                raise ValueError("If password is specified, it cannot be empty string")
+        if password is not None and password == "":
+            raise ValueError("If password is specified, it cannot be empty string.")
 
-        if compression is not None:
-            if not 0 <= compression <= 5:
-                raise ValueError("Compression should be in range [0-5]")
+        if compression is not None and not 0 <= compression <= 5:
+            raise ValueError("Compression should be either None or in [0-5] range.")
 
-        if recovery is not None:
-            if not 0 <= recovery <= 1000:
-                raise ValueError("Recovery should be in range [0-1000]")
+        if recovery is not None and not 0 <= recovery <= 1000:
+            raise ValueError("Recovery should be either None or in [0-1000] range.")
 
         self._runner = runner
         self._password = password
@@ -105,7 +102,9 @@ class RarArchiver(Archiver):
 class RarArchivalStatus(ArchivalStatus):
 
     def __init__(self, proc: CompletedProcess, directory: str, archive: str):
-        super().__init__(directory, archive, proc.started, proc.completed)
+        super().__init__(directory, archive)
+        self.started = proc.started
+        self.completed = proc.completed
         self.proc = proc
 
     @property
