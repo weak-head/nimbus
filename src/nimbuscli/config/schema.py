@@ -10,7 +10,7 @@ def schema() -> Map:
     return Map(
         {
             Optional("observability"): observability(),
-            "profiles": profiles(),
+            Optional("profiles"): profiles(),
             "commands": commands(),
         }
     )
@@ -58,22 +58,32 @@ def observability() -> Map:
 def profiles() -> Map:
     return Map(
         {
-            "archive": Seq(
+            Optional("archive"): Seq(
                 Map(
                     {
                         "name": Str(),
-                        "provider": Str(),
+                        "provider": Enum(
+                            [
+                                "rar",
+                                "tar",
+                                "zip",
+                            ]
+                        ),
                         Optional("compress"): Int() | Str(),
                         Optional("recovery"): Int(),
                         Optional("password"): Str(),
                     }
                 )
             ),
-            "upload": Seq(
+            Optional("upload"): Seq(
                 Map(
                     {
                         "name": Str(),
-                        "provider": Str(),
+                        "provider": Enum(
+                            [
+                                "aws",
+                            ]
+                        ),
                         "access_key": Str(),
                         "secret_key": Str(),
                         "bucket": Str(),

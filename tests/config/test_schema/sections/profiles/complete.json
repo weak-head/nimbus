@@ -1,0 +1,51 @@
+{
+  "archive": [
+    {
+      "name": "rar_default",
+      "provider": "rar"
+    },
+    {
+      "name": "rar_protected",
+      "provider": "rar",
+      "password": "SecretPwd",
+      "recovery": 3,
+      "compress": 1
+    },
+    {
+      "name": "tar",
+      "provider": "tar"
+    },
+    {
+      "name": "tar_xz",
+      "provider": "tar",
+      "compress": "xz"
+    },
+    {
+      "name": "zip",
+      "provider": "zip"
+    },
+    {
+      "name": "zip_gz",
+      "provider": "zip",
+      "compress": "gz"
+    }
+  ],
+  "upload": [
+    {
+      "name": "aws_store",
+      "provider": "aws",
+      "access_key": "XX",
+      "secret_key": "XXX",
+      "bucket": "aws.storage.bucket",
+      "storage": "STANDARD"
+    },
+    {
+      "name": "aws_archival",
+      "provider": "aws",
+      "access_key": "XX",
+      "secret_key": "XXX",
+      "bucket": "aws.archival.bucket",
+      "storage": "DEEP_ARCHIVE"
+    }
+  ]
+}
