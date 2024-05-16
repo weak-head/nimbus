@@ -1,57 +1,15 @@
 import pytest
 from strictyaml import YAMLError, load
 
-from nimbuscli.config import (
-    Config,
-    commands_schema,
-    config_schema,
-    observability_schema,
-    profiles_schema,
-)
+from nimbuscli.config.schema import commands, observability, profiles, schema
 
 
-class TestConfig:
-
-    @pytest.mark.parametrize(
-        ["config", "path", "expected"],
-        [
-            [{}, "", None],
-            [{}, "a.b.c.d", None],
-            [{"foo": {"bar": {"baz": 17}}}, "foo.bar.foo", None],
-            [{"foo": {"bar": {"baz": 17}}}, "foo.foo.baz", None],
-            [{"foo": {"bar": {"baz": 17}}}, "baz.foo.baz", None],
-            [{"foo": {"bar": {"baz": 17}}}, "foo.bar.baz", 17],
-            [{"foo": {"bar": {"baz": 17, "buz": 22}}}, "foo.bar", {"baz": 17, "buz": 22}],
-            [{"foo": {"bar": {"bur": {"baz": 17, "buz": 22}}}}, "foo.bar.bur", {"baz": 17, "buz": 22}],
-            [{"foo": {"bar": {"bur": {"baz": 17, "buz": 22}}}}, "foo.bar.bur.biz.fix", None],
-            [{"foo": {"bar": {"bur": {"baz": 17, "buz": ["a", "b", "c"]}}}}, "foo.bar.bur.buz", ["a", "b", "c"]],
-            [{"foo": {"bar": {"bur": {"baz": 17, "buz": ["a", "b", "c"]}}}}, "", None],
-        ],
-    )
-    def test_nested(self, config, path, expected):
-        cfg = Config(config)
-        assert cfg.nested(path) == expected
-
-    @pytest.mark.parametrize(
-        "config",
-        [
-            {},
-            {"foo": 123},
-            {"foo": 123, "bar": 233},
-            {"foo": 123, "bar": {"buz": 12}},
-        ],
-    )
-    def test_items(self, config):
-        cfg = Config(config)
-        assert cfg.items() == config.items()
-
-
-def validate_schema(schema, yaml_snippet, expected_cfg):
+def validate(config_schema, yaml_snippet, expected_cfg):
     if expected_cfg is None:
         with pytest.raises(YAMLError):
-            load(yaml_snippet, schema)
+            load(yaml_snippet, config_schema)
     else:
-        parsed_cfg = load(yaml_snippet, schema)
+        parsed_cfg = load(yaml_snippet, config_schema)
         assert parsed_cfg == expected_cfg
 
 
@@ -250,7 +208,7 @@ def validate_schema(schema, yaml_snippet, expected_cfg):
     ],
 )
 def test_observability_schema(yaml_snippet, cfg):
-    validate_schema(observability_schema(), yaml_snippet, cfg)
+    validate(observability(), yaml_snippet, cfg)
 
 
 @pytest.mark.parametrize(
@@ -453,7 +411,7 @@ def test_observability_schema(yaml_snippet, cfg):
     ],
 )
 def test_profiles_schema(yaml_snippet, cfg):
-    validate_schema(profiles_schema(), yaml_snippet, cfg)
+    validate(profiles(), yaml_snippet, cfg)
 
 
 @pytest.mark.parametrize(
@@ -694,7 +652,7 @@ def test_profiles_schema(yaml_snippet, cfg):
     ],
 )
 def test_commands_schema(yaml_snippet, cfg):
-    validate_schema(commands_schema(), yaml_snippet, cfg)
+    validate(commands(), yaml_snippet, cfg)
 
 
 @pytest.mark.parametrize(
@@ -842,4 +800,4 @@ def test_commands_schema(yaml_snippet, cfg):
     ],
 )
 def test_config_schema(yaml_snippet, cfg):
-    validate_schema(config_schema(), yaml_snippet, cfg)
+    validate(schema(), yaml_snippet, cfg)
