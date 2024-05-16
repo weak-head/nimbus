@@ -1,0 +1,3 @@
+reports:
+  format: other
+  directory: ~/reports

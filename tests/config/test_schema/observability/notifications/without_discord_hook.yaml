@@ -1,0 +1,4 @@
+notifications:
+  discord:
+    username: name
+    avatar_url: http://avatar.url

@@ -1,0 +1,4 @@
+{
+  "logs": { "level": "DEBUG", "stdout": true, "directory": "~/logs" },
+  "notifications": { "discord": { "webhook": "http://hook.url" } }
+}

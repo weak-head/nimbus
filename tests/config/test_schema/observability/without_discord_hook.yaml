@@ -1,0 +1,11 @@
+reports:
+  format: txt
+  directory: ~/reports
+logs:
+  level: DEBUG
+  stdout: true
+  directory: ~/logs
+notifications:
+  discord:
+    username: name
+    avatar_url: http://avatar.url

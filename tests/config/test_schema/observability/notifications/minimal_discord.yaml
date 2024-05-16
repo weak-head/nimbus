@@ -1,0 +1,3 @@
+notifications:
+  discord:
+    webhook: http://hook.url

@@ -1,5 +1,8 @@
+import json
+import os
+
 import pytest
-from strictyaml import YAMLError, load
+from strictyaml import Map, YAMLError, load
 
 from nimbuscli.config.schema import commands, observability, profiles, schema
 
@@ -13,202 +16,60 @@ def validate(config_schema, yaml_snippet, expected_cfg):
         assert parsed_cfg == expected_cfg
 
 
+def validatef(config_schema: Map, file_path: str):
+    with open(f"{file_path}.yaml") as y:
+        yaml_snippet = y.read().strip()
+        expected_cfg = None
+
+        # Search for the '.json' pair.
+        # If the corresponding '.json' pair doesn't exist
+        # we expect the yaml to be invalid and a
+        # YAMLError exception to be generated.
+        if os.path.exists(f"{file_path}.json"):
+            with open(f"{file_path}.json") as j:
+                expected_cfg = j.read().strip()
+
+        if not expected_cfg:
+            with pytest.raises(YAMLError):
+                load(yaml_snippet, config_schema)
+        else:
+            parsed_cfg = load(yaml_snippet, config_schema)
+            assert parsed_cfg.data == json.loads(expected_cfg)
+
+
 @pytest.mark.parametrize(
-    ["yaml_snippet", "cfg"],
+    "filename",
     [
-        [
-            """
-            """,
-            None,
-        ],
-        [
-            """
-            reports:
-            """,
-            None,
-        ],
-        [
-            """
-            reports:
-                format: other
-                directory: ~/reports
-            """,
-            None,
-        ],
-        [
-            """
-            reports:
-                format: txt
-                directory: ~/reports
-            """,
-            {"reports": {"format": "txt", "directory": "~/reports"}},
-        ],
-        [
-            """
-            reports:
-                format: txt
-                directory: ~/reports
-                some_other_field: value
-            """,
-            None,
-        ],
-        [
-            """
-            logs:
-                level: DEBUG
-                stdout: true
-                directory: ~/logs
-            """,
-            {
-                "logs": {"level": "DEBUG", "stdout": True, "directory": "~/logs"},
-            },
-        ],
-        [
-            """
-            reports:
-                format: txt
-                directory: ~/reports
-            logs:
-                level: DEBUG
-                stdout: true
-                directory: ~/logs
-            """,
-            {
-                "reports": {"format": "txt", "directory": "~/reports"},
-                "logs": {"level": "DEBUG", "stdout": True, "directory": "~/logs"},
-            },
-        ],
-        [
-            """
-            reports:
-                format: txt
-                directory: ~/reports
-            logs:
-                level: DEBUG
-                directory: ~/logs
-            """,
-            None,
-        ],
-        [
-            """
-            reports:
-                format: txt
-                directory: ~/reports
-            logs:
-                level: value
-                stdout: true
-                directory: ~/logs
-            """,
-            None,
-        ],
-        [
-            """
-            logs:
-                level: DEBUG
-                stdout: true
-                directory: ~/logs
-            notifications:
-                discord:
-                    webhook: http://hook.url
-            """,
-            {
-                "logs": {"level": "DEBUG", "stdout": True, "directory": "~/logs"},
-                "notifications": {"discord": {"webhook": "http://hook.url"}},
-            },
-        ],
-        [
-            """
-            reports:
-                format: txt
-                directory: ~/reports
-            logs:
-                level: DEBUG
-                stdout: true
-                directory: ~/logs
-            notifications:
-                discord:
-                    webhook: http://hook.url
-            """,
-            {
-                "reports": {"format": "txt", "directory": "~/reports"},
-                "logs": {"level": "DEBUG", "stdout": True, "directory": "~/logs"},
-                "notifications": {"discord": {"webhook": "http://hook.url"}},
-            },
-        ],
-        [
-            """
-            reports:
-                format: txt
-                directory: ~/reports
-            logs:
-                level: DEBUG
-                stdout: true
-                directory: ~/logs
-            notifications:
-                discord:
-            """,
-            None,
-        ],
-        [
-            """
-            reports:
-                format: txt
-                directory: ~/reports
-            logs:
-                level: DEBUG
-                stdout: true
-                directory: ~/logs
-            notifications:
-            """,
-            None,
-        ],
-        [
-            """
-            reports:
-                format: txt
-                directory: ~/reports
-            logs:
-                level: DEBUG
-                stdout: true
-                directory: ~/logs
-            notifications:
-                discord:
-                    webhook: http://hook.url
-                    username: name
-                    avatar_url: http://avatar.url
-            """,
-            {
-                "reports": {"format": "txt", "directory": "~/reports"},
-                "logs": {"level": "DEBUG", "stdout": True, "directory": "~/logs"},
-                "notifications": {
-                    "discord": {
-                        "webhook": "http://hook.url",
-                        "username": "name",
-                        "avatar_url": "http://avatar.url",
-                    }
-                },
-            },
-        ],
-        [
-            """
-            reports:
-                format: txt
-                directory: ~/reports
-            logs:
-                level: DEBUG
-                stdout: true
-                directory: ~/logs
-            notifications:
-                discord:
-                    username: name
-                    avatar_url: http://avatar.url
-            """,
-            None,
-        ],
+        # --
+        "observability/reports/empty",
+        "observability/reports/empty_reports",
+        "observability/reports/invalid_format",
+        "observability/reports/unexpected_field",
+        "observability/reports/valid_format",
+        # --
+        "observability/logs/empty",
+        "observability/logs/empty_logs",
+        "observability/logs/valid_fields",
+        "observability/logs/without_directory",
+        "observability/logs/without_stdout",
+        "observability/logs/invalid_level",
+        # --
+        "observability/notifications/empty",
+        "observability/notifications/empty_notifications",
+        "observability/notifications/empty_discord",
+        "observability/notifications/minimal_discord",
+        "observability/notifications/valid_fields",
+        "observability/notifications/without_discord_hook",
+        # --
+        "observability/without_notifications",
+        "observability/without_reports",
+        "observability/without_discord_hook",
+        "observability/all_sections",
+        "observability/all_sections_complete",
     ],
 )
-def test_observability_schema(yaml_snippet, cfg):
-    validate(observability(), yaml_snippet, cfg)
+def test_observability(datadir, filename):
+    validatef(observability(), datadir.join(filename))
 
 
 @pytest.mark.parametrize(

@@ -1,0 +1,4 @@
+logs:
+  level: value
+  stdout: true
+  directory: ~/logs
