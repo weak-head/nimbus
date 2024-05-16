@@ -1,3 +1,4 @@
+import glob
 import json
 import os
 
@@ -17,59 +18,52 @@ def validate(config_schema, yaml_snippet, expected_cfg):
 
 
 def validatef(config_schema: Map, file_path: str):
-    with open(f"{file_path}.yaml") as y:
-        yaml_snippet = y.read().strip()
+    with open(file_path) as yaml_file:
+        yaml_snippet = yaml_file.read().strip()
         expected_cfg = None
 
         # Search for the '.json' pair.
-        # If the corresponding '.json' pair doesn't exist
+        # If the corresponding '.json' pair doesn't exist,
         # we expect the yaml to be invalid and a
         # YAMLError exception to be generated.
-        if os.path.exists(f"{file_path}.json"):
-            with open(f"{file_path}.json") as j:
-                expected_cfg = j.read().strip()
+        # Otherwise the json file contains the valid config.
+        json_path = os.path.splitext(file_path)[0] + ".json"
+        if os.path.exists(json_path):
+            with open(json_path) as json_file:
+                expected_cfg = json_file.read().strip()
 
-        if not expected_cfg:
+            parsed_cfg = load(yaml_snippet, config_schema)
+
+            # Validate parsed YAML matches the expected config
+            assert parsed_cfg.data == json.loads(expected_cfg)
+        else:
             with pytest.raises(YAMLError):
                 load(yaml_snippet, config_schema)
-        else:
-            parsed_cfg = load(yaml_snippet, config_schema)
-            assert parsed_cfg.data == json.loads(expected_cfg)
 
 
-@pytest.mark.parametrize(
-    "filename",
-    [
-        # --
-        "observability/reports/empty",
-        "observability/reports/empty_reports",
-        "observability/reports/invalid_format",
-        "observability/reports/unexpected_field",
-        "observability/reports/valid_format",
-        # --
-        "observability/logs/empty",
-        "observability/logs/empty_logs",
-        "observability/logs/valid_fields",
-        "observability/logs/without_directory",
-        "observability/logs/without_stdout",
-        "observability/logs/invalid_level",
-        # --
-        "observability/notifications/empty",
-        "observability/notifications/empty_notifications",
-        "observability/notifications/empty_discord",
-        "observability/notifications/minimal_discord",
-        "observability/notifications/valid_fields",
-        "observability/notifications/without_discord_hook",
-        # --
-        "observability/without_notifications",
-        "observability/without_reports",
-        "observability/without_discord_hook",
-        "observability/all_sections",
-        "observability/all_sections_complete",
-    ],
-)
-def test_observability(datadir, filename):
-    validatef(observability(), datadir.join(filename))
+def discover(directory: str) -> list[str]:
+    test_dir = os.path.splitext(__file__)[0]
+    root_dir = os.path.join(test_dir, directory)
+    return [
+        os.path.join(root_dir, p)
+        for p in glob.glob(
+            "**/*.yaml",
+            root_dir=root_dir,
+            recursive=True,
+        )
+    ]
+
+
+def pytest_generate_tests(metafunc):
+    if "observability_filename" in metafunc.fixturenames:
+        metafunc.parametrize(
+            "observability_filename",
+            discover("sections/observability"),
+        )
+
+
+def test_observability(observability_filename):
+    validatef(observability(), observability_filename)
 
 
 @pytest.mark.parametrize(
