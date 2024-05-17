@@ -1,0 +1,49 @@
+{
+  "deploy": {
+    "services": ["~/services", "/mnt/ssd/services"],
+    "secrets": [
+      {
+        "service": "*",
+        "environment": {
+          "UID": "1001",
+          "GID": "1001",
+          "TZ": "America/New_York",
+          "SMTP_SERVER": "smtp.server.com",
+          "SMTP_PORT": "587",
+          "SMTP_USERNAME": "username",
+          "SMTP_PASSWORD": "password",
+          "SMTP_DOMAIN": "domain.com"
+        }
+      },
+      {
+        "service": "git*",
+        "environment": {
+          "UID": "1002",
+          "GID": "1002"
+        }
+      },
+      {
+        "service": "gitlab",
+        "environment": {
+          "GITLAB_HTTP_PORT": "8080",
+          "GITLAB_SSH_PORT": "8022"
+        }
+      }
+    ]
+  },
+  "backup": {
+    "destination": "/mnt/backups",
+    "archive": "rar_protected",
+    "upload": "aws_archival",
+    "directories": {
+      "apps": [
+        "/mnt/ssd/apps/gitlab",
+        "/mnt/ssd/apps/nextcloud",
+        "/mnt/ssd/apps/plex"
+      ],
+      "media": ["~/Music", "~/Videos", "/mnt/hdd/music", "/mnt/hdd/books"],
+      "photos": ["~/Photos", "/mnt/hdd/photos"],
+      "docs": ["~/Documents"]
+    }
+  }
+}
