@@ -41,7 +41,10 @@ def validatef(config_schema: Map, file_path: str):
                 load(yaml_snippet, config_schema)
 
 
-def discover(directory: str) -> list[str]:
+def discover(directory: str, recursive: bool = True) -> list[str]:
+    """
+    Discover all configs under the specified directory.
+    """
     test_dir = os.path.splitext(__file__)[0]
     root_dir = os.path.join(test_dir, directory)
     return [
@@ -49,22 +52,20 @@ def discover(directory: str) -> list[str]:
         for p in glob.glob(
             "**/*.yaml",
             root_dir=root_dir,
-            recursive=True,
+            recursive=recursive,
         )
     ]
 
 
 def pytest_generate_tests(metafunc):
-    if "observability_filename" in metafunc.fixturenames:
-        metafunc.parametrize(
-            "observability_filename",
-            discover("sections/observability"),
-        )
-    if "profiles_filename" in metafunc.fixturenames:
-        metafunc.parametrize(
-            "profiles_filename",
-            discover("sections/profiles"),
-        )
+    directories = {
+        "observability_filename": "observability",
+        "profiles_filename": "profiles",
+        "commands_filename": "commands",
+    }
+    for param_name, root_dir in directories.items():
+        if param_name in metafunc.fixturenames:
+            metafunc.parametrize(param_name, discover(root_dir))
 
 
 def test_observability(observability_filename):
@@ -73,6 +74,10 @@ def test_observability(observability_filename):
 
 def test_profiles(profiles_filename):
     validatef(profiles(), profiles_filename)
+
+
+def test_commands(commands_filename):
+    validatef(commands(), commands_filename)
 
 
 @pytest.mark.parametrize(
