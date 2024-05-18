@@ -1,0 +1,5 @@
+destination: /mnt/backups
+archive: rar_protected
+directories:
+  apps:
+    - /mnt/ssd/apps/gitlab

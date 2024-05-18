@@ -1,0 +1,11 @@
+{
+  "archive": [
+    {
+      "name": "rar_protected",
+      "provider": "rar",
+      "password": "SecretPwd",
+      "recovery": 3,
+      "compress": 1
+    }
+  ]
+}

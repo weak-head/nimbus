@@ -12,9 +12,8 @@ class TestRarArchivalStatus:
     @pytest.mark.parametrize("archive", [True, False])
     @pytest.mark.parametrize("success", [True, False])
     @pytest.mark.parametrize("exists", [True, False])
-    def test_success(self, directory, archive, success, exists):
-        patcher = patch("os.path.exists")
-        mock_exists = patcher.start()
+    @patch("os.path.exists")
+    def test_success(self, mock_exists, directory, archive, success, exists):
         mock_exists.return_value = exists
 
         mock_proc = Mock()

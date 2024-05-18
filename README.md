@@ -110,11 +110,11 @@ Nimbus supports various archiver backends for creating backups. Each backend has
 
 **Available Archiver Backends**
 
-| Backend | Support | Output |
-| --- | --- | --- |
-| `zip` | Native | [zip](https://en.wikipedia.org/wiki/ZIP_(file_format)) archive |
-| `tar` | Native | [tar](https://en.wikipedia.org/wiki/Tar_(computing)) archive |
-| `rar` | Requires installation of [rar](https://www.win-rar.com/) | [rar](https://en.wikipedia.org/wiki/RAR_(file_format)) archive |
+| Backend | Support | Output | Default Profile |
+| --- | --- | --- | --- |
+| `zip` | Native | [zip](https://en.wikipedia.org/wiki/ZIP_(file_format)) archive | `compress: xz` |
+| `tar` | Native | [tar](https://en.wikipedia.org/wiki/Tar_(computing)) archive | `compress: xz` |
+| `rar` | Requires installation of [rar](https://www.win-rar.com/) | [rar](https://en.wikipedia.org/wiki/RAR_(file_format)) archive | `compress: 3`, `recovery: 3` |
 
 **Customizing Archiver Profiles**
 

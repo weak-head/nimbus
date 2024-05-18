@@ -13,9 +13,8 @@ class TestArchivalStatus:
     @pytest.mark.parametrize("exists", [True, False])
     @pytest.mark.parametrize("started", [datetime(2024, 1, 1, 10, 30, 00), None])
     @pytest.mark.parametrize("completed", [datetime(2024, 1, 1, 10, 35, 10), None])
-    def test_success(self, directory, archive, exists, started, completed):
-        patcher = patch("os.path.exists")
-        mock_exists = patcher.start()
+    @patch("os.path.exists")
+    def test_success(self, mock_exists, directory, archive, exists, started, completed):
         mock_exists.return_value = exists
 
         fdr = "directory" if directory else None
@@ -27,9 +26,8 @@ class TestArchivalStatus:
 
         assert a.success == all([directory, archive, exists, started, completed])
 
-    def test_success_with_exception(self):
-        patcher = patch("os.path.exists")
-        mock_exists = patcher.start()
+    @patch("os.path.exists")
+    def test_success_with_exception(self, mock_exists):
         mock_exists.return_value = True
 
         a = ArchivalStatus("dir", "arc")

@@ -1,0 +1,4 @@
+reports:
+  format: txt
+  directory: ~/reports
+  some_other_field: value

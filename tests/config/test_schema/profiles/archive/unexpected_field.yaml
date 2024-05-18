@@ -1,0 +1,9 @@
+archive:
+  - name: rar_default
+    provider: rar
+  - name: rar_protected
+    provider: rar
+    password: SecretPwd
+    recovery: 3
+    compress: 1
+    some_other_field: value

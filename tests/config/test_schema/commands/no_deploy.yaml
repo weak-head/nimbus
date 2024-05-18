@@ -1,0 +1,13 @@
+backup:
+  destination: /mnt/backups
+  archive: rar_protected
+  upload: aws_archival
+  directories:
+    apps:
+      - /mnt/ssd/apps/gitlab
+    media:
+      - ~/Music
+    photos:
+      - ~/Photos
+    docs:
+      - ~/Documents

@@ -1,0 +1,12 @@
+{
+  "upload": [
+    {
+      "name": "aws_store",
+      "provider": "aws",
+      "access_key": "XX",
+      "secret_key": "XXX",
+      "bucket": "aws.storage.bucket",
+      "storage": "STANDARD"
+    }
+  ]
+}

@@ -1,0 +1,9 @@
+{
+  "notifications": {
+    "discord": {
+      "webhook": "http://hook.url",
+      "username": "name",
+      "avatar_url": "http://avatar.url"
+    }
+  }
+}

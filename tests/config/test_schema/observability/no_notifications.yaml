@@ -1,0 +1,7 @@
+reports:
+  format: txt
+  directory: ~/reports
+logs:
+  level: DEBUG
+  stdout: true
+  directory: ~/logs

@@ -1,0 +1,7 @@
+upload:
+  - name: some_provider
+    provider: unknown_provider
+    access_key: XX
+    secret_key: XXX
+    bucket: aws.storage.bucket
+    storage: STANDARD

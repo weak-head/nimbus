@@ -1,0 +1,14 @@
+upload:
+  - name: aws_store
+    provider: aws
+    access_key: XX
+    secret_key: XXX
+    bucket: aws.storage.bucket
+    storage: STANDARD
+    some_other_field: value
+  - name: aws_archival
+    provider: aws
+    access_key: XX
+    secret_key: XXX
+    bucket: aws.archival.bucket
+    storage: DEEP_ARCHIVE

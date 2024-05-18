@@ -1,0 +1,10 @@
+commands:
+  deploy:
+    services:
+      - ~/services
+  backup:
+    destination: ~/backups
+    archive: tar
+    directories:
+      docs:
+        - ~/Documents
