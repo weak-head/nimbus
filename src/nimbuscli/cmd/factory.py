@@ -43,6 +43,11 @@ class CfgCommandFactory(CommandFactory):
 
     def __init__(self, config: Config) -> None:
         self._cfg = config
+        self._profiles = {
+            "rar": Config({"provider": "rar", "password": None, "compress": 3, "recovery": 3}),
+            "tar": Config({"provider": "tar", "compress": "xz"}),
+            "zip": Config({"provider": "zip", "compress": "xz"}),
+        }
 
     @log_on_start(logging.DEBUG, "Creating Backup command")
     @log_on_error(logging.ERROR, "Failed to create Backup command: {e!r}", on_exceptions=Exception)
@@ -78,14 +83,21 @@ class CfgCommandFactory(CommandFactory):
     @log_on_end(logging.DEBUG, "Created Archiver: {result!r}")
     @log_on_error(logging.ERROR, "Failed to create Archiver: {e!r}", on_exceptions=Exception)
     def create_archiver(self, profile: str) -> Archiver:
-        if cfg := CfgCommandFactory._profile(self._cfg.profiles.archive, profile):
-            match cfg.provider:
+        # Load the archive profile from the app config
+        p = self._cfg.first("profiles.archive", lambda x: x.name == profile)
+
+        # Try to load a default profile
+        if p is None:
+            p = self._profiles.get(profile, None)
+
+        if p is not None:
+            match p.provider:
                 case "rar":
-                    return RarArchiver(SubprocessRunner(), cfg.password, cfg.compress, cfg.recovery)
+                    return RarArchiver(SubprocessRunner(), p.password, p.compress, p.recovery)
                 case "tar":
-                    return TarArchiver(cfg.compress)
+                    return TarArchiver(p.compress)
                 case "zip":
-                    return ZipArchiver(cfg.compress)
+                    return ZipArchiver(p.compress)
 
         return None
 
@@ -93,7 +105,7 @@ class CfgCommandFactory(CommandFactory):
     @log_on_end(logging.DEBUG, "Created Uploader: {result!r}")
     @log_on_error(logging.ERROR, "Failed to create Uploader: {e!r}", on_exceptions=Exception)
     def create_uploader(self, profile: str) -> Uploader:
-        if cfg := CfgCommandFactory._profile(self._cfg.profiles.upload, profile):
+        if cfg := self._cfg.first("profiles.upload", lambda x: x.name == profile):
             if cfg.provider == "aws":
                 return AwsUploader(
                     cfg.access_key,
@@ -118,9 +130,3 @@ class CfgCommandFactory(CommandFactory):
             SubprocessRunner(),
             Secrets(SecretsProvider(self._cfg.commands.deploy.secrets)),
         )
-
-    @staticmethod
-    def _profile(profiles: list[Config], name: str) -> Config | None:
-        if cfg := [c for c in profiles if c.name == name]:
-            return cfg[0]
-        return None

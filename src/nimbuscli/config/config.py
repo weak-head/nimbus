@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from os.path import abspath, exists, expanduser
+from typing import Any, Callable
 
 from strictyaml import load
 
@@ -35,7 +36,7 @@ class Config:
         """
         return self._config.items()
 
-    def nested(self, path: str):
+    def nested(self, path: str) -> Config | Any | None:
         """
         Safely access nested fields of the configuration object.
 
@@ -50,8 +51,26 @@ class Config:
                 return None
         return value
 
+    def first(self, path: str, predicate: Callable[[Config], bool]) -> Config | Any | None:
+        """
+        Safely access a nested collection of items and retrieve
+        the first item for which the predicate returns true.
+
+        :param path: A sequence of keys (separated by `.`) representing the nested fields.
+        :param predicate: A function that takes an item and returns a boolean.
+        :return: The first matching item, or None if no match is found.
+        """
+        if entries := self.nested(path):
+            for entry in entries:
+                try:
+                    if predicate(entry):
+                        return entry
+                except AttributeError:
+                    return None
+        return None
+
     @staticmethod
-    def _convert(val):
+    def _convert(val: Any) -> Config | list | Any:
         if isinstance(val, dict):
             return Config(val)
         if isinstance(val, list):

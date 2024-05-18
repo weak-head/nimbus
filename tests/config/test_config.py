@@ -27,6 +27,56 @@ class TestConfig:
         assert cfg.nested(path) == expected
 
     @pytest.mark.parametrize(
+        ["config", "path", "name", "expected"],
+        [
+            [{}, "", "abc", None],
+            [{}, "a.b.c.d", "d", None],
+            [{"foo": {"bar": {"baz": 17, "buz": 22}}}, "foo.bar", "buz", None],
+            [
+                {
+                    "foo": {
+                        "bar": {
+                            "bur": {
+                                "baz": 17,
+                                "buz": [
+                                    {"name": "a", "val": 1},
+                                    {"name": "b", "val": 3},
+                                    {"name": "b", "val": 4},
+                                ],
+                            }
+                        }
+                    }
+                },
+                "foo.bar.bur.buz",
+                "b",
+                {"name": "b", "val": 3},
+            ],
+            [
+                {
+                    "foo": {
+                        "bar": {
+                            "bur": {
+                                "baz": 17,
+                                "buz": [
+                                    {"name": "a", "val": 1},
+                                    {"name": "b", "val": 3},
+                                    {"name": "b", "val": 4},
+                                ],
+                            }
+                        }
+                    }
+                },
+                "foo.bar.bur.buz",
+                "c",
+                None,
+            ],
+        ],
+    )
+    def test_first(self, config, path, name, expected):
+        cfg = Config(config)
+        assert cfg.first(path, lambda x: x.name == name) == expected
+
+    @pytest.mark.parametrize(
         "config",
         [
             {},
