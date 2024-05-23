@@ -19,6 +19,16 @@ class DiscordNotifier(Notifier):
     _SUCCESS = 0x00FF00
 
     def __init__(self, webhook: str, username: str = None, avatar_url: str = None) -> None:
+        """
+        Creates a new instance of the DiscordNotifier.
+
+        :param webhook: Discord webhook url.
+        :param username: Overwrite username (optional).
+        :param avatar_url: Overwrite avatar (optional).
+        """
+        if not webhook:
+            raise ValueError("The webhook cannot be None or empty.")
+
         self._webhook = webhook
         self._username = username
         self._avatar_url = avatar_url
