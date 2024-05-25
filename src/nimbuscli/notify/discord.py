@@ -41,22 +41,17 @@ class DiscordNotifier(Notifier):
         ]
         return "DiscordNotifier(" + ", ".join(params) + ")"
 
-    def _send_message(self, json: dict) -> None:
-        requests.post(
-            self._webhook,
-            json=json,
-            timeout=3_000,
-        )
+    def completed(self, result: ExecutionResult, attachments: list[str] = None) -> None:
+        requests.post(self._webhook, json=self.compose_request(result), timeout=3_000)
 
-    def _send_attachment(self, filepath: str) -> None:
-        with open(filepath, "rb") as file:
-            requests.post(
-                self._webhook,
-                files={"file": file},
-                timeout=10_000,
-            )
+        if not attachments:
+            return
 
-    def _compose_completed(self, result: ExecutionResult) -> dict:
+        for attachment in attachments:
+            with open(attachment, "rb") as file:
+                requests.post(self._webhook, files={"file": file}, timeout=10_000)
+
+    def compose_request(self, result: ExecutionResult) -> dict:
         """
         Compose 'completed' notification request that follows the discord spec:
             - https://discord.com/developers/docs/resources/webhook
@@ -75,58 +70,60 @@ class DiscordNotifier(Notifier):
             {"name": f"{fmt.ch('duration')} Elapsed", "value": f"{fmt.duration(result.elapsed)}", "inline": True},
             {"name": f"{fmt.ch('time')} Started", "value": f"{fmt.datetime(result.started)}", "inline": True},
             {"name": f"{fmt.ch('time')} Completed", "value": f"{fmt.datetime(result.completed)}", "inline": True},
-            *self._details(result),
+            *self._execution_details(result),
         ]
 
         data["embeds"] = [event]
         return data
 
-    def _details(self, result: ExecutionResult) -> Iterator[dict]:
+    def _execution_details(self, result: ExecutionResult) -> Iterator[dict]:
         for action in result.actions:
             match action:
                 case DeploymentActionResult():
-                    yield {
-                        "name": f"{fmt.ch('service')} Services",
-                        "value": "\n".join(
-                            [
-                                f"{ix:02d}. "
-                                f"{fmt.ch('success') if entry.success else fmt.ch('failure')} "
-                                f"{fmt.ch(entry.kind)} {entry.service}"
-                                for ix, entry in enumerate(action.entries)
-                            ]
-                        ),
-                        "inline": False,
-                    }
+                    yield self._deployment_details(action)
                 case BackupActionResult():
-                    yield {
-                        "name": f"{fmt.ch('backup')} Backups",
-                        "value": "\n".join(
-                            [
-                                f"{ix:02d}. "
-                                f"{fmt.ch('success') if entry.success else fmt.ch('failure')} "
-                                f"{fmt.ch('directory')} {entry.directory}"
-                                for ix, entry in enumerate(action.entries)
-                            ]
-                        ),
-                        "inline": False,
-                    }
+                    yield self._backup_details(action)
                 case UploadActionResult():
-                    yield {
-                        "name": f"{fmt.ch('upload')} Uploads",
-                        "value": "\n".join(
-                            [
-                                f"{ix:02d}. "
-                                f"{fmt.ch('success') if entry.success else fmt.ch('failure')} "
-                                f"{fmt.ch('archive')} {entry.upload.key}"
-                                for ix, entry in enumerate(action.entries)
-                            ]
-                        ),
-                        "inline": False,
-                    }
+                    yield self._upload_details(action)
 
-    def completed(self, result: ExecutionResult, attachments: list[str] = None) -> None:
-        self._send_message(self._compose_completed(result))
+    def _deployment_details(self, action: DeploymentActionResult) -> dict:
+        return {
+            "name": f"{fmt.ch('service')} Services",
+            "value": "\n".join(
+                [
+                    f"{ix:02d}. "
+                    f"{fmt.ch('success') if entry.success else fmt.ch('failure')} "
+                    f"{fmt.ch(entry.kind)} {entry.service}"
+                    for ix, entry in enumerate(action.entries)
+                ]
+            ),
+            "inline": False,
+        }
 
-        if attachments is not None:
-            for attachment in attachments:
-                self._send_attachment(attachment)
+    def _backup_details(self, action: BackupActionResult) -> dict:
+        return {
+            "name": f"{fmt.ch('backup')} Backups",
+            "value": "\n".join(
+                [
+                    f"{ix:02d}. "
+                    f"{fmt.ch('success') if entry.success else fmt.ch('failure')} "
+                    f"{fmt.ch('directory')} {entry.directory}"
+                    for ix, entry in enumerate(action.entries)
+                ]
+            ),
+            "inline": False,
+        }
+
+    def _upload_details(self, action: UploadActionResult) -> dict:
+        return {
+            "name": f"{fmt.ch('upload')} Uploads",
+            "value": "\n".join(
+                [
+                    f"{ix:02d}. "
+                    f"{fmt.ch('success') if entry.success else fmt.ch('failure')} "
+                    f"{fmt.ch('archive')} {entry.upload.key}"
+                    for ix, entry in enumerate(action.entries)
+                ]
+            ),
+            "inline": False,
+        }
