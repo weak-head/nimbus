@@ -2,8 +2,15 @@ import pytest
 from mock import Mock, call, patch
 
 from nimbuscli.cmd import ExecutionResult
-from nimbuscli.cmd.backup import BackupActionResult, UploadActionResult
+from nimbuscli.cmd.backup import (
+    BackupActionResult,
+    BackupEntry,
+    UploadActionResult,
+    UploadEntry,
+)
 from nimbuscli.cmd.deploy import DeploymentActionResult
+from nimbuscli.core.deploy import OperationStatus
+from nimbuscli.core.upload.uploader import UploadStatus
 from nimbuscli.notify.discord import DiscordNotifier
 
 
@@ -88,10 +95,50 @@ class TestDiscordNotifier:
                 mock_func.assert_not_called()
 
     def test_deployment_details(self):
-        pass
+        notifier = DiscordNotifier("webhook")
+        dar = DeploymentActionResult("op", [])
+
+        result = notifier._deployment_details(dar)
+        assert result["value"] == ""
+
+        dar.entries = [OperationStatus("srv", "op", "knd")]
+        result = notifier._deployment_details(dar)
+        assert result["value"] == "00. 👍 knd srv"
+
+        dar.entries = [
+            OperationStatus("srv1", "op1", "knd1"),
+            OperationStatus("srv2", "op2", "knd2"),
+        ]
+        result = notifier._deployment_details(dar)
+        assert result["value"] == "00. 👍 knd1 srv1\n01. 👍 knd2 srv2"
 
     def test_backup_details(self):
-        pass
+        notifier = DiscordNotifier("webhook")
+        bar = BackupActionResult([])
+
+        result = notifier._backup_details(bar)
+        assert result["value"] == ""
+
+        bar.entries = [BackupEntry("grp", "dir")]
+        result = notifier._backup_details(bar)
+        assert result["value"] == "00. ❌ 📁 dir"
+
+        bar.entries = [
+            BackupEntry("grp", "dir"),
+            BackupEntry("grp2", "dir2"),
+        ]
+        result = notifier._backup_details(bar)
+        assert result["value"] == "00. ❌ 📁 dir\n01. ❌ 📁 dir2"
 
     def test_upload_details(self):
-        pass
+        notifier = DiscordNotifier("webhook")
+        uar = UploadActionResult([])
+
+        result = notifier._upload_details(uar)
+        assert result["value"] == ""
+
+        ue = UploadEntry(BackupEntry("grp", "dir"))
+        ue.upload = UploadStatus("file", "key")
+        uar.entries = [ue]
+        result = notifier._upload_details(uar)
+        assert result["value"] == "00. ❌ 📦 key"
