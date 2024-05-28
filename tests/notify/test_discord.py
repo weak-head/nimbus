@@ -63,12 +63,16 @@ class TestDiscordNotifier:
         "actions",
         [
             [],
+            ["value"],
             [DeploymentActionResult("")],
             [BackupActionResult("")],
             [UploadActionResult("")],
             [DeploymentActionResult(""), BackupActionResult("")],
             [DeploymentActionResult(""), BackupActionResult(""), UploadActionResult("")],
             [BackupActionResult(""), UploadActionResult("")],
+            [UploadActionResult(""), UploadActionResult(""), UploadActionResult()],
+            [BackupActionResult(""), BackupActionResult(""), BackupActionResult("")],
+            [DeploymentActionResult(""), DeploymentActionResult(""), DeploymentActionResult("")],
         ],
     )
     def test_execution_details(self, actions):
