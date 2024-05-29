@@ -1,5 +1,6 @@
 import pytest
 from mock import Mock, call, patch
+from datetime import datetime, timedelta
 
 from nimbuscli.cmd import ExecutionResult
 from nimbuscli.cmd.backup import (
@@ -57,7 +58,35 @@ class TestDiscordNotifier:
         mock_post.assert_has_calls(calls)
 
     def test_compose_request(self):
-        pass
+        notifier = DiscordNotifier("webhook_url")
+        notifier._execution_details = Mock()
+        notifier._execution_details.return_value = iter([])
+
+        res = Mock(ExecutionResult("cmd"))
+        res.success = True
+        res.started = datetime(2000, 1, 1, 10, 30, 00)
+        res.completed = datetime(2000, 1, 1, 10, 35, 00)
+        res.elapsed = timedelta(minutes=5)
+
+        d = notifier.compose_request(res)
+
+        assert "username" not in d
+        assert "avatar_url" not in d
+        assert len(d["embeds"]) == 1
+        event = d["embeds"][0]
+        assert event["color"] == DiscordNotifier._SUCCESS
+        notifier._execution_details.assert_called_once()
+
+        res.success = False
+        notifier._username = "username"
+        notifier._avatar_url = "avatar"
+        d = notifier.compose_request(res)
+
+        assert d["username"] == "username"
+        assert d["avatar_url"] == "avatar"
+        assert len(d["embeds"]) == 1
+        event = d["embeds"][0]
+        assert event["color"] == DiscordNotifier._FAILURE
 
     @pytest.mark.parametrize(
         "actions",
