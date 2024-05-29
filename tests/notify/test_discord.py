@@ -1,6 +1,7 @@
+from datetime import datetime, timedelta
+
 import pytest
 from mock import Mock, call, patch
-from datetime import datetime, timedelta
 
 from nimbuscli.cmd import ExecutionResult
 from nimbuscli.cmd.backup import (
