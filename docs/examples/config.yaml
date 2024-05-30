@@ -19,9 +19,9 @@ observability:
       username: nimbus # Optional: Override the default username of the webhook
       avatar_url: http://avatar.picture/url # Optional: Override the default avatar of the webhook
 
-# Profiles Collection
+# Profiles Collection (Optional)
 profiles:
-  # Archival Profiles
+  # Archival Profiles (Optional)
   archive:
     - name: rar_default
       provider: rar
@@ -37,7 +37,7 @@ profiles:
       provider: zip
       compress: bz2  # Optional: Compression ( bz2 | gz | xz )
 
-  # Uploader Profiles
+  # Uploader Profiles (Optional)
   upload:
     - name: aws_store
       provider: aws
