@@ -1,5 +1,24 @@
 # Changelog
 
+## 0.4.0 (2024-05-30)
+
+### Changed
+
+- Minor redesign of the application configuration.
+- Made the `profiles` configuration section optional.
+
+### Added
+
+- Added support for `tar` with `gzip`, `bz2` and `lzma` compression.
+- Introduced support for `zip` with the same compression options.
+- Included default profiles for `tar`, `zip` and `rar` archivers.
+
+## 0.3.2 (2024-05-05)
+
+### Changed
+
+- Explicitly define archive and deploy dependencies in the Readme.
+
 ## 0.3.1 (2024-05-01)
 
 ### Changed
